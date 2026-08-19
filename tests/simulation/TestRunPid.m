@@ -15,6 +15,9 @@ classdef TestRunPid < matlab.unittest.TestCase
             testCase.verifySize(result.q, [2 sampleCount]);
             testCase.verifySize(result.dq, [2 sampleCount]);
             testCase.verifySize(result.tau, [2 sampleCount]);
+            testCase.verifySize(result.effectiveKp, [2 sampleCount]);
+            testCase.verifySize(result.effectiveKi, [2 sampleCount]);
+            testCase.verifySize(result.effectiveKd, [2 sampleCount]);
             testCase.verifyTrue(all(isfinite(result.q), "all"));
             testCase.verifyTrue(all(isfinite(result.dq), "all"));
             testCase.verifyTrue(all(isfinite(result.tau), "all"));
