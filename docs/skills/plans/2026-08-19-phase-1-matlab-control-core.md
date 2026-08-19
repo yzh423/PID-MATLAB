@@ -53,7 +53,7 @@ end
 Run:
 
 ```powershell
-& 'E:\MATLAB2026\bin\matlab.exe' -batch "cd('E:/YZH123123/PID vs Fuzzy PID'); results=runtests('tests/config/TestMakeRobot.m'); assertSuccess(results);"
+& 'E:\MATLAB2026\bin\matlab.exe' -batch "cd('E:/YZH123123/PID vs Fuzzy PID'); addpath(pwd); results=runtests('tests/config/TestMakeRobot.m'); assertSuccess(results);"
 ```
 
 Expected: FAIL because `rrm.config.makeRobot` is undefined.

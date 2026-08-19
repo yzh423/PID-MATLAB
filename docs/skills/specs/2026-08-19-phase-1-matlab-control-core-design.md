@@ -123,13 +123,13 @@ The experiment must:
 Run all tests from PowerShell:
 
 ```powershell
-& 'E:\MATLAB2026\bin\matlab.exe' -batch "cd('E:/YZH123123/PID vs Fuzzy PID'); results=runtests('tests','IncludeSubfolders',true); assertSuccess(results);"
+& 'E:\MATLAB2026\bin\matlab.exe' -batch "cd('E:/YZH123123/PID vs Fuzzy PID'); addpath(pwd); results=runtests('tests','IncludeSubfolders',true); assertSuccess(results);"
 ```
 
 Run the nominal experiment:
 
 ```powershell
-& 'E:\MATLAB2026\bin\matlab.exe' -batch "cd('E:/YZH123123/PID vs Fuzzy PID'); run('experiments/run_nominal_pid.m');"
+& 'E:\MATLAB2026\bin\matlab.exe' -batch "cd('E:/YZH123123/PID vs Fuzzy PID'); addpath(pwd); run('experiments/run_nominal_pid.m');"
 ```
 
 Run both verification commands:
