@@ -1,12 +1,12 @@
 # Reliable Robotic Manipulation: PID vs Fuzzy-PID
 
-This repository implements the revised MATLAB robotics research plan in verified stages. Phases 1 and 2 provide a payload-aware planar two-link manipulator, analytical kinematics, nonlinear rigid-body dynamics, a smooth joint reference, torque-limited PID and Mamdani Fuzzy-PID controllers, one shared deterministic simulator, common metrics, tests, and reproducible nominal experiments.
+This repository implements the revised MATLAB robotics research plan in verified stages. Phases 1–3 provide a payload-aware planar two-link manipulator, analytical kinematics, nonlinear rigid-body dynamics, torque-limited PID and Mamdani Fuzzy-PID controllers, one shared deterministic simulator, reproducible experiments, and optimization-assisted PID tuning with held-out validation.
 
 The project studies reliable low-level execution for a **given** robot and trajectory. Robot morphology is a controlled robustness variable in later phases; it is not an optimization target.
 
 ## Current Status
 
-Implemented through Phase 2:
+Implemented through Phase 3:
 
 - baseline 2-DOF planar robot configuration;
 - analytical forward and two-branch inverse kinematics;
@@ -17,11 +17,13 @@ Implemented through Phase 2:
 - one fixed-step RK4 simulation path shared by both controllers;
 - common tracking, control-effort, saturation, and success metrics;
 - effective-gain and fuzzy-inference histories;
-- MATLAB Unit Tests and reproducible PID and PID-versus-Fuzzy nominal experiments.
+- bounded six-gain PID tuning using deterministic `fmincon` SQP;
+- a dimensionless objective covering tracking, overshoot, effort, settling, saturation, and failure;
+- frozen-gain validation on an unseen 0.8 kg endpoint payload;
+- MATLAB Unit Tests and reproducible controller and optimization experiments.
 
 Deferred to later verified phases:
 
-- `fmincon` PID tuning and held-out validation;
 - payload, morphology, uncertainty, disturbance, noise, saturation, and combined stress sweeps;
 - Cartesian path tracking and simplified pick-and-place;
 - Simulink and Simscape Multibody cross-validation.
@@ -60,6 +62,12 @@ Run the fair PID-versus-Fuzzy comparison:
 & 'E:\MATLAB2026\bin\matlab.exe' -batch "cd('E:/YZH123123/PID vs Fuzzy PID'); addpath(pwd); run('experiments/run_nominal_pid_vs_fuzzy.m');"
 ```
 
+Run optimization-assisted PID tuning and held-out validation:
+
+```powershell
+& 'E:\MATLAB2026\bin\matlab.exe' -batch "cd('E:/YZH123123/PID vs Fuzzy PID'); addpath(pwd); run('experiments/run_pid_optimization.m');"
+```
+
 The experiment writes:
 
 ```text
@@ -71,6 +79,12 @@ results/figures/nominal_pid_vs_fuzzy_tracking.png
 results/figures/nominal_pid_vs_fuzzy_error.png
 results/figures/nominal_pid_vs_fuzzy_torque.png
 results/figures/nominal_pid_vs_fuzzy_gains.png
+results/data/pid_optimization.mat
+results/figures/pid_optimization_objective.png
+results/figures/pid_optimization_nominal_tracking.png
+results/figures/pid_optimization_nominal_torque.png
+results/figures/pid_optimization_validation_tracking.png
+results/figures/pid_optimization_gains.png
 ```
 
 Generated MAT and PNG outputs are excluded from Git.
@@ -85,6 +99,7 @@ Generated MAT and PNG outputs are excluded from Git.
   +fuzzy/        Five-set memberships and Mamdani inference
   +kinematics/   Forward and analytical inverse kinematics
   +metrics/      Common experiment metrics and success decision
+  +optimization/ PID multiplier mapping, objective scoring, and fmincon tuning
   +simulation/   Deterministic closed-loop simulation
   +trajectory/   Reference generation
 docs/
@@ -134,6 +149,42 @@ The checked Phase 2 reference run produced:
 
 Both controllers met the common acceptance thresholds. In this one nominal case, Fuzzy-PID slightly improved joint 2 steady RMS error and joint 1 torque RMS, but worsened joint 1 steady tracking error. These data show bounded, successful online adaptation under the baseline condition; they do not establish general superiority or robustness.
 
+## Optimization-Assisted PID Tuning
+
+Phase 3 tunes six dimensionless multipliers in the order `[Kp1,Kp2,Ki1,Ki2,Kd1,Kd2]`. The manual gains correspond to an all-ones initial point. Multiplier bounds are `[0.5,0.5,0.25,0.25,0.5,0.5]` to `[2,2,2,2,2,2]`; robot dimensions and payload are not decision variables.
+
+The dimensionless objective is:
+
+```text
+J = 0.50 E_rms + 0.10 O + 0.15 U_rms + 0.25 T_settle
+    + 100 S + P_failure
+```
+
+`E_rms` is travel-normalized tracking RMS, `O` is directional normalized overshoot, `U_rms` is torque-limit-normalized RMS effort, `T_settle` uses a 2 degree final-target band, and `S` is actuator saturation fraction. Non-completed and missing-sample results receive explicit finite penalties.
+
+Optimization uses `fmincon` SQP with forward finite differences, no parallel evaluation, 20 maximum iterations, 150 maximum function evaluations, `1e-4` step tolerance, and `1e-3` optimality tolerance. The training condition is the nominal 0.5 kg payload only. The checked run converged with exit flag 1 after 12 iterations and 96 evaluations:
+
+```text
+Manual gains:    Kp=[120,100], Ki=[40,30],       Kd=[25,18]
+Optimized gains: Kp=[240,200], Ki=[79.9554,30.2026], Kd=[29.3133,18.3972]
+Objective:       0.2024268 -> 0.18768376  (-7.283%)
+```
+
+The final gains were then frozen and evaluated on a 0.8 kg payload not used during tuning:
+
+| Scenario | Controller | Joint | Whole RMS error (rad) | Steady RMS error (rad) | Torque RMS (N m) |
+|---|---|---:|---:|---:|---:|
+| Nominal 0.5 kg | Manual | 1 | 0.066966 | 0.0012684 | 12.503 |
+| Nominal 0.5 kg | Manual | 2 | 0.024231 | 0.013762 | 2.6202 |
+| Nominal 0.5 kg | Optimized | 1 | 0.033284 | 0.00003322 | 12.415 |
+| Nominal 0.5 kg | Optimized | 2 | 0.012274 | 0.0071288 | 2.5605 |
+| Held-out 0.8 kg | Manual | 1 | 0.076221 | 0.0030897 | 14.000 |
+| Held-out 0.8 kg | Manual | 2 | 0.030378 | 0.017196 | 3.2795 |
+| Held-out 0.8 kg | Optimized | 1 | 0.037824 | 0.00070723 | 13.901 |
+| Held-out 0.8 kg | Optimized | 2 | 0.015317 | 0.0088871 | 3.1929 |
+
+Both controllers completed both scenarios without torque saturation. The held-out result is evidence of transfer to one heavier payload, not proof of broad robustness; the full reliability matrix remains a later phase.
+
 ## Design Rules
 
 - Package functions do not read base-workspace variables or perform file I/O.
@@ -144,7 +195,7 @@ Both controllers met the common acceptance thresholds. In this one nominal case,
 
 ## Limitations
 
-This is a nominal simulation result, not evidence of real-robot performance or broad robustness. The project has not yet validated actuator dynamics, sensor sampling, dry friction, backlash, flexible links, communication delay, collision constraints, or hardware safety. Later phases must preserve identical test conditions and add held-out stress cases before drawing controller-ranking conclusions.
+This is a simulation result, not evidence of real-robot performance or broad robustness. Optimization used one initial point and one training trajectory, and validation used only one unseen payload. The project has not yet validated actuator dynamics, sensor sampling, dry friction, backlash, flexible links, communication delay, collision constraints, or hardware safety. Later phases must preserve identical test conditions and add systematic stress cases before drawing general controller-ranking conclusions.
 
 ## Research Baseline
 
@@ -154,4 +205,4 @@ The authoritative revised plan is stored at:
 docs/requirements/Daniel_MATLAB_Robotics_Project_Implementation_Guide_Revised.md
 ```
 
-The Phase 1 and Phase 2 design and implementation plans are stored under `docs/skills/`.
+The Phase 1–3 design and implementation plans are stored under `docs/skills/`.

@@ -75,7 +75,8 @@ save(fullfile(dataDirectory,"pid_optimization.mat"), ...
 
 objectiveFigure = figure("Visible","off","Color","white");
 objectiveValues = [optimizationReport.history.objective];
-plot(objectiveValues,"LineWidth",1.0,"Color",[0.4 0.4 0.4]);
+scatter(1:numel(objectiveValues),objectiveValues,18,[0.55 0.55 0.55], ...
+    "filled");
 hold on;
 plot(cummin(objectiveValues),"LineWidth",1.8);
 grid on;

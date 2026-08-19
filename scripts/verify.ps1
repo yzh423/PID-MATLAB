@@ -15,6 +15,8 @@ assertSuccess(results);
 run('experiments/run_nominal_pid.m');
 clear outputRoot;
 run('experiments/run_nominal_pid_vs_fuzzy.m');
+clear outputRoot;
+run('experiments/run_pid_optimization.m');
 "@ -replace "`r?`n", ' '
 
 & $matlabExecutable -batch $matlabCommand
