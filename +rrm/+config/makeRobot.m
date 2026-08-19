@@ -1,11 +1,21 @@
 function robot = makeRobot(name)
 %MAKEROBOT Create a validated planar two-link robot configuration.
 arguments
-    name (1,1) string {mustBeMember(name, "baseline")} = "baseline"
+    name (1,1) string {mustBeMember(name, ...
+        ["compact","baseline","extended"])} = "baseline"
 end
 
-L1 = 0.45;
-L2 = 0.35;
+switch name
+    case "compact"
+        L1 = 0.35;
+        L2 = 0.25;
+    case "baseline"
+        L1 = 0.45;
+        L2 = 0.35;
+    case "extended"
+        L1 = 0.55;
+        L2 = 0.45;
+end
 m1 = 2.0;
 m2 = 1.5;
 
