@@ -42,6 +42,54 @@ classdef TestRunController < matlab.unittest.TestCase
                 robot, controller, reference, options), ...
                 "rrm:simulation:UnknownControllerType");
         end
+
+        function constantDisturbanceExpandsAndMatchesHistory(testCase)
+            [robot, options, reference] = fixtures();
+            controller = rrm.config.makePidController(robot);
+            sampleCount = numel(reference.time);
+            constant = [1.25; -0.75];
+
+            options.disturbanceTorque = constant;
+            constantResult = rrm.simulation.runController( ...
+                robot, controller, reference, options);
+            options.disturbanceTorque = repmat(constant, 1, sampleCount);
+            historyResult = rrm.simulation.runController( ...
+                robot, controller, reference, options);
+
+            testCase.verifyEqual(constantResult, historyResult);
+            testCase.verifyEqual(constantResult.disturbanceTorque, ...
+                repmat(constant, 1, sampleCount));
+        end
+
+        function sampledDisturbanceIsRecordedExactly(testCase)
+            [robot, options, reference] = fixtures();
+            controller = rrm.config.makePidController(robot);
+            pulse = zeros(2, numel(reference.time));
+            pulse(:,101:151) = repmat([4;-3], 1, 51);
+            options.disturbanceTorque = pulse;
+
+            result = rrm.simulation.runController( ...
+                robot, controller, reference, options);
+
+            testCase.verifyEqual(result.disturbanceTorque, pulse);
+        end
+
+        function invalidDisturbanceHistoryIsRejected(testCase)
+            [robot, options, reference] = fixtures();
+            controller = rrm.config.makePidController(robot);
+            sampleCount = numel(reference.time);
+
+            invalidValues = { ...
+                zeros(2, sampleCount-1), ...
+                [0; NaN], ...
+                complex([0;0], [0;1])};
+            for value = invalidValues
+                options.disturbanceTorque = value{1};
+                testCase.verifyError(@() rrm.simulation.runController( ...
+                    robot, controller, reference, options), ...
+                    "rrm:simulation:InvalidDisturbance");
+            end
+        end
     end
 end
 
