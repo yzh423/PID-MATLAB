@@ -1,0 +1,11 @@
+.worktrees/
+
+# Generated MATLAB experiment artifacts
+results/data/*.mat
+results/figures/*.png
+
+# MATLAB temporary and autosave files
+*.asv
+*.m~
+slprj/
+codegen/
