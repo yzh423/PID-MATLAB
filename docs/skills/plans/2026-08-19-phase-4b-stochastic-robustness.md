@@ -179,7 +179,7 @@ half = z*sqrt(0.5*0.5/10 + z^2/(4*10^2))/(1 + z^2/10);
 - Public default `stochasticMode="full"`; automated artifact test sets `stochasticMode="smoke"`.
 - Writes one MAT, two CSV, and six PNG files named in the design specification.
 
-- [ ] **Step 1: Write the failing smoke artifact test.** Require all nine files, 12 unique trial rows, six summary rows, four representative histories, three successful noise-free nominal reference runs, and saved mode `"smoke"`.
+- [ ] **Step 1: Write the failing smoke artifact test.** Require all nine files, 12 unique trial rows, six summary rows, six representative histories, three successful noise-free nominal reference runs, and saved mode `"smoke"`.
 - [ ] **Step 2: Verify RED**, then implement baseline controller definitions, noise-free nominal reference runs, stochastic scenarios, runner, summary, and persistence.
 - [ ] **Step 3: Add six figures** for Wilson success, accuracy, torque slew, saturation, combined stress, and representative measured/true/torque histories. Every axis must include units and unfavorable results.
 - [ ] **Step 4: Add full-mode assertions** for 360 unique trials, 12 summary rows, exact seeds and labels, representative count 12, global RNG preservation around orchestration, and finite reportable metrics.
