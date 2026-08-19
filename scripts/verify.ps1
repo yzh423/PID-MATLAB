@@ -19,6 +19,8 @@ clear outputRoot;
 run('experiments/run_pid_optimization.m');
 clear outputRoot robustnessMode robustnessReference;
 run('experiments/run_deterministic_robustness.m');
+clear outputRoot stochasticMode stochasticReference;
+run('experiments/run_stochastic_robustness.m');
 "@ -replace "`r?`n", ' '
 
 & $matlabExecutable -batch $matlabCommand

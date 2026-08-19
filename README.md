@@ -1,12 +1,12 @@
 # Reliable Robotic Manipulation: PID vs Fuzzy-PID
 
-This repository implements the revised MATLAB robotics research plan in verified stages. Phases 1–4A provide a payload-aware planar two-link manipulator, analytical kinematics, nonlinear rigid-body dynamics, torque-limited PID and Mamdani Fuzzy-PID controllers, one shared deterministic simulator, optimization-assisted PID tuning, and a reproducible deterministic robustness matrix.
+This repository implements the revised MATLAB robotics research plan in verified stages. Phases 1–4B provide a payload-aware planar two-link manipulator, analytical kinematics, nonlinear rigid-body dynamics, torque-limited PID and Mamdani Fuzzy-PID controllers, one shared simulator, optimization-assisted PID tuning, a deterministic robustness matrix, and locally seeded stochastic measurement-noise trials.
 
 The project studies reliable low-level execution for a **given** robot and trajectory. Robot morphology is a controlled robustness variable in later phases; it is not an optimization target.
 
 ## Current Status
 
-Implemented through Phase 4A:
+Implemented through Phase 4B:
 
 - baseline 2-DOF planar robot configuration;
 - analytical forward and two-branch inverse kinematics;
@@ -24,11 +24,14 @@ Implemented through Phase 4A:
 - a 13-scenario, 39-run deterministic robustness matrix with frozen controllers;
 - Cartesian tracking, actuator saturation, recovery, and robustness metrics;
 - raw MAT evidence, per-run and summary CSV tables, and six robustness figures;
+- controller-feedback-only Gaussian position and velocity measurement noise;
+- paired, locally seeded trials that leave MATLAB's global random state unchanged;
+- 360 stochastic runs with Wilson 95% success intervals and nearest-rank 95th percentiles;
+- true-state tracking variance and applied-torque slew metrics for noise sensitivity;
 - MATLAB Unit Tests and reproducible controller and optimization experiments.
 
 Deferred to later verified phases:
 
-- seeded measurement-noise trials and statistical success intervals (Phase 4B);
 - Cartesian path tracking and simplified pick-and-place;
 - Simulink and Simscape Multibody cross-validation.
 
@@ -78,6 +81,12 @@ Run the full deterministic robustness matrix:
 & 'E:\MATLAB2026\bin\matlab.exe' -batch "cd('E:/YZH123123/PID vs Fuzzy PID'); addpath(pwd); run('experiments/run_deterministic_robustness.m');"
 ```
 
+Run the full stochastic robustness study:
+
+```powershell
+& 'E:\MATLAB2026\bin\matlab.exe' -batch "cd('E:/YZH123123/PID vs Fuzzy PID'); addpath(pwd); run('experiments/run_stochastic_robustness.m');"
+```
+
 The experiment writes:
 
 ```text
@@ -104,6 +113,15 @@ results/figures/deterministic_robustness_uncertainty.png
 results/figures/deterministic_robustness_disturbance.png
 results/figures/deterministic_robustness_heatmap.png
 results/figures/deterministic_robustness_summary.png
+results/data/stochastic_robustness.mat
+results/data/stochastic_robustness_trials.csv
+results/data/stochastic_robustness_summary.csv
+results/figures/stochastic_robustness_success.png
+results/figures/stochastic_robustness_accuracy.png
+results/figures/stochastic_robustness_chattering.png
+results/figures/stochastic_robustness_saturation.png
+results/figures/stochastic_robustness_combined.png
+results/figures/stochastic_robustness_representative.png
 ```
 
 Generated MAT, CSV, and PNG outputs are excluded from Git.
@@ -119,8 +137,8 @@ Generated MAT, CSV, and PNG outputs are excluded from Git.
   +kinematics/   Forward and analytical inverse kinematics
   +metrics/      Common experiment metrics and success decision
   +optimization/ PID multiplier mapping, objective scoring, and fmincon tuning
-  +robustness/   Deterministic scenarios, metrics, matrix execution, and summaries
-  +simulation/   Deterministic closed-loop simulation
+  +robustness/   Deterministic and stochastic scenarios, metrics, execution, and summaries
+  +simulation/   Shared closed-loop simulation and seeded measurement-noise generation
   +trajectory/   Reference generation
 docs/
   requirements/  Revised source plan in DOCX and Markdown
@@ -225,6 +243,31 @@ All three controllers passed nominal and disturbance-pulse cases with no saturat
 
 The optimized PID achieved the highest success count and lowest matrix-average joint RMS, while accumulating the most total saturation and a slightly larger worst end-effector error. Fuzzy-PID gained one successful case over manual PID and slightly reduced total saturation. These trade-offs and the shared failures do not establish universal superiority.
 
+## Stochastic Measurement-Noise Robustness
+
+Phase 4B keeps the plant state and all performance metrics physically truthful: independent zero-mean Gaussian noise is added only to the joint position and velocity feedback seen by the controller. Within a scenario and seed, all three frozen controllers receive exactly the same noise realization. A local MT19937 stream makes the study reproducible without reading or changing MATLAB's global random state.
+
+The three pure-noise levels use jointwise position/velocity standard deviations of `0.05 deg / 0.5 deg/s`, `0.20 deg / 2.0 deg/s`, and `0.50 deg / 5.0 deg/s`. The final combined case applies medium noise together with the Phase 4A extended geometry, 1.0 kg payload, 20% mass/inertia increase, `[18;10] N m` limits, and `[4;-3] N m` pulse. Seeds 42001 through 42030 give 30 paired trials per scenario, controller, and noise condition: 360 stochastic runs in total, plus three separate no-noise nominal references.
+
+The verified full study produced:
+
+| Scenario | Controller | Successes | Wilson 95% interval | Mean joint RMS (rad) | Mean torque slew (N m/s) | Non-recoveries |
+|---|---|---:|---:|---:|---:|---:|
+| Low noise | Manual PID | 30/30 | [0.8865, 1.0000] | 0.045598 | 153.57 | 0 |
+| Low noise | Mamdani Fuzzy-PID | 30/30 | [0.8865, 1.0000] | 0.045261 | 173.20 | 0 |
+| Low noise | Optimized PID | 30/30 | [0.8865, 1.0000] | 0.022779 | 290.07 | 0 |
+| Medium noise | Manual PID | 30/30 | [0.8865, 1.0000] | 0.045598 | 608.44 | 0 |
+| Medium noise | Mamdani Fuzzy-PID | 30/30 | [0.8865, 1.0000] | 0.045195 | 675.52 | 0 |
+| Medium noise | Optimized PID | 30/30 | [0.8865, 1.0000] | 0.022783 | 1156.40 | 0 |
+| High noise | Manual PID | 30/30 | [0.8865, 1.0000] | 0.045606 | 1520.30 | 0 |
+| High noise | Mamdani Fuzzy-PID | 30/30 | [0.8865, 1.0000] | 0.045111 | 1631.20 | 0 |
+| High noise | Optimized PID | 30/30 | [0.8865, 1.0000] | 0.022808 | 2888.30 | 0 |
+| Combined stochastic | Manual PID | 0/30 | [0.0000, 0.1135] | 0.83500 | 284.15 | 30 |
+| Combined stochastic | Mamdani Fuzzy-PID | 0/30 | [0.0000, 0.1135] | 0.83630 | 305.72 | 30 |
+| Combined stochastic | Optimized PID | 0/30 | [0.0000, 0.1135] | 0.83079 | 521.09 | 30 |
+
+All controllers preserve the Phase 4A success criteria under isolated white measurement noise, and true-state tracking RMS remains nearly flat as noise increases. That success rate alone conceals a major actuator-side cost: torque slew rises steeply with noise, especially for the optimized PID. In the combined case all controllers fail, saturate for about 6 joint-summed seconds in the worst trial, and never meet the recovery criterion. The optimized PID retains the lowest tracking RMS but is also the most noise-sensitive by torque slew; no controller is universally superior.
+
 ## Design Rules
 
 - Package functions do not read base-workspace variables or perform file I/O.
@@ -235,7 +278,7 @@ The optimized PID achieved the highest success count and lowest matrix-average j
 
 ## Limitations
 
-This is a deterministic simulation result, not evidence of real-robot performance, stochastic robustness, or hardware safety. Optimization used one initial point and one training trajectory. Phase 4A has no measurement-noise model, random trials, confidence intervals, actuator dynamics, sensor sampling, dry friction, backlash, flexible links, communication delay, or collision constraints. Phase 4B must add locally seeded repeated noise trials and statistical reporting without changing the global random state.
+These remain simulation results, not evidence of real-robot performance or hardware safety. Optimization used one initial point and one training trajectory. Phase 4B models independent white Gaussian measurement noise only; it does not yet represent quantization, bias, drift, coloured noise, sensor filtering, sample-rate mismatch, delay, actuator dynamics, dry friction, backlash, flexible links, communication effects, or collision constraints. Thirty seeds support reproducible within-study comparisons, not universal probability claims.
 
 ## Research Baseline
 
@@ -245,4 +288,4 @@ The authoritative revised plan is stored at:
 docs/requirements/Daniel_MATLAB_Robotics_Project_Implementation_Guide_Revised.md
 ```
 
-The Phase 1–4A design and implementation plans are stored under `docs/skills/`.
+The Phase 1–4B design and implementation plans are stored under `docs/skills/`.
