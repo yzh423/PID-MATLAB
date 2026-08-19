@@ -87,7 +87,70 @@ classdef TestRunController < matlab.unittest.TestCase
                 options.disturbanceTorque = value{1};
                 testCase.verifyError(@() rrm.simulation.runController( ...
                     robot, controller, reference, options), ...
-                    "rrm:simulation:InvalidDisturbance");
+                "rrm:simulation:InvalidDisturbance");
+            end
+        end
+
+        function absentAndExplicitZeroMeasurementNoiseAreIdentical(testCase)
+            [robot, options, reference] = fixtures();
+            controller = rrm.config.makePidController(robot);
+            withoutNoise = rrm.simulation.runController( ...
+                robot, controller, reference, options);
+            sampleCount = numel(reference.time);
+            options.measurementNoise = struct( ...
+                "position", zeros(2,sampleCount), ...
+                "velocity", zeros(2,sampleCount));
+            withZeros = rrm.simulation.runController( ...
+                robot, controller, reference, options);
+
+            testCase.verifyEqual(withoutNoise, withZeros);
+            testCase.verifyEqual(withZeros.qMeasured, withZeros.q);
+            testCase.verifyEqual(withZeros.dqMeasured, withZeros.dq);
+            testCase.verifyEqual(withZeros.measurementNoise, ...
+                options.measurementNoise);
+        end
+
+        function prescribedNoiseChangesFeedbackButNotTrueInitialState(testCase)
+            [robot, options, reference] = fixtures();
+            controller = rrm.config.makePidController(robot);
+            controller.Kp = [2;3];
+            controller.Ki = [0;0];
+            controller.Kd = [0;0];
+            controller.torqueLimits = [1e6;1e6];
+            robot.torqueLimits = [1e6;1e6];
+            sampleCount = numel(reference.time);
+            positionNoise = zeros(2,sampleCount);
+            positionNoise(:,1) = [0.1;-0.2];
+            options.measurementNoise = struct( ...
+                "position", positionNoise, ...
+                "velocity", zeros(2,sampleCount));
+
+            result = rrm.simulation.runController( ...
+                robot, controller, reference, options);
+
+            testCase.verifyEqual(result.q(:,1), reference.q(:,1));
+            testCase.verifyEqual(result.qMeasured(:,1), [0.1;-0.2]);
+            testCase.verifyEqual(result.tauUnsaturated(:,1), [-0.2;0.6], ...
+                "AbsTol", 1e-12);
+        end
+
+        function invalidMeasurementNoiseIsRejected(testCase)
+            [robot, options, reference] = fixtures();
+            controller = rrm.config.makePidController(robot);
+            sampleCount = numel(reference.time);
+            invalidValues = { ...
+                struct("position",zeros(2,sampleCount-1), ...
+                    "velocity",zeros(2,sampleCount)), ...
+                struct("position",[NaN;0],"velocity",zeros(2,sampleCount)), ...
+                struct("position",complex(zeros(2,sampleCount),1), ...
+                    "velocity",zeros(2,sampleCount)), ...
+                struct("velocity",zeros(2,sampleCount)), ...
+                struct("position",zeros(2,sampleCount))};
+            for value = invalidValues
+                options.measurementNoise = value{1};
+                testCase.verifyError(@() rrm.simulation.runController( ...
+                    robot, controller, reference, options), ...
+                    "rrm:simulation:InvalidMeasurementNoise");
             end
         end
     end
