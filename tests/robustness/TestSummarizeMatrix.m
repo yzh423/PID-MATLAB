@@ -1,0 +1,23 @@
+classdef TestSummarizeMatrix < matlab.unittest.TestCase
+    methods (Test)
+        function aggregatesInStableControllerOrder(testCase)
+            runTable = table(["A";"A";"B";"B"], logical([1;0;1;1]), ...
+                [0.1;0.3;0.2;0.4], [0;0.2;0;0.1], ...
+                [0.02;0.06;0.03;0.05], [0.04;0.08;0.05;0.07], ...
+                VariableNames=["Controller","Success","JointRmsMean", ...
+                "TotalSaturationTime","EndEffectorRms", ...
+                "EndEffectorMax"]);
+
+            summary = rrm.robustness.summarizeMatrix(runTable);
+
+            testCase.verifyEqual(summary.Controller, ["A";"B"]);
+            testCase.verifyEqual(summary.SuccessRate, [0.5;1]);
+            testCase.verifyEqual(summary.MeanJointRms, [0.2;0.3], ...
+                "AbsTol", 1e-12);
+            testCase.verifyEqual(summary.WorstJointRms, [0.3;0.4]);
+            testCase.verifyEqual(summary.TotalSaturationTime, [0.2;0.1], ...
+                "AbsTol", 1e-12);
+            testCase.verifyEqual(summary.FailedRunCount, [1;0]);
+        end
+    end
+end
