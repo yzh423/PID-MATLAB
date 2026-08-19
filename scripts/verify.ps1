@@ -13,6 +13,8 @@ addpath(pwd);
 results = runtests('tests', 'IncludeSubfolders', true);
 assertSuccess(results);
 run('experiments/run_nominal_pid.m');
+clear outputRoot;
+run('experiments/run_nominal_pid_vs_fuzzy.m');
 "@ -replace "`r?`n", ' '
 
 & $matlabExecutable -batch $matlabCommand
