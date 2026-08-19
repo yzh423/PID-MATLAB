@@ -17,6 +17,8 @@ clear outputRoot;
 run('experiments/run_nominal_pid_vs_fuzzy.m');
 clear outputRoot;
 run('experiments/run_pid_optimization.m');
+clear outputRoot robustnessMode robustnessReference;
+run('experiments/run_deterministic_robustness.m');
 "@ -replace "`r?`n", ' '
 
 & $matlabExecutable -batch $matlabCommand

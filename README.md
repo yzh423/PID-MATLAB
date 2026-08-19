@@ -1,12 +1,12 @@
 # Reliable Robotic Manipulation: PID vs Fuzzy-PID
 
-This repository implements the revised MATLAB robotics research plan in verified stages. Phases 1–3 provide a payload-aware planar two-link manipulator, analytical kinematics, nonlinear rigid-body dynamics, torque-limited PID and Mamdani Fuzzy-PID controllers, one shared deterministic simulator, reproducible experiments, and optimization-assisted PID tuning with held-out validation.
+This repository implements the revised MATLAB robotics research plan in verified stages. Phases 1–4A provide a payload-aware planar two-link manipulator, analytical kinematics, nonlinear rigid-body dynamics, torque-limited PID and Mamdani Fuzzy-PID controllers, one shared deterministic simulator, optimization-assisted PID tuning, and a reproducible deterministic robustness matrix.
 
 The project studies reliable low-level execution for a **given** robot and trajectory. Robot morphology is a controlled robustness variable in later phases; it is not an optimization target.
 
 ## Current Status
 
-Implemented through Phase 3:
+Implemented through Phase 4A:
 
 - baseline 2-DOF planar robot configuration;
 - analytical forward and two-branch inverse kinematics;
@@ -20,11 +20,15 @@ Implemented through Phase 3:
 - bounded six-gain PID tuning using deterministic `fmincon` SQP;
 - a dimensionless objective covering tracking, overshoot, effort, settling, saturation, and failure;
 - frozen-gain validation on an unseen 0.8 kg endpoint payload;
+- three prescribed link configurations and time-varying disturbance torque;
+- a 13-scenario, 39-run deterministic robustness matrix with frozen controllers;
+- Cartesian tracking, actuator saturation, recovery, and robustness metrics;
+- raw MAT evidence, per-run and summary CSV tables, and six robustness figures;
 - MATLAB Unit Tests and reproducible controller and optimization experiments.
 
 Deferred to later verified phases:
 
-- payload, morphology, uncertainty, disturbance, noise, saturation, and combined stress sweeps;
+- seeded measurement-noise trials and statistical success intervals (Phase 4B);
 - Cartesian path tracking and simplified pick-and-place;
 - Simulink and Simscape Multibody cross-validation.
 
@@ -68,6 +72,12 @@ Run optimization-assisted PID tuning and held-out validation:
 & 'E:\MATLAB2026\bin\matlab.exe' -batch "cd('E:/YZH123123/PID vs Fuzzy PID'); addpath(pwd); run('experiments/run_pid_optimization.m');"
 ```
 
+Run the full deterministic robustness matrix:
+
+```powershell
+& 'E:\MATLAB2026\bin\matlab.exe' -batch "cd('E:/YZH123123/PID vs Fuzzy PID'); addpath(pwd); run('experiments/run_deterministic_robustness.m');"
+```
+
 The experiment writes:
 
 ```text
@@ -85,9 +95,18 @@ results/figures/pid_optimization_nominal_tracking.png
 results/figures/pid_optimization_nominal_torque.png
 results/figures/pid_optimization_validation_tracking.png
 results/figures/pid_optimization_gains.png
+results/data/deterministic_robustness.mat
+results/data/deterministic_robustness_runs.csv
+results/data/deterministic_robustness_summary.csv
+results/figures/deterministic_robustness_payload.png
+results/figures/deterministic_robustness_configuration.png
+results/figures/deterministic_robustness_uncertainty.png
+results/figures/deterministic_robustness_disturbance.png
+results/figures/deterministic_robustness_heatmap.png
+results/figures/deterministic_robustness_summary.png
 ```
 
-Generated MAT and PNG outputs are excluded from Git.
+Generated MAT, CSV, and PNG outputs are excluded from Git.
 
 ## Repository Structure
 
@@ -100,6 +119,7 @@ Generated MAT and PNG outputs are excluded from Git.
   +kinematics/   Forward and analytical inverse kinematics
   +metrics/      Common experiment metrics and success decision
   +optimization/ PID multiplier mapping, objective scoring, and fmincon tuning
+  +robustness/   Deterministic scenarios, metrics, matrix execution, and summaries
   +simulation/   Deterministic closed-loop simulation
   +trajectory/   Reference generation
 docs/
@@ -183,7 +203,27 @@ The final gains were then frozen and evaluated on a 0.8 kg payload not used duri
 | Held-out 0.8 kg | Optimized | 1 | 0.037824 | 0.00070723 | 13.901 |
 | Held-out 0.8 kg | Optimized | 2 | 0.015317 | 0.0088871 | 3.1929 |
 
-Both controllers completed both scenarios without torque saturation. The held-out result is evidence of transfer to one heavier payload, not proof of broad robustness; the full reliability matrix remains a later phase.
+Both controllers completed both scenarios without torque saturation. The held-out result is evidence of transfer to one heavier payload, not proof of broad robustness.
+
+## Deterministic Robustness Matrix
+
+Phase 4A freezes the manual PID, Phase 2 Mamdani Fuzzy-PID, and Phase 3 optimized PID before testing. No controller is retuned for a stress case. Every controller receives the same 5 s reference and 1 ms step within each scenario.
+
+The 13 prescribed scenarios are: nominal; payloads 0.0, 1.0, and 1.5 kg; compact and extended link configurations; mass/inertia scales 0.8, 0.9, 1.1, and 1.2; a `[4;-3] N m` pulse from 2.00 through 2.10 s; actuator limits reduced to `[18;10] N m`; and an extended-link combined case with 1.0 kg payload, 1.2 mass/inertia scale, reduced limits, and the pulse. Link changes recompute centres of mass and uniform-link inertias. These are prescribed evaluation cases, not morphology optimization variables.
+
+Robustness success requires a completed simulation, the existing steady-state joint thresholds, and maximum end-effector tracking error at most 0.15 m. Recovery is the first 0.10 s continuous interval after the pulse during which both joint errors remain within 2 degrees. Saturation is reported rather than automatically treated as failure.
+
+The verified full matrix produced:
+
+| Frozen controller | Successful runs | Success rate | Mean joint RMS (rad) | Worst joint RMS (rad) | Worst EE error (m) | Total saturation (s) |
+|---|---:|---:|---:|---:|---:|---:|
+| Manual PID | 8/13 | 61.54% | 0.13109 | 0.83476 | 1.8046 | 10.797 |
+| Mamdani Fuzzy-PID | 9/13 | 69.23% | 0.13042 | 0.83604 | 1.8038 | 10.528 |
+| Optimized PID | 10/13 | 76.92% | 0.11074 | 0.83037 | 1.8070 | 11.279 |
+
+All three controllers passed nominal and disturbance-pulse cases with no saturation. Their pulse recovery time was 0 s because both errors were already inside the 2 degree recovery band when the pulse ended. The manual PID additionally failed the 1.0 kg payload and extended configuration thresholds. All controllers failed the 1.5 kg payload, actuator-derated, and combined cases; the combined case caused approximately 6 s of joint-summed saturation per controller and no qualifying recovery before the run ended.
+
+The optimized PID achieved the highest success count and lowest matrix-average joint RMS, while accumulating the most total saturation and a slightly larger worst end-effector error. Fuzzy-PID gained one successful case over manual PID and slightly reduced total saturation. These trade-offs and the shared failures do not establish universal superiority.
 
 ## Design Rules
 
@@ -195,7 +235,7 @@ Both controllers completed both scenarios without torque saturation. The held-ou
 
 ## Limitations
 
-This is a simulation result, not evidence of real-robot performance or broad robustness. Optimization used one initial point and one training trajectory, and validation used only one unseen payload. The project has not yet validated actuator dynamics, sensor sampling, dry friction, backlash, flexible links, communication delay, collision constraints, or hardware safety. Later phases must preserve identical test conditions and add systematic stress cases before drawing general controller-ranking conclusions.
+This is a deterministic simulation result, not evidence of real-robot performance, stochastic robustness, or hardware safety. Optimization used one initial point and one training trajectory. Phase 4A has no measurement-noise model, random trials, confidence intervals, actuator dynamics, sensor sampling, dry friction, backlash, flexible links, communication delay, or collision constraints. Phase 4B must add locally seeded repeated noise trials and statistical reporting without changing the global random state.
 
 ## Research Baseline
 
@@ -205,4 +245,4 @@ The authoritative revised plan is stored at:
 docs/requirements/Daniel_MATLAB_Robotics_Project_Implementation_Guide_Revised.md
 ```
 
-The Phase 1–3 design and implementation plans are stored under `docs/skills/`.
+The Phase 1–4A design and implementation plans are stored under `docs/skills/`.

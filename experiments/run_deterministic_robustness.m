@@ -140,12 +140,14 @@ for index = 1:numel(runs)
     end
     result = runs(index).result;
     errorNorm = vecnorm(rad2deg(result.qReference-result.q),2,1);
-    plot(axisHandle,result.time,errorNorm,"LineWidth",1.25, ...
+    lineHandle = plot(axisHandle,result.time,errorNorm,"LineWidth",1.25, ...
         "DisplayName",runs(index).controllerName);
     recovery = runs(index).metrics.recoveryTime;
     if isfinite(recovery)
-        xline(axisHandle,2.10+recovery,":", ...
-            runs(index).controllerName + " recovered", ...
+        recoveryTime = 2.10 + recovery;
+        [~,sample] = min(abs(result.time-recoveryTime));
+        plot(axisHandle,result.time(sample),errorNorm(sample),"o", ...
+            "Color",lineHandle.Color,"MarkerFaceColor","white", ...
             "HandleVisibility","off");
     end
 end
@@ -156,7 +158,7 @@ xlim(axisHandle,[1.75 min(2.75,max(runs(1).result.time))]);
 xlabel(axisHandle,"Time (s)");
 ylabel(axisHandle,"Joint-error norm (deg)");
 legend(axisHandle,"Location","best");
-title(axisHandle,"Deterministic Disturbance and Recovery");
+title(axisHandle,"Deterministic Disturbance (circle marks recovery)");
 end
 
 function figureHandle = heatmapPlot(runTable)

@@ -2,6 +2,7 @@
 
 # Generated MATLAB experiment artifacts
 results/data/*.mat
+results/data/*.csv
 results/figures/*.png
 
 # MATLAB temporary and autosave files
