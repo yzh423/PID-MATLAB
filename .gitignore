@@ -10,6 +10,9 @@ results/report/report_evidence.json
 results/report/rendered-pages/
 /results/presentation/
 /tmp/phase7b/
+/node_modules/
+/presentation/final_presentation/
+/presentation/*.pptx.inspect.ndjson
 
 # MATLAB temporary and autosave files
 *.asv
