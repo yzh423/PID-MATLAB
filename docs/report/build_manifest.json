@@ -5,7 +5,7 @@
   "sources": [
     {
       "path": "docs/report/technical_report_template.md",
-      "sha256": "78d99da9786a0fe0ed265860493bbc4abd06d1fcd0d13eaec6f56b6f8a935245"
+      "sha256": "e7e88982b4ca1ab31dc82e6c4138022fffc32674eff221065283b15fa6ef0d7d"
     },
     {
       "path": "docs/report/references.json",
@@ -17,41 +17,41 @@
     },
     {
       "path": "results/figures/nominal_pid_vs_fuzzy_tracking.png",
-      "sha256": "7f3eacb73063f5dfcec9adeedd3f86b662516de775ab25a05135abf7115cf00c"
+      "sha256": "cac5f9ec719e270142d9c5b7c98e840ad87e4343d443509d949dcc8d61fab900"
     },
     {
       "path": "results/figures/pid_optimization_objective.png",
-      "sha256": "b37658d49fd8df8757ff394722ffc92a8c5ae6b57d0bcb1edf92e49c8ac0f048"
+      "sha256": "d05113ac3c02ca3aa54c3558ebe741d13f36f127ee93e851c312258407758ed5"
     },
     {
       "path": "results/figures/deterministic_robustness_summary.png",
-      "sha256": "4dc2219687f00cd189571b53151f76c61a68018c0519ef552dc63e20a6719871"
+      "sha256": "144d52b65285e37cf7e1cb7d6cba4237e223ea8399be79ff350edd59bb1ca300"
     },
     {
       "path": "results/figures/stochastic_robustness_chattering.png",
-      "sha256": "572796dc9a284ec21e3c823d6710d64239d1dcfc10b5673c32cd29fc2a3f80b4"
+      "sha256": "abe9cc2c5451e5650c12b3ed68b5ce6f7af05a510c25bd4d28366b3b6fba3ae7"
     },
     {
       "path": "results/figures/cartesian_tasks_paths.png",
-      "sha256": "fda5df09a14e5e515c5f0d800430a76d5e0bd5ceb123c3c3769290e10b22ae3a"
+      "sha256": "2dcaa14c41b63c087c871fb7e2f3cf2699d92e47a865476e50e5d3b64ff6a2ac"
     },
     {
       "path": "results/figures/multibody_cross_validation_tracking.png",
-      "sha256": "6a9fba47ceec5125ffea58fc35016f2e1add9558e57740fc45f981e86bdef57b"
+      "sha256": "598b4f89069ca9198255c5db98736ef43476db1763f02e1d388353304db0a22d"
     }
   ],
   "outputs": [
     {
       "path": "docs/report/technical_report.md",
-      "sha256": "4cb46b3254588d8880ceccad327977ea24aa13c2133cff8200eb5c3549e5f3f8"
+      "sha256": "b3a7da4d611c7e8ced71285309b4a9960c38155bf9670fe9fee46114361b4674"
     },
     {
       "path": "docs/report/technical_report.docx",
-      "sha256": "264e26d1e13b0a28efe461c0ad7f48e3b689938238508cd895f9eb1d339dcad8"
+      "sha256": "7bd9684121d075d461bcf8d75f3f74dbb2f925716d84dab7236e680f5b14e034"
     },
     {
       "path": "docs/report/technical_report.pdf",
-      "sha256": "0ceee9b596c7dc7d225d2a669e693a27f22e1c38ef2e7d4691f62350bc8cbf43"
+      "sha256": "231c36bea38b24375aa47937eeb2967068367c98763b3a61db01ed668254c71e"
     }
   ],
   "usedEvidenceTokens": [

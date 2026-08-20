@@ -776,6 +776,8 @@ git commit -m "feat: export verified technical report PDF"
 
 ## Task 7: Document, Regress, Review, and Integrate Phase 7A
 
+**Evidence-backed deviation recorded after Task 6:** Repeat builds initially changed manifest, DOCX, and PDF hashes even when all experimental evidence and rendered content were unchanged. The final implementation therefore preserves `generatedAt` only for an otherwise identical evidence manifest, normalizes DOCX ZIP entry metadata and ordering, and normalizes volatile Word PDF metadata and document identifiers. Focused tests and two complete report-only builds demonstrated identical SHA-256 hashes for the evidence JSON, DOCX, PDF, and build manifest. This strengthens the planned reproducibility boundary without changing report content or experimental results.
+
 **Files:**
 - Modify: `README.md`
 - Modify: `scripts/verify.ps1`

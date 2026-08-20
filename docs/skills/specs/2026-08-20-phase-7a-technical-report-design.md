@@ -105,6 +105,8 @@ results/report/report_evidence.json
 
 `rrm.report.exportEvidence(projectRoot, outputPath)` reads the existing formal artifacts under `results/data`, validates their schemas, writes `results/report/report_evidence.json`, and returns the same scalar evidence struct for tests. `experiments/export_report_evidence.m` is the thin reproducible entry point. Neither layer reruns or mutates a controller experiment.
 
+To keep repeated verification hash-stable without hiding evidence changes, the exporter preserves the existing `generatedAt` value only when the newly validated manifest is otherwise identical. Any substantive evidence change produces a newly timestamped manifest.
+
 The manifest contains:
 
 - environment and protocol metadata;
@@ -133,6 +135,8 @@ Stable error identifiers cover missing source artifacts, incompatible schemas, n
 The builder uses the bundled Python runtime with `python-docx`, Pillow, and the standard library. It does not install a new dependency.
 
 `scripts/export_report_pdf.ps1` opens the generated DOCX through the installed Microsoft Word COM interface, exports `docs/report/technical_report.pdf`, closes the document, and always terminates the hidden Word application it created. It never edits an already open user document.
+
+Binary reproducibility is enforced after content generation. DOCX ZIP entries receive fixed metadata and deterministic ordering. The Word-produced PDF is then normalized to remove volatile metadata and assign fixed document dates and identifiers before its hash is recorded. The normalizers do not alter report text, figures, tables, or pagination.
 
 ### Report Structure
 
@@ -285,6 +289,7 @@ Report prose must:
 8. **PDF tests:** require 8 to 12 pages, nonempty extracted text on every content page, expected title and section headings, and no unresolved tokens.
 9. **Visual QA:** render every PDF page to images and inspect text clipping, table overflow, figure legibility, caption placement, page breaks, and blank pages.
 10. **Regression:** rerun the existing 145 MATLAB tests and all Phase 1 through Phase 6B formal experiments before final integration.
+11. **Binary reproducibility:** rebuild the evidence manifest, DOCX, PDF, and build manifest twice from unchanged inputs and require identical SHA-256 hashes.
 
 ## Boundaries
 
@@ -323,6 +328,7 @@ Report prose must:
 - **Citation hallucination:** use a structured citation bank and independently verify bibliographic fields before drafting dependent claims.
 - **Page-count pressure:** constrain figure selection and table density before reducing font size; maintain readable body text and captions.
 - **DOCX/PDF mismatch:** make DOCX the single export input, verify the resulting PDF, and visually inspect every rendered page.
+- **Volatile office metadata:** preserve an unchanged evidence timestamp, normalize DOCX ZIP metadata and ordering, and normalize Word PDF metadata and identifiers before hashing.
 - **Word automation leakage:** create one hidden application instance, use `try/finally`, close the owned document, quit the owned instance, and release COM objects.
 - **Large report scope:** keep Phase 7A limited to the report. Presentation and one-page summary start only after this report passes its own gate.
 - **Overclaiming:** include explicit scope sentences beside Simulink, Multibody, stochastic, and embodied-AI discussions.

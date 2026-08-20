@@ -2,20 +2,22 @@
 
 This repository is a reproducible MATLAB experiment pipeline for a planar two-link manipulator. Choose a robot, one of three frozen controllers, and a joint- or Cartesian-space reference; execute it through the shared torque-limited nonlinear plant; then turn the logged histories into acceptance metrics and evidence artifacts. The experiment scripts are the normal entry points, while the `rrm.*` package exposes the same workflow as composable building blocks for custom studies.
 
-Implemented evidence progresses from nominal PID tracking through a fair bounded Mamdani Fuzzy-PID comparison, optimization-assisted PID tuning, deterministic and paired seeded stochastic robustness studies, Cartesian tasks, and independent Robotics System Toolbox, Simulink, and torque-driven Simscape Multibody cross-validation. The MATLAB fixed-step RK4 path remains the shared reference implementation. The project studies reliable low-level execution for a **given** robot and trajectory; morphology varies only as a controlled robustness condition, not as an optimization target.
+Implemented evidence progresses from nominal PID tracking through a fair bounded Mamdani Fuzzy-PID comparison, optimization-assisted PID tuning, deterministic and paired seeded stochastic robustness studies, Cartesian tasks, and independent Robotics System Toolbox, Simulink, and torque-driven Simscape Multibody cross-validation. The MATLAB fixed-step RK4 path remains the shared reference implementation. Phase 7A admits the full formal results through `rrm.report.exportEvidence`; controlled Python validators resolve evidence and citations; deterministic Markdown, DOCX, and PDF artifacts are produced; and the verification pipeline checks the completed package. The project studies reliable low-level execution for a **given** robot and trajectory; morphology varies only as a controlled robustness condition, not as an optimization target. This remains simulation evidence, not hardware validation.
 
 ## Requirements
 
 - Windows PowerShell
 - MATLAB R2026a at `E:\MATLAB2026\bin\matlab.exe`
 - Simulink, Simscape, and Simscape Multibody
+- Microsoft Word Office 16 for hidden COM-based PDF export
+- Bundled Codex Python at `C:\Users\14228\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe` for report assembly and PDF checks
 - No third-party MATLAB packages
 
 Installed toolboxes used by the verified stages include Control System Toolbox, Optimization Toolbox, Robotics System Toolbox, Simulink, Simscape, and Simscape Multibody. Fuzzy Logic Toolbox and Global Optimization Toolbox are not required and are not installed in the current environment.
 
 ## Quick Start
 
-From the repository root, run the complete test and experiment pipeline:
+From the repository root, run the complete test and experiment pipeline. Use this full entry point rather than an individual experiment when reproducing the complete study, because it regenerates every formal result before the report package is checked.
 
 ```powershell
 & '.\scripts\verify.ps1'
@@ -40,12 +42,16 @@ The verified evidence sequence and entry points are:
 | 5 | Cartesian line and pick-transfer-place tasks | `run_cartesian_tasks.m` |
 | 6A | Rigid-body and native Simulink cross-validation | `run_simulink_cross_validation.m` |
 | 6B | Torque-driven Simscape Multibody cross-validation and animation | `run_multibody_cross_validation.m` |
+| 7A | Evidence-grounded Markdown, DOCX, and PDF technical report | `export_report_evidence.m`, `scripts/build_report.py`, `scripts/export_report_pdf.ps1` |
 
 ## Output Contract
 
 - `results/data/` contains MAT evidence and, where applicable, per-run and summary CSV tables.
 - `results/figures/` contains the tracking, error, effort, robustness, task, validation, and model views emitted by each experiment.
 - `results/videos/` contains full-mode animation evidence.
+- `results/report/report_evidence.json` is a regenerated, ignored evidence manifest used only as the report build input.
+- `docs/report/technical_report.md`, `docs/report/technical_report.docx`, and `docs/report/technical_report.pdf` are the committed Phase 7A report deliverables.
+- `docs/report/build_manifest.json` records source, figure, DOCX, PDF, and report hashes for provenance.
 
 Earlier-stage artifact names use the stable study stem established by their experiment script. Phase 6B writes these exact files:
 
@@ -60,19 +66,73 @@ results/figures/multibody_cross_validation_model.png
 results/videos/multibody_cross_validation_manual_pid.mp4
 ```
 
-Generated MAT, CSV, PNG, and MP4 outputs are excluded from Git.
+Generated MAT, CSV, PNG, MP4, report-evidence JSON, and render-page outputs are excluded from Git. The report Markdown, DOCX, PDF, references, audit report, and build manifest are committed because they are the reviewed Phase 7A package.
+
+## Technical Report Package
+
+When formal experiment results are already current and need a reviewable deliverable, use Phase 7A to package the Phase 1 through Phase 6B simulation evidence into an English technical report:
+
+- [Markdown report](docs/report/technical_report.md)
+- [Editable DOCX report](docs/report/technical_report.docx)
+- [Final PDF report](docs/report/technical_report.pdf)
+- [Build manifest](docs/report/build_manifest.json)
+- [Claim audit](docs/report/PAPER_CLAIM_AUDIT.md)
+
+The canonical workflow is `experiments/export_report_evidence.m`, then `scripts/build_report.py`, then `scripts/export_report_pdf.ps1`; choose `scripts/verify_report.ps1` only when the formal experiments are already current, and choose `scripts/verify.ps1` for a clean end-to-end reproduction. This separation avoids producing a polished report from stale evidence while keeping PDF creation in its required Windows Word COM boundary.
+
+**Admit evidence and claims.** Start with `rrm.report.exportEvidence`, which validates the formal MAT/CSV artifacts, checks frozen run counts and selected figures, then writes `results/report/report_evidence.json`. Use `scripts.reporting.evidence.load_evidence` and `scripts.reporting.evidence.validate_evidence` only when a custom report-side tool must independently inspect that manifest; use `scripts.reporting.evidence.lookup` and `scripts.reporting.evidence.resolve_tokens` when resolving constrained template values rather than manually traversing evidence. When bibliography or report prose changes, use `scripts.reporting.content.load_references` to load the reference set and `scripts.reporting.content.validate_report` to gate citations and scope before artifacts are assembled.
+
+> `rrm.report.exportEvidence` is a strict admission gate, not a best-effort summary: all 14 named MAT/CSV sources, six selected PNGs, full modes, exact study counts of 39/360/6/2/2, unique keys, finite headline values, and passing independent-model rows are mandatory.
+
+> Each report CSV must mirror its MAT table within tolerance, and controller summaries must retain the frozen order `manual-pid`, `mamdani-fuzzy-pid`, `optimization-pid`; equivalent rows in a different order are rejected.
+
+> Direct callers of `rrm.report.exportEvidence` must provide an existing parent directory and a `.json` destination; the exporter writes through a same-directory temporary file and atomically replaces the destination.
+
+> The evidence boundary is exposed by `scripts.reporting.evidence.EvidenceError`, `scripts.reporting.evidence.load_evidence`, `scripts.reporting.evidence.validate_evidence`, `scripts.reporting.evidence.lookup`, and `scripts.reporting.evidence.resolve_tokens`. Tokens may select mapping fields or zero-based list indices only; containers, `null`, non-finite values, unknown paths, and formats outside `d` or `.[digits][feg]` are rejected.
+
+> Citation and scope admission is owned by `scripts.reporting.content.ContentError`, `scripts.reporting.content.Reference`, `scripts.reporting.content.load_references`, and `scripts.reporting.content.validate_report`. The gate requires explicit combined-stress and pick-transfer-place failure disclosures plus the phrase "not hardware validation," and rejects hardware-validation, safety-guarantee, validated-real-time, or universal Fuzzy-PID superiority claims.
+
+**Build and verify artifacts.** Run the `scripts/build_report.py` command for ordinary report assembly. `scripts.build_report.main` coordinates its helpers, while `scripts.reporting.document.DocumentBuildError`, `scripts.reporting.document.DocumentMetadata`, and `scripts.reporting.document.build_docx` are the lower-level controlled DOCX surface for direct assembly, extension work, or builder tests; they are not a replacement for the normal pipeline. This boundary keeps the document contract, figure/table checks, and final Word PDF export coupled to the admitted report content.
+
+> `scripts.reporting.document.DocumentBuildError`, `scripts.reporting.document.DocumentMetadata`, and `scripts.reporting.document.build_docx` define the controlled Markdown-to-DOCX boundary: only `text` fences are supported, HTML is rejected, images must be project-contained PNGs, and the document must contain exactly six figures and nine mapped tables.
+
+Run the report-only gate when the experiments are already current:
+
+```powershell
+& '.\scripts\verify_report.ps1'
+```
+
+> `scripts/verify_report.ps1` assumes the formal experiment artifacts are already current; use `scripts/verify.ps1` for a clean end-to-end reproduction because it regenerates every experiment before entering the report gate.
+
+For targeted report work:
+
+```powershell
+& 'E:\MATLAB2026\bin\matlab.exe' -batch "addpath(genpath(pwd)); run('experiments/export_report_evidence.m');"
+& 'C:\Users\14228\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' '.\scripts\build_report.py' --project-root '.' --markdown-only
+& 'C:\Users\14228\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' '.\scripts\build_report.py' --project-root '.'
+& '.\scripts\export_report_pdf.ps1'
+```
+
+> `scripts.build_report.main` orchestrates `scripts.build_report.insert_references`, `scripts.build_report.format_reference`, `scripts.build_report.atomic_write`, and `scripts.build_report.build_docx_outputs`, but stops after Markdown, DOCX, and manifest output. PDF creation remains the separate Windows Word COM step in `scripts/export_report_pdf.ps1`, followed by `scripts.normalize_report_pdf.normalize_pdf` through `scripts.normalize_report_pdf.main`.
+
+The current verified PDF is 8 pages with 6 figures, 9 tables, and 8 references. The report evidence path records 39 deterministic runs, 360 paired stochastic trials, 6 Cartesian task runs, 2 Simulink comparisons, 2 Multibody comparisons, 145 pre-report MATLAB tests, and 5 report-specific MATLAB tests at export time. This package communicates simulation evidence; it is not new hardware validation.
 
 ## Compose a Custom Study
 
-The eight scripts listed in Quick Start are the default reproducible entry points, and `scripts/verify.ps1` runs them as one verification gate. Use the package APIs when a study needs a different robot, command, controller, or evidence slice while preserving the same lifecycle:
+When a study needs a different robot, command, controller, or evidence slice than the verified default, use the package APIs while preserving the same lifecycle. The eight scripts listed in Quick Start remain the default reproducible entry points, and `scripts/verify.ps1` runs them as one verification gate so that custom composition does not silently replace the study's common protocol:
 
 1. **Freeze the protocol.** Create the plant and numerical rules with `rrm.config.makeRobot` and `makeSimulationOptions`, then select `makePidController`, `makeFuzzyPidController`, or `makeOptimizedPidController`. `makePidOptimization` separately defines the bounded tuning problem.
 2. **Build the motion command.** Use `rrm.trajectory.quintic` for joint motion, or compose Cartesian motion with `cartesianQuintic`, `cartesianWaypoints`, `cartesianToJoint`, and `makePickAndPlaceTask`. The supporting `rrm.kinematics.forward`, `inverse`, `jacobian`, and `jacobianDot` functions expose reachability and differential mappings.
 3. **Execute the closed loop.** Call `rrm.simulation.runController` when code selects the controller type at runtime. Use `runPid` or `runFuzzyPid` when the study is intentionally controller-specific and should reject the wrong definition early. These runners coordinate the `rrm.control.pidStep` or `fuzzyPidStep` logic with the shared `rrm.dynamics.matrices` and `acceleration` plant; fuzzy inference remains isolated in `rrm.fuzzy.membershipFive` and `mamdani`.
+
+> `rrm.simulation.runPid` and `rrm.simulation.runFuzzyPid` both delegate to `rrm.simulation.runController`, so the MATLAB controller comparison shares one integration and plant path; independence comes from the narrower fixed-gain PID, zero-disturbance, zero-noise validation layers.
 4. **Evaluate the result.** Use `rrm.metrics.evaluate` for common joint tracking, effort, saturation, and success metrics. Use `evaluateCartesianTask` when end-effector and waypoint accuracy must be added to that same common result.
 5. **Tune without changing the test.** `rrm.optimization.applyPidMultipliers` maps bounded variables to gains, `scorePidResult` grades each candidate, and `tunePid` owns the deterministic optimizer and its history. Freeze the resulting controller before held-out evaluation.
+
+> `rrm.config.makeOptimizedPidController` reproduces the already-verified Phase 3 gains without rerunning optimization; `rrm.optimization.tunePid` is the separate `fmincon` path and requires Optimization Toolbox.
 6. **Stress-test frozen controllers.** In `rrm.robustness`, the deterministic lifecycle uses `makeDeterministicScenarios`, `runDeterministicMatrix`, `evaluateRun`, and `summarizeMatrix` for prescribed physical variations and pulses. The stochastic lifecycle uses `makeStochasticScenarios`, `makeMeasurementNoise`, `runStochasticStudy`, `evaluateStochasticRun`, and `summarizeStochasticStudy` when reproducible reliability intervals under paired sensor noise are required.
 7. **Cross-check independent models.** Use `rrm.validation.makeRigidBodyTree` and `compareRigidBodyDynamics` to check analytical dynamics. In `rrm.simulink`, `buildPidCrossValidationModel`, `runPidCrossValidation`, and `comparePidRuns` check an independently encoded block-diagram execution. In `rrm.multibody`, `buildCrossValidationModel` creates the physical mechanism, `runCrossValidation` injects and executes the fixed protocol, `compareRuns` grades agreement, and `writeVideo` renders an already completed Multibody history. Build only when the committed model must be regenerated; run and compare for numerical evidence; render only when a full-mode visual artifact is needed.
+8. **Package the report.** Use `rrm.report.exportEvidence` through `experiments/export_report_evidence.m` when the formal artifacts need to be re-exported for the report builder. The report workflow is a packaging and provenance layer over existing evidence, not a new experiment stage.
 
 The two committed generated models are `models/rrm_pid_cross_validation.slx` and `models/rrm_multibody_cross_validation.slx`. Requirements, designs, tests, and generated evidence live under `docs/`, `tests/`, and the `results/data`, `results/figures`, and `results/videos` directories respectively.
 
@@ -210,7 +270,7 @@ All controllers preserve the Phase 4A success criteria under isolated white meas
 
 ## Cartesian Path and Pick-and-Place Tasks
 
-Phase 5 accepts Cartesian commands from a hypothetical high-level planner while retaining the same low-level controllers. Each straight segment uses analytic rest-to-rest quintic position, velocity, and acceleration. Both analytical IK branches are considered at every sample; the joint-limit-valid solution nearest the previous state is selected. Joint velocities and accelerations are then calculated from `dq = J\v` and `ddq = J\(a-Jdot*dq)`. Unreachable, joint-limit-invalid, and singular paths fail explicitly instead of being clipped.
+When a hypothetical high-level planner supplies Cartesian goals instead of a fixed joint reference, use Phase 5 to retain the same low-level controllers while converting those commands into joint motion. Each straight segment uses analytic rest-to-rest quintic position, velocity, and acceleration. Both analytical IK branches are considered at every sample; the joint-limit-valid solution nearest the previous state is selected. Joint velocities and accelerations are then calculated from `dq = J\v` and `ddq = J\(a-Jdot*dq)`. Unreachable, joint-limit-invalid, and singular paths fail explicitly instead of being clipped, so that planning failures are not hidden as modified trajectories.
 
 > Analytical IK returns two `NaN` solutions with `reachable=false` for an unreachable target; Cartesian conversion also considers each branch shifted by plus or minus one revolution before selecting the nearest valid continuation and rejecting singular paths.
 
@@ -293,10 +353,10 @@ These remain simulation results, not evidence of real-robot performance or hardw
 
 ## Research Baseline
 
-The authoritative revised plan is stored at:
+When you need the controlling requirements or a phase-specific implementation decision behind the verified workflow, start with the authoritative revised plan because it anchors the repository evidence to the agreed study scope:
 
 ```text
 docs/requirements/Daniel_MATLAB_Robotics_Project_Implementation_Guide_Revised.md
 ```
 
-The Phase 1–6B design and implementation plans are stored under `docs/skills/`.
+The Phase 1 through Phase 7A design and implementation plans are stored under `docs/skills/`.

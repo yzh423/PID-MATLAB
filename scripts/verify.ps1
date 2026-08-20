@@ -33,3 +33,8 @@ run('experiments/run_multibody_cross_validation.m');
 if ($LASTEXITCODE -ne 0) {
     throw "MATLAB verification failed with exit code $LASTEXITCODE"
 }
+
+& (Join-Path $PSScriptRoot 'verify_report.ps1')
+if ($LASTEXITCODE -ne 0) {
+    throw "Report verification failed with exit code $LASTEXITCODE"
+}
