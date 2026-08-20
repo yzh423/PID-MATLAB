@@ -11,15 +11,25 @@ import sys
 from reportlab.lib.colors import HexColor
 from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.platypus import Image, KeepTogether, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from reportlab import rl_config
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from scripts.phase7b.summary import SummaryBuildError, _require_summary
+
+
+ARIAL_REGULAR = Path("C:/Windows/Fonts/arial.ttf")
+ARIAL_BOLD = Path("C:/Windows/Fonts/arialbd.ttf")
+BUNDLED_DEPENDENCIES = Path(sys.executable).resolve().parents[1]
+LIBERATION_REGULAR = BUNDLED_DEPENDENCIES / "node/node_modules/pdfjs-dist/standard_fonts/LiberationSans-Regular.ttf"
+LIBERATION_BOLD = BUNDLED_DEPENDENCIES / "node/node_modules/pdfjs-dist/standard_fonts/LiberationSans-Bold.ttf"
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -32,7 +42,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 def _style(name: str, *, size: float, leading: float, color: str = "#000000", bold: bool = False, alignment: int = 0, before: float = 0, after: float = 0) -> ParagraphStyle:
     return ParagraphStyle(
         name,
-        fontName="Helvetica-Bold" if bold else "Helvetica",
+        fontName="ResearchSummaryArial-Bold" if bold else "ResearchSummaryArial",
         fontSize=size,
         leading=leading,
         textColor=HexColor(color),
@@ -40,6 +50,18 @@ def _style(name: str, *, size: float, leading: float, color: str = "#000000", bo
         spaceBefore=before,
         spaceAfter=after,
     )
+
+
+def _register_embedded_fonts() -> None:
+    """Embed Arial when available, with an Arial-compatible bundled fallback."""
+    regular, bold = (ARIAL_REGULAR, ARIAL_BOLD)
+    if not regular.is_file() or not bold.is_file():
+        regular, bold = (LIBERATION_REGULAR, LIBERATION_BOLD)
+    if not regular.is_file() or not bold.is_file():
+        raise SummaryBuildError("an embeddable Arial-compatible font is required for the PDF fallback")
+    if "ResearchSummaryArial" not in pdfmetrics.getRegisteredFontNames():
+        pdfmetrics.registerFont(TTFont("ResearchSummaryArial", str(regular)))
+        pdfmetrics.registerFont(TTFont("ResearchSummaryArial-Bold", str(bold)))
 
 
 def build_pdf(root: Path, output: Path) -> None:
@@ -54,17 +76,19 @@ def build_pdf(root: Path, output: Path) -> None:
     if not figure.is_file():
         raise SummaryBuildError(f"admitted summary figure does not exist: {figure}")
 
-    styles = getSampleStyleSheet()
+    rl_config.invariant = 1
+    _register_embedded_fonts()
+
     label = _style("label", size=8.5, leading=10, color="#1F4E79", bold=True, after=1)
     title = _style("title", size=17.5, leading=20.5, bold=True, after=2)
     takeaway = _style("takeaway", size=10.5, leading=12.5, color="#525960", after=4)
     heading = _style("heading", size=10.5, leading=12, color="#1F4E79", bold=True, before=3, after=1)
-    body = _style("body", size=9.15, leading=10.7, after=2)
+    body = _style("body", size=10.25, leading=11.8, after=3)
     snapshot = _style("snapshot", size=7.7, leading=9, color="#525960", after=2)
     result_value = _style("result_value", size=13.5, leading=15.5, color="#1F4E79", bold=True, alignment=TA_CENTER)
     result_label = _style("result_label", size=7.5, leading=8.7, color="#525960", alignment=TA_CENTER)
     caption = _style("caption", size=7.8, leading=9, color="#525960", alignment=TA_CENTER, after=2)
-    source = _style("source", size=6.6, leading=7.5, color="#525960", before=1)
+    source = _style("source", size=7.0, leading=8.1, color="#525960", before=2)
 
     document = SimpleDocTemplate(
         str(output), pagesize=letter,
@@ -104,8 +128,8 @@ def build_pdf(root: Path, output: Path) -> None:
     ]))
     story.extend([
         table,
-        Spacer(1, 3),
-        Image(str(figure), width=4.1 * inch, height=1.55 * inch, hAlign="CENTER"),
+        Spacer(1, 18),
+        Image(str(figure), width=5.0 * inch, height=(5.0 * inch) / (1825 / 1171), hAlign="CENTER"),
         Paragraph(f"Figure. {summary['figureCaption']}", caption),
         Paragraph("Why this matters", heading),
         Paragraph(str(summary["significance"]), body),

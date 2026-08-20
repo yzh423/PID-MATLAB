@@ -1,0 +1,113 @@
+from __future__ import annotations
+
+import re
+from pathlib import Path
+import unittest
+from xml.etree import ElementTree
+from zipfile import ZipFile
+
+from docx import Document
+import pdfplumber
+from pypdf import PdfReader
+
+
+ROOT = Path(__file__).resolve().parents[2]
+DOCX = ROOT / "docs" / "summary" / "research_summary.docx"
+PDF = ROOT / "docs" / "summary" / "research_summary.pdf"
+EXPORTER = ROOT / "scripts" / "export_research_summary_pdf.ps1"
+FIGURE_RATIO = 1825 / 1171
+NAMESPACES = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+
+
+class ResearchSummaryOOXMLTests(unittest.TestCase):
+    def test_docx_geometry_table_figure_and_text_contract(self) -> None:
+        document = Document(DOCX)
+        self.assertEqual(len(document.sections), 1)
+        section = document.sections[0]
+        self.assertAlmostEqual(section.page_width.inches, 8.5, places=2)
+        self.assertAlmostEqual(section.page_height.inches, 11, places=2)
+        self.assertAlmostEqual(section.left_margin.inches, 0.6, places=2)
+        self.assertAlmostEqual(section.right_margin.inches, 0.6, places=2)
+        self.assertAlmostEqual(section.top_margin.inches, 0.55, places=2)
+        self.assertAlmostEqual(section.bottom_margin.inches, 0.55, places=2)
+        self.assertEqual(len(document.inline_shapes), 1)
+        shape = document.inline_shapes[0]
+        self.assertAlmostEqual(shape.width / shape.height, FIGURE_RATIO, places=2)
+        with ZipFile(DOCX) as archive:
+            names = archive.namelist()
+            payload = archive.read("word/document.xml")
+        self.assertFalse(any(name.startswith("word/comments") for name in names))
+        self.assertNotIn(b"w:ins", payload)
+        self.assertNotIn(b"w:del", payload)
+        self.assertNotIn(b"{{", payload)
+        root = ElementTree.fromstring(payload)
+        table = root.find(".//w:tbl", NAMESPACES)
+        self.assertIsNotNone(table)
+        assert table is not None
+        table_properties = table.find("./w:tblPr", NAMESPACES)
+        self.assertEqual(table_properties.find("./w:tblW", NAMESPACES).get(f"{{{NAMESPACES['w']}}}w"), "10512")
+        self.assertEqual(table_properties.find("./w:tblInd", NAMESPACES).get(f"{{{NAMESPACES['w']}}}w"), "0")
+        self.assertEqual(
+            [column.get(f"{{{NAMESPACES['w']}}}w") for column in table.findall("./w:tblGrid/w:gridCol", NAMESPACES)],
+            ["3504", "3504", "3504"],
+        )
+        self.assertEqual(
+            [cell.get(f"{{{NAMESPACES['w']}}}w") for cell in table.findall(".//w:tcPr/w:tcW", NAMESPACES)],
+            ["3504", "3504", "3504"],
+        )
+
+
+class ResearchSummaryPDFLayoutTests(unittest.TestCase):
+    def test_pdf_preserves_image_aspect_embeds_font_and_uses_page_depth(self) -> None:
+        reader = PdfReader(PDF)
+        self.assertEqual(len(reader.pages), 1)
+        page = reader.pages[0]
+        media_box = page.mediabox
+        self.assertAlmostEqual(float(media_box.width), 612, places=1)
+        self.assertAlmostEqual(float(media_box.height), 792, places=1)
+        contents = page.get_contents().get_data().decode("latin-1")
+        image_matrix = re.search(
+            r"q\s+([\d.]+)\s+0\s+0\s+([\d.]+)\s+[\d.]+\s+[\d.]+\s+cm\s+/\S+\s+Do",
+            contents,
+        )
+        self.assertIsNotNone(image_matrix, "PDF must draw the admitted figure as an image XObject")
+        assert image_matrix is not None
+        self.assertAlmostEqual(float(image_matrix.group(1)) / float(image_matrix.group(2)), FIGURE_RATIO, delta=0.02)
+        self.assertIn("10.25 Tf", contents, "fallback body typography must match the DOCX 10.25 pt body")
+        fonts = page["/Resources"]["/Font"].get_object().values()
+        self.assertTrue(
+            any("/FontDescriptor" in font.get_object() for font in fonts),
+            "fallback must embed an Arial-compatible font rather than rely on base-14 Helvetica",
+        )
+        text = page.extract_text() or ""
+        for claim in ("7.283%", "10/13", "30/30", "0/30", "Simulation scope", "Limitations and next steps"):
+            self.assertIn(claim, text)
+        with pdfplumber.open(PDF) as document:
+            source_words = [word for word in document.pages[0].extract_words() if word["text"].startswith("Sources:")]
+        self.assertEqual(len(source_words), 1)
+        self.assertGreater(source_words[0]["bottom"], 650, "content should use the lower Letter page without a top-heavy blank third")
+        self.assertLess(source_words[0]["bottom"], 752, "source footer must remain inside the bottom margin")
+
+
+class ResearchSummaryExportLifecycleTests(unittest.TestCase):
+    def test_exporter_has_independent_com_and_temp_cleanup_guarantees(self) -> None:
+        source = EXPORTER.read_text(encoding="utf-8")
+        for function in (
+            "function Close-WordDocument",
+            "function Quit-WordApplication",
+            "function Release-ComReference",
+            "function Remove-TaskOwnedTemporaryPdf",
+        ):
+            self.assertIn(function, source)
+        self.assertRegex(source, r"try \{\s*\$Document\.Close\(0\)\s*\} catch")
+        self.assertRegex(source, r"try \{\s*\$Word\.Quit\(\)\s*\} catch")
+        self.assertRegex(
+            source,
+            r"finally \{\s*Remove-TaskOwnedTemporaryPdf -Path \$temporaryPdf -SummaryRoot \$summaryRoot",
+        )
+        self.assertIn(".research_summary.", source)
+        self.assertIn(".tmp.pdf", source)
+
+
+if __name__ == "__main__":
+    unittest.main()
