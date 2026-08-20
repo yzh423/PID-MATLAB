@@ -42,6 +42,25 @@ classdef TestExportReportEvidence < matlab.unittest.TestCase
                 [0;0;0]);
         end
 
+        function exportsSystemAndControllerProtocol(testCase)
+            output = string(tempname) + ".json";
+            testCase.addTeardown(@() deleteIfPresent(output));
+
+            evidence = rrm.report.exportEvidence(projectRoot(),output);
+
+            testCase.verifyEqual(evidence.system.linkLengthsM,[0.45;0.35]);
+            testCase.verifyEqual(evidence.system.linkMassesKg,[2;1.5]);
+            testCase.verifyEqual(evidence.system.payloadKg,0.5);
+            testCase.verifyEqual(evidence.system.torqueLimitsNm,[25;15]);
+            testCase.verifyEqual(evidence.protocol.sampleTimeS,0.001);
+            testCase.verifyEqual( ...
+                evidence.protocol.steadyRmsThresholdRad,[0.02;0.02]);
+            testCase.verifyEqual(evidence.controllers.manualPid.Kp,[120;100]);
+            testCase.verifyEqual(evidence.controllers.optimizedPid.Kp,[240;200]);
+            testCase.verifyEqual( ...
+                evidence.controllers.fuzzyPid.correctionFraction.Kp,0.35);
+        end
+
         function rejectsMissingFormalArtifact(testCase)
             fixture = makeFixtureWithout("nominal_pid_vs_fuzzy.mat");
             testCase.addTeardown(@() rmdir(fixture,"s"));
