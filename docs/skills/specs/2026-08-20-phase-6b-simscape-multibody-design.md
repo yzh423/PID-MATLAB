@@ -22,7 +22,7 @@ The user has already authorized recommended implementation choices without repea
 4. The Multibody plant must not call `rrm.dynamics`, `rrm.simulation.runController`, or the Phase 6A equation-based plant during simulation.
 5. Link z-axis moments of inertia exactly match the analytical model. Positive transverse moments are supplied to form a physically valid three-dimensional inertia tensor; they do not affect the constrained planar motion.
 6. The endpoint payload is a point mass at the distal tip and has no rotational inertia, matching the analytical model.
-7. Multibody Explorer supplies interactive animation. The formal experiment also exports one representative MP4 when `smwritevideo` is available.
+7. Multibody Explorer supplies interactive three-dimensional visualization. The formal experiment exports one representative MP4 from the validated Multibody joint logs through a deterministic `VideoWriter` renderer. R2026a Update 4 `smwritevideo` was rejected for automated use after both MPEG-4 and AVI created locked zero-byte files and crashed `physmod_sm_gui_app_video.dll` under `matlab -batch`.
 8. Generated MAT, CSV, PNG, and MP4 evidence remains ignored. The deterministic builder and generated `.slx` model are committed.
 
 ## Alternatives Considered
@@ -116,7 +116,7 @@ The MATLAB end-effector history is recomputed from the MATLAB joint history with
 - actuator limits: `[25;15] N m`;
 - MATLAB reference: unchanged `rrm.simulation.runController`;
 - Multibody visualization: enabled for interactive use, suppressed during automated tests;
-- exported animation: manual PID representative run at 30 frames/s, MPEG-4.
+- exported animation: manual PID Multibody-log representative run at 30 frames/s, 1280-by-720 MPEG-4.
 
 No gain, inertia, geometry, damping, or acceptance parameter may be fitted after observing cross-validation disagreement.
 
@@ -183,7 +183,7 @@ Run static analysis:
 ## Project Structure
 
 ```text
-+rrm/+multibody/   Model builder, runner, log normalization, comparison
++rrm/+multibody/   Model builder, runner, comparison, and log animation
 models/             Committed generated Multibody model
 experiments/        Reproducible Phase 6B experiment
 tests/multibody/    Builder, runner, and comparison tests
@@ -206,7 +206,7 @@ comparison = rrm.multibody.compareRuns( ...
 assert(comparison.pass,comparison.failureSummary);
 ```
 
-Package functions do not write experiment artifacts. The experiment script owns MAT, CSV, PNG, and MP4 output.
+Core numerical package functions do not write experiment artifacts. The explicitly named model builder and video exporter write only their caller-requested model or MP4; the experiment script owns orchestration and all artifact paths.
 
 ## Error Handling
 
@@ -222,18 +222,18 @@ Stable errors cover:
 - comparison time/reference mismatch; and
 - video-export failure in formal mode.
 
-Automated tests suppress interactive visualization only for the duration of the relevant run and restore all preferences afterward.
+Automated numerical tests do not depend on an open Explorer window. The MP4 exporter consumes completed Multibody logs and therefore does not start or control the Explorer video backend.
 
 ## Testing Strategy
 
-1. **Capability tests:** verify installed/licensed Multibody blocks and `smwritevideo` availability explicitly.
+1. **Capability tests:** verify installed/licensed Multibody blocks and MATLAB MPEG-4 writing capability explicitly.
 2. **Builder tests:** build in a temporary owned directory, load the model, inspect required blocks and parameters, compile, close, and remove only the test directory.
 3. **Physical-structure tests:** assert two joints, correct gravity, damping, mass, z inertia, link transforms, payload, converter units, and sensor configuration.
 4. **Runner tests:** use a short reference and require aligned finite q, dq, torque, and end-effector histories without base-workspace mutation.
 5. **Comparison tests:** exact synthetic runs, threshold boundaries, time/reference mismatch, and non-finite histories.
 6. **Numerical smoke comparison:** short manual and optimized PID runs against MATLAB.
 7. **Experiment smoke test:** create two unique rows, MAT/CSV, and expected PNG artifacts without exporting a video.
-8. **Formal experiment:** execute the fixed 5 s protocol, export evidence and representative animation, and require both controllers to pass.
+8. **Formal experiment:** execute the fixed 5 s protocol, export evidence and a deterministic Multibody-log animation, and require both controllers to pass.
 9. **Regression:** all Phase 1–6A tests and public experiments remain green.
 10. **Visual QA:** inspect the model layout, physical assembly rendering, every Phase 6B figure, and representative video frame.
 

@@ -25,6 +25,8 @@ clear outputRoot cartesianMode;
 run('experiments/run_cartesian_tasks.m');
 clear outputRoot simulinkValidationMode;
 run('experiments/run_simulink_cross_validation.m');
+clear outputRoot multibodyValidationMode controllerDefinitions;
+run('experiments/run_multibody_cross_validation.m');
 "@ -replace "`r?`n", ' '
 
 & $matlabExecutable -batch $matlabCommand

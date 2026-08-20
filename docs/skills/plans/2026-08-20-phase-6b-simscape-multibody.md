@@ -6,7 +6,7 @@
 
 **Architecture:** A deterministic builder copies the Phase 6A Reference and PID Controller subsystems into a new standalone model and creates an independent Multibody plant from native bodies, transforms, revolute joints, physical-signal converters, and sensors. A runner injects parameters through `Simulink.SimulationInput`; a comparison module evaluates q, dq, torque, end-effector, saturation, and completion thresholds; an experiment owns MAT, CSV, PNG, and MP4 output.
 
-**Tech Stack:** MATLAB R2026a Update 4, Simulink, Simscape, Simscape Multibody, MATLAB Unit Test, `smwritevideo`, PowerShell, Git worktrees.
+**Tech Stack:** MATLAB R2026a Update 4, Simulink, Simscape, Simscape Multibody, MATLAB Unit Test, `VideoWriter`, PowerShell, Git worktrees.
 
 ## Global Constraints
 
@@ -540,7 +540,7 @@ Every axis must include units, every curve a legend, every title a controller na
 
 - [ ] **Step 5: Add formal animation export**
 
-In full mode, create `results/videos`, configure the manual PID run variables, and call:
+In full mode, create `results/videos` and export the manual-PID Multibody joint log as a deterministic 1280-by-720, 30 fps MPEG-4. The originally planned call was:
 
 ```matlab
 smwritevideo(char(modelName),char(videoPath), ...
@@ -549,6 +549,8 @@ smwritevideo(char(modelName),char(videoPath), ...
     "VideoFormat","mpeg-4", ...
     "FrameSize",[1280 720]);
 ```
+
+During execution on R2026a Update 4, the new Multibody Explorer backend created locked zero-byte output and crashed `physmod_sm_gui_app_video.dll` during batch shutdown for both MPEG-4 and AVI. Per the systematic-debugging stop rule, automated export was changed to `rrm.multibody.writeVideo`, which uses the completed Multibody joint log and tested MATLAB `VideoWriter` codec instead of invoking the unstable Explorer video DLL. Interactive Multibody Explorer visualization remains available.
 
 Require a nonempty MP4 afterward; otherwise throw `rrm:experiment:MultibodyVideoExportFailed`. Add `*.avi`, `*.mp4`, and generated Multibody cache files to `.gitignore` without ignoring `.slx`.
 
