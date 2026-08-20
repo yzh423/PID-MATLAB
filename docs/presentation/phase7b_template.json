@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-21T00:00:00Z",
+  "deck": {
+    "title": "Reliable Robotic Manipulation Through Evidence-Grounded PID and Fuzzy-PID Evaluation",
+    "slides": [
+      {
+        "id": "opening",
+        "title": "Reliable execution connects plans to physical action",
+        "subtitle": "Evidence-grounded PID and Fuzzy-PID evaluation for a two-link manipulator",
+        "figure": "results/figures/multibody_cross_validation_tracking.png",
+        "figureAlt": "MATLAB and Simscape Multibody end-effector tracking comparison",
+        "figureFrame": {"left": 680, "top": 92, "width": 540, "height": 500},
+        "presenterNote": "Frame the project as a validated execution layer rather than an end-to-end robot intelligence stack.",
+        "sources": ["docs/report/technical_report.md", "results/figures/multibody_cross_validation_tracking.png"]
+      },
+      {
+        "id": "problem",
+        "title": "Nominal success is not enough to claim reliable manipulation",
+        "claim": "The central question is how controller choices survive controlled changes in payload, configuration, noise, disturbance, and actuator authority.",
+        "body": [
+          "A controller can pass one nominal trajectory and still fail when uncertainties interact.",
+          "This study therefore reports failed completed runs instead of filtering them from averages.",
+          "All conclusions are simulation-only; no hardware safety or fidelity claim is made."
+        ],
+        "figure": "results/figures/nominal_pid_vs_fuzzy_tracking.png",
+        "figureAlt": "Nominal PID and Fuzzy-PID joint tracking comparison",
+        "figureFrame": {"left": 620, "top": 138, "width": 600, "height": 470},
+        "presenterNote": "Use the nominal plot to motivate why the later stress matrix is necessary.",
+        "sources": ["docs/report/technical_report.md", "results/figures/nominal_pid_vs_fuzzy_tracking.png"]
+      },
+      {
+        "id": "protocol",
+        "title": "Every controller faces the same plant, trajectory, limits, and metrics",
+        "layout": "metrics",
+        "metrics": [
+          {"value": "{{protocol.sampleTimeS|.3f}} s", "label": "fixed sample time"},
+          {"value": "{{protocol.nominalDurationS|.1f}} s", "label": "nominal duration"},
+          {"value": "{{protocol.nominalSampleCount}}", "label": "samples per nominal run"}
+        ],
+        "interpretation": "Manual PID, Mamdani Fuzzy-PID, and optimized PID use identical robot parameters, torque limits, trajectories, thresholds, and random seeds.",
+        "presenterNote": "Emphasize fairness before discussing controller rankings.",
+        "sources": ["docs/report/technical_report.md", "results/report/report_evidence.json"]
+      },
+      {
+        "id": "optimization",
+        "title": "Optimization improves the baseline without changing the protocol",
+        "claim": "The bounded search reduces the nominal objective by {{optimization.objectiveReductionPercent|.3f}}% and improves the held-out payload objective from {{optimization.heldOutInitialObjective|.6f}} to {{optimization.heldOutFinalObjective|.6f}}.",
+        "body": [
+          "The search converges with exit flag {{optimization.exitFlag}} after {{optimization.iterations}} iterations and {{optimization.functionEvaluations}} evaluations.",
+          "Only PID gains change; the plant, torque limits, trajectory, objective, and evaluation thresholds remain fixed."
+        ],
+        "figure": "results/figures/pid_optimization_objective.png",
+        "figureAlt": "PID optimization objective history",
+        "figureFrame": {"left": 620, "top": 138, "width": 600, "height": 470},
+        "presenterNote": "Separate tuning evidence from reliability evidence: a lower objective does not prove universal robustness.",
+        "sources": ["docs/report/technical_report.md", "results/figures/pid_optimization_objective.png", "results/data/pid_optimization.mat"]
+      },
+      {
+        "id": "deterministic",
+        "title": "Reliability separates the controllers under deterministic stress",
+        "claim": "Success rises from {{deterministic.successCount.manualPid}}/{{deterministic.scenarioCount}} for manual PID to {{deterministic.successCount.fuzzyPid}}/{{deterministic.scenarioCount}} for Fuzzy-PID and {{deterministic.successCount.optimizedPid}}/{{deterministic.scenarioCount}} for optimized PID.",
+        "body": [
+          "The matrix contains {{deterministic.runCount}} controller-scenario runs across payload, configuration, disturbance, actuator, and combined conditions.",
+          "All three controllers fail the combined deterministic case, so the ranking is comparative rather than a safety guarantee."
+        ],
+        "figure": "results/figures/deterministic_robustness_summary.png",
+        "figureAlt": "Deterministic robustness success counts and error summary",
+        "figureFrame": {"left": 620, "top": 138, "width": 600, "height": 470},
+        "presenterNote": "State both the aggregate ranking and the shared combined-condition failure.",
+        "sources": ["docs/report/technical_report.md", "results/figures/deterministic_robustness_summary.png", "results/data/deterministic_robustness_summary.csv"]
+      },
+      {
+        "id": "stochastic",
+        "title": "Noise alone is manageable; combined stress is not",
+        "claim": "Each isolated-noise cell passes 30/30 paired trials, while every combined-stress cell passes 0/30.",
+        "body": [
+          "The full study contains {{stochastic.trialCount}} trials: {{stochastic.scenarioCount}} scenarios x 3 controllers x {{protocol.stochasticTrialsPerScenario}} fixed seeds.",
+          "At high noise, optimized PID has the lowest tracking error but the highest mean torque slew ({{stochastic.highNoiseMeanTorqueSlew.optimizedPid|.2f}} N m/s)."
+        ],
+        "figure": "results/figures/stochastic_robustness_chattering.png",
+        "figureAlt": "Stochastic robustness torque-slew comparison",
+        "figureFrame": {"left": 620, "top": 138, "width": 600, "height": 470},
+        "presenterNote": "Use the paired-seed design to explain why the controller comparison is fair.",
+        "sources": ["docs/report/technical_report.md", "results/figures/stochastic_robustness_chattering.png", "results/data/stochastic_robustness_summary.csv"]
+      },
+      {
+        "id": "cartesian",
+        "title": "Task-space evaluation exposes failures hidden by joint metrics",
+        "claim": "All three controllers pass the straight-line task; only optimized PID passes pick-transfer-place, so 4 of 6 completed task runs meet every gate.",
+        "body": [
+          "Manual and Fuzzy-PID complete the pick-transfer-place simulation but fail its quantitative pickup/place criteria.",
+          "Optimized PID records {{cartesian.runRows.5.CartesianRms|.5f}} m RMS and {{cartesian.runRows.5.CartesianMax|.5f}} m maximum Cartesian error."
+        ],
+        "figure": "results/figures/cartesian_tasks_paths.png",
+        "figureAlt": "Straight-line and pick-transfer-place Cartesian paths",
+        "figureFrame": {"left": 620, "top": 138, "width": 600, "height": 470},
+        "presenterNote": "Completed does not mean successful; retain the two failed completed runs.",
+        "sources": ["docs/report/technical_report.md", "results/figures/cartesian_tasks_paths.png", "results/data/cartesian_tasks_runs.csv"]
+      },
+      {
+        "id": "cross-validation",
+        "title": "Independent formulations agree at numerical precision",
+        "layout": "metrics",
+        "metrics": [
+          {"value": "{{simulink.runCount}}/{{simulink.runCount}}", "label": "Simulink agreement and tracking passes"},
+          {"value": "{{multibody.runCount}}/{{multibody.runCount}}", "label": "Multibody agreement and tracking passes"},
+          {"value": "{{multibody.endEffectorMaxWorst|.2e}} m", "label": "worst end-effector difference"}
+        ],
+        "interpretation": "The result supports model consistency under one fixed protocol. Shared parameters and target trajectories mean it is not evidence of hardware fidelity.",
+        "presenterNote": "Distinguish independent formulation from independent physical validation.",
+        "sources": ["docs/report/technical_report.md", "results/data/simulink_cross_validation.mat", "results/data/multibody_cross_validation.mat"]
+      },
+      {
+        "id": "conclusion",
+        "title": "There is no universal winner, but optimized PID is the strongest reliability baseline",
+        "layout": "metrics",
+        "metrics": [
+          {"value": "{{deterministic.successCount.manualPid}}/{{deterministic.scenarioCount}}", "label": "manual PID deterministic success"},
+          {"value": "{{deterministic.successCount.fuzzyPid}}/{{deterministic.scenarioCount}}", "label": "Fuzzy-PID deterministic success"},
+          {"value": "{{deterministic.successCount.optimizedPid}}/{{deterministic.scenarioCount}}", "label": "optimized PID deterministic success"}
+        ],
+        "interpretation": "Fuzzy adaptation gives a small nominal joint-2 benefit; optimized PID provides the best aggregate deterministic and Cartesian reliability, with a torque-slew trade-off under noise.",
+        "presenterNote": "Deliver a conditional conclusion, not a universal-controller claim.",
+        "sources": ["docs/report/technical_report.md", "results/report/report_evidence.json"]
+      },
+      {
+        "id": "next-steps",
+        "title": "The validated layer is ready to support the next research step",
+        "claim": "The next milestone is to test whether the same evidence discipline survives contact with sensing, hardware uncertainty, and online safety constraints.",
+        "body": [
+          "1. Hardware-in-the-loop and physical-arm validation with calibrated uncertainty.",
+          "2. Perception and task-planning integration above the existing inner-loop controller layer.",
+          "3. Online monitoring, collision avoidance, and explicit safety supervision before deployment."
+        ],
+        "presenterNote": "Close by resolving the opening: the low-level layer is validated for simulation and bounded next research is clear.",
+        "sources": ["docs/report/technical_report.md", "docs/report/references.json"]
+      }
+    ]
+  },
+  "summary": {
+    "title": "Reliable Robotic Manipulation Through Evidence-Grounded Control",
+    "takeaway": "Across identical simulation protocols, optimized PID produced the strongest aggregate reliability while no controller dominated every condition.",
+    "problem": "Reliable manipulation requires more than nominal trajectory tracking: controllers must remain interpretable under payload, configuration, disturbance, noise, and actuator changes.",
+    "method": "A two-link arm compares manual PID, Mamdani Fuzzy-PID, and bounded optimization-assisted PID under identical 0.001 s simulation, trajectory, torque-limit, threshold, and paired-seed protocols.",
+    "results": [
+      {"value": "{{optimization.objectiveReductionPercent|.3f}}%", "label": "nominal objective reduction"},
+      {"value": "{{deterministic.successCount.optimizedPid}}/{{deterministic.scenarioCount}}", "label": "deterministic scenarios passed"},
+      {"value": "30/30 vs 0/30", "label": "isolated-noise vs combined-stress trials"}
+    ],
+    "figure": "results/figures/deterministic_robustness_summary.png",
+    "figureCaption": "Deterministic stress testing separates aggregate controller reliability while preserving failed cases.",
+    "significance": "The project supplies a transparent low-level execution layer that can sit beneath future perception, language, and task-planning systems.",
+    "limitations": "Simulation only; no hardware fidelity, collision avoidance, perception, online safety supervisor, or end-to-end embodied-AI implementation is claimed.",
+    "nextSteps": "Validate on hardware, add calibrated sensing uncertainty, and introduce runtime safety monitoring before deployment claims.",
+    "sources": ["docs/report/technical_report.md", "results/report/report_evidence.json", "docs/report/PAPER_CLAIM_AUDIT.md"]
+  }
+}

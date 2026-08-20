@@ -15,3 +15,10 @@
 /scripts/verify.ps1 text eol=lf
 /scripts/verify_report.ps1 text eol=lf
 /tests/report/** text eol=lf
+/docs/presentation/** text eol=lf
+/scripts/phase7b/** text eol=lf
+/scripts/export_phase7b_package.py text eol=lf
+/tests/presentation/** text eol=lf
+/presentation/*.pptx binary
+/docs/summary/*.docx binary
+/docs/summary/*.pdf binary
