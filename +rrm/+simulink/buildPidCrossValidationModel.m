@@ -180,6 +180,10 @@ add_line(path,"Integral Derivative/1","Integral State/1", ...
 add_block("simulink/Ports & Subsystems/Out1",path + "/tau", ...
     "Port","1","Position",[665 90 695 110]);
 add_line(path,"Torque Limit/1","tau/1");
+add_block("simulink/Ports & Subsystems/Out1",path + "/tauUnsaturated", ...
+    "Port","2","Position",[665 135 695 155]);
+add_line(path,"Unsaturated Torque/1","tauUnsaturated/1", ...
+    "autorouting","on");
 end
 
 function buildPlant(path)
@@ -234,7 +238,7 @@ end
 
 function buildLogging(path)
 Simulink.SubSystem.deleteContents(path);
-names = ["q","dq","tau"];
+names = ["q","dq","tau","tauUnsaturated"];
 for index = 1:numel(names)
     y = 40 + (index-1)*65;
     add_block("simulink/Ports & Subsystems/In1",path + "/" + names(index), ...
@@ -257,9 +261,12 @@ add_line(modelName,"Two-Link Plant/2","Logging/2","autorouting","on");
 tauLine = add_line(modelName,"PID Controller/1","Two-Link Plant/1", ...
     "autorouting","on");
 add_line(modelName,"PID Controller/1","Logging/3","autorouting","on");
+tauUnsaturatedLine = add_line(modelName,"PID Controller/2","Logging/4", ...
+    "autorouting","on");
 configureLoggedSignal(qLine,"q");
 configureLoggedSignal(dqLine,"dq");
 configureLoggedSignal(tauLine,"tau");
+configureLoggedSignal(tauUnsaturatedLine,"tauUnsaturated");
 end
 
 function configureLoggedSignal(lineHandle, name)
