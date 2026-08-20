@@ -43,6 +43,8 @@ DEFAULT_NAMESPACE_CORE_PROPERTIES = """<?xml version=\"1.0\" encoding=\"UTF-8\" 
   <dcterms:created>{timestamp}</dcterms:created>
   <dcterms:modified>{timestamp}</dcterms:modified>
 </coreProperties>
+<?phase7b preserve-after-default?>
+<!-- Post-root default-core namespace comment retained byte-for-byte. -->
 """
 
 
@@ -104,6 +106,8 @@ class Phase7BOfficeTests(unittest.TestCase):
             self.assertIn(b'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>', core)
             self.assertIn(b"Default-core namespace comment retained byte-for-byte.", core)
             self.assertIn(b"<?phase7b preserve-default?>", core)
+            self.assertIn(b"<?phase7b preserve-after-default?>", core)
+            self.assertIn(b"Post-root default-core namespace comment retained byte-for-byte.", core)
             root = ElementTree.fromstring(core)
             dates = [
                 element.text
