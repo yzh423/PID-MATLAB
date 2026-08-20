@@ -117,8 +117,13 @@ if multibodyValidationMode == "full"
     end
     videoPath = fullfile(videoDirectory, ...
         "multibody_cross_validation_manual_pid.mp4");
-    writeVideo(modelPath,videoPath,robot,controllerDefinitions(1).controller, ...
-        reference,simulationOptions);
+    videoOptions = struct( ...
+        "playbackSpeedRatio",1, ...
+        "frameRate",30, ...
+        "frameSize",[1280 720], ...
+        "format","MPEG-4");
+    rrm.multibody.writeVideo( ...
+        robot,runs(1).multibodyResult,videoPath,videoOptions);
 end
 
 disp(runTable);
@@ -318,57 +323,5 @@ set_param(modelName,"ZoomFactor","FitSystem");
 fileName = fullfile(figureDirectory, ...
     "multibody_cross_validation_model.png");
 print(char("-s"+modelName),"-dpng","-r180",fileName);
-clear cleanup
-end
-
-function writeVideo(modelPath,videoPath,robot,controller,reference,options)
-[~,modelName] = fileparts(modelPath);
-load_system(modelPath);
-cleanup = onCleanup(@() close_system(modelName,0));
-workspace = get_param(modelName,"ModelWorkspace");
-assignin(workspace,"rrmSampleTime",options.sampleTime);
-assignin(workspace,"rrmStopTime",reference.time(end));
-assignin(workspace,"rrmQReferenceSignal", ...
-    timeseries(reference.q.',reference.time));
-assignin(workspace,"rrmDqReferenceSignal", ...
-    timeseries(reference.dq.',reference.time));
-assignin(workspace,"rrmKp",controller.Kp);
-assignin(workspace,"rrmKi",controller.Ki);
-assignin(workspace,"rrmKd",controller.Kd);
-assignin(workspace,"rrmDerivativeAlpha", ...
-    exp(-2*pi*controller.derivativeFilterHz*options.sampleTime));
-assignin(workspace,"rrmAntiWindupGain",controller.antiWindupGain);
-assignin(workspace,"rrmTorqueLimits", ...
-    min(controller.torqueLimits,robot.torqueLimits));
-assignin(workspace,"rrmInitialQ",reference.q(:,1));
-assignin(workspace,"rrmInitialDq",options.initialVelocity);
-assignin(workspace,"rrmGravity",robot.gravity);
-assignin(workspace,"rrmMbLinkLength",[robot.L1;robot.L2]);
-assignin(workspace,"rrmMbLinkMass",[robot.m1;robot.m2]);
-assignin(workspace,"rrmMbLinkInertia",robot.inertia);
-assignin(workspace,"rrmMbPayload",robot.payload);
-assignin(workspace,"rrmMbDamping",robot.viscousFriction);
-assignin(workspace,"rrmMbWidth",0.06);
-transverse = max(1e-6,0.01*robot.inertia);
-assignin(workspace,"rrmMbMoments", ...
-    [transverse robot.inertia robot.inertia]);
-set_param(modelName,"StopTime",string(reference.time(end)), ...
-    "FixedStep",string(options.sampleTime));
-try
-    smwritevideo(char(modelName),char(videoPath), ...
-        "PlaybackSpeedRatio",1, ...
-        "FrameRate",30, ...
-        "VideoFormat","mpeg-4", ...
-        "FrameSize",[1280 720]);
-catch exception
-    throwAsCaller(MException( ...
-        "rrm:experiment:MultibodyVideoExportFailed", ...
-        "Multibody video export failed: %s",exception.message));
-end
-file = dir(videoPath);
-if numel(file) ~= 1 || file.bytes == 0
-    error("rrm:experiment:MultibodyVideoExportFailed", ...
-        "Multibody video export did not create a nonempty MP4 file.");
-end
 clear cleanup
 end
