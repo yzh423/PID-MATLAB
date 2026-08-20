@@ -45,6 +45,87 @@
 | `docs/summary/research_summary.pdf` | Final one-page distribution summary |
 | `docs/presentation/phase7b_build_manifest.json` | Stable input/output hashes and structural counts |
 
+### Task 0: Make the baseline verifier clean-checkout safe
+
+**Files:**
+- Create: `tests/report/test_verify_clean_checkout.py`
+- Modify: `scripts/verify.ps1`
+
+**Interfaces:**
+- Consumes: the existing formal experiment entry points and full MATLAB test suite.
+- Produces: a root verification order in which every formal artifact is generated before `runtests('tests', 'IncludeSubfolders', true)` executes report tests that consume those artifacts.
+
+- [ ] **Step 1: Write the failing ordering regression test**
+
+```python
+from __future__ import annotations
+
+from pathlib import Path
+import unittest
+
+
+ROOT = Path(__file__).resolve().parents[2]
+VERIFY = ROOT / "scripts/verify.ps1"
+
+
+class CleanCheckoutVerificationTests(unittest.TestCase):
+    def test_formal_experiments_run_before_artifact_dependent_tests(self) -> None:
+        script = VERIFY.read_text(encoding="utf-8")
+        test_index = script.index("results = runtests('tests', 'IncludeSubfolders', true);")
+        experiments = (
+            "run('experiments/run_nominal_pid.m');",
+            "run('experiments/run_nominal_pid_vs_fuzzy.m');",
+            "run('experiments/run_pid_optimization.m');",
+            "run('experiments/run_deterministic_robustness.m');",
+            "run('experiments/run_stochastic_robustness.m');",
+            "run('experiments/run_cartesian_tasks.m');",
+            "run('experiments/run_simulink_cross_validation.m');",
+            "run('experiments/run_multibody_cross_validation.m');",
+        )
+        for experiment in experiments:
+            with self.subTest(experiment=experiment):
+                self.assertLess(script.index(experiment), test_index)
+
+
+if __name__ == "__main__":
+    unittest.main()
+```
+
+- [ ] **Step 2: Run the regression test and verify RED**
+
+```powershell
+& $BundledPython -m unittest tests.report.test_verify_clean_checkout -v
+```
+
+Expected: FAIL because all formal experiment calls currently occur after `runtests`.
+
+- [ ] **Step 3: Move only the full-suite test call after formal generation**
+
+Keep the existing experiment order and variable clears unchanged. Move these three MATLAB statements:
+
+```matlab
+results = runtests('tests', 'IncludeSubfolders', true);
+assertSuccess(results);
+```
+
+to immediately after `run('experiments/run_multibody_cross_validation.m');`. Do not split the single MATLAB batch or change an experiment mode.
+
+- [ ] **Step 4: Run GREEN and the complete clean-checkout baseline**
+
+```powershell
+& $BundledPython -m unittest tests.report.test_verify_clean_checkout -v
+& powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1
+```
+
+Expected: ordering test PASS; full verifier exits 0 after generating the missing ignored artifacts and then passing the complete MATLAB/report suites.
+
+- [ ] **Step 5: Commit**
+
+```powershell
+git add tests/report/test_verify_clean_checkout.py scripts/verify.ps1 docs/skills/plans/2026-08-21-phase-7b-presentation-summary.md
+git commit -m "fix: bootstrap formal evidence before verification"
+```
+
 ### Task 1: Deterministic Phase 7B evidence package
 
 **Files:**

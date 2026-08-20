@@ -10,8 +10,6 @@ $matlabProjectRoot = $projectRoot.Replace('\', '/').Replace("'", "''")
 $matlabCommand = @"
 cd('$matlabProjectRoot');
 addpath(pwd);
-results = runtests('tests', 'IncludeSubfolders', true);
-assertSuccess(results);
 run('experiments/run_nominal_pid.m');
 clear outputRoot;
 run('experiments/run_nominal_pid_vs_fuzzy.m');
@@ -27,6 +25,8 @@ clear outputRoot simulinkValidationMode;
 run('experiments/run_simulink_cross_validation.m');
 clear outputRoot multibodyValidationMode controllerDefinitions;
 run('experiments/run_multibody_cross_validation.m');
+results = runtests('tests', 'IncludeSubfolders', true);
+assertSuccess(results);
 "@ -replace "`r?`n", ' '
 
 & $matlabExecutable -batch $matlabCommand
