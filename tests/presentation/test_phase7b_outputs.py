@@ -16,6 +16,7 @@ FINAL_OUTPUTS = (
     "docs/summary/research_summary.docx",
     "docs/summary/research_summary.pdf",
 )
+REBUILD_DIR = ROOT / "tmp" / "phase7b" / "rebuild"
 
 
 def run_phase7b_build(root: Path) -> None:
@@ -43,6 +44,14 @@ def run_phase7b_build(root: Path) -> None:
 
 
 class Phase7BOutputTests(unittest.TestCase):
+    def test_verifier_counts_the_rebuilt_docx_with_owned_word_and_cleans_up(self) -> None:
+        source = VERIFY.read_text(encoding="utf-8")
+        self.assertIn("OpenNoRepairDialog", source)
+        self.assertIn("Repaginate()", source)
+        self.assertIn("ComputeStatistics(2)", source)
+        self.assertNotIn("'docxPages': 1", source)
+        self.assertIn("Remove-Item -LiteralPath $rebuildRoot -Force -Recurse", source)
+
     def test_manifest_hashes_all_inputs_and_outputs(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         self.assertEqual(manifest["schemaVersion"], 1)
@@ -70,9 +79,15 @@ class Phase7BOutputTests(unittest.TestCase):
 
     def test_two_phase7b_builds_are_hash_identical(self) -> None:
         expected = {path: sha256_file(ROOT / path) for path in FINAL_OUTPUTS}
-        run_phase7b_build(ROOT)
-        actual = {path: sha256_file(ROOT / path) for path in FINAL_OUTPUTS}
-        self.assertEqual(actual, expected)
+        try:
+            run_phase7b_build(ROOT)
+            first = {path: sha256_file(ROOT / path) for path in FINAL_OUTPUTS}
+            run_phase7b_build(ROOT)
+            second = {path: sha256_file(ROOT / path) for path in FINAL_OUTPUTS}
+        finally:
+            self.assertFalse(REBUILD_DIR.exists(), "task-owned DOCX rebuild directory must be removed")
+        self.assertEqual(first, expected)
+        self.assertEqual(second, first)
 
 
 if __name__ == "__main__":

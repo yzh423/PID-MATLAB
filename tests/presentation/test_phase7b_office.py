@@ -157,7 +157,8 @@ class Phase7BOfficeTests(unittest.TestCase):
                         f'<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" '
                         f'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" '
                         f'xmlns:a16="http://schemas.microsoft.com/office/drawing/2014/main">'
-                        f'<p:pic r:embed="{relationship_id}"/><a16:creationId id="{{{creation_id}}}"/></p:sld>'
+                        f'<p:pic r:embed="{relationship_id}"/><p:ext id="R-unrelated">R-unrelated</p:ext>'
+                        f'<a16:creationId id="{{{creation_id}}}"/></p:sld>'
                     ).encode("utf-8"),
                     "ppt/slides/_rels/slide1.xml.rels": (
                         f'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
@@ -170,15 +171,17 @@ class Phase7BOfficeTests(unittest.TestCase):
                     for name, payload in entries.items():
                         archive.writestr(name, payload)
 
-            write_pptx(first, "RrandomA", "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA", "987654321")
-            write_pptx(second, "RrandomB", "BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB", "123456789")
+            write_pptx(first, "R-unrelated", "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA", "987654321")
+            write_pptx(second, "R-unrelated", "BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB", "123456789")
             normalize_openxml_package(first, ".pptx")
             normalize_openxml_package(second, ".pptx")
 
             self.assertEqual(sha256_file(first), sha256_file(second))
             with ZipFile(first) as archive:
                 self.assertIn(b'Id="rId1"', archive.read("ppt/slides/_rels/slide1.xml.rels"))
-                self.assertIn(b'r:embed="rId1"', archive.read("ppt/slides/slide1.xml"))
+                slide = archive.read("ppt/slides/slide1.xml")
+                self.assertIn(b'r:embed="rId1"', slide)
+                self.assertIn(b'<p:ext id="R-unrelated">R-unrelated</p:ext>', slide)
 
     def test_semantically_invalid_dates_fail_before_replacing_target(self) -> None:
         invalid_values = (

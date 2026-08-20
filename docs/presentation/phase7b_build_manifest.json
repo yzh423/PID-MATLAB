@@ -72,7 +72,7 @@
                     },
                     {
                         "path":  "scripts/phase7b/office.py",
-                        "sha256":  "7f5e6c03f473fd7b752490763a6c4e988ff29094726cb51ed7a7633d24b76843"
+                        "sha256":  "1b75551f923172172324f6a6436fb631a4fbb0d354c05970bfd72f1cfd748a4f"
                     },
                     {
                         "path":  "scripts/phase7b/summary.py",

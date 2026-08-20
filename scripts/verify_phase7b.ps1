@@ -25,8 +25,10 @@ function Get-Sha256 {
     }
 }
 
-function Test-WordAvailability {
+function Get-DocxPageCount {
+    param([string]$DocxPath)
     $word = $null
+    $document = $null
     $ownedProcessIds = @()
     $preexistingProcessIds = @(
         Get-Process -Name WINWORD -ErrorAction SilentlyContinue |
@@ -35,27 +37,45 @@ function Test-WordAvailability {
     try {
         $word = New-Object -ComObject Word.Application
         $word.Visible = $false
+        $word.DisplayAlerts = 0
         $ownedProcessIds = @(
             Get-Process -Name WINWORD -ErrorAction SilentlyContinue |
                 Select-Object -ExpandProperty Id |
                 Where-Object { $_ -notin $preexistingProcessIds }
         )
+        $document = $word.Documents.OpenNoRepairDialog($DocxPath, $false, $true, $false)
+        $document.Repaginate()
+        $pageCount = [int]$document.ComputeStatistics(2)
+        if ($pageCount -lt 1) { throw "Word returned an invalid DOCX page count: $pageCount" }
+        return $pageCount
     }
     finally {
-        if ($null -ne $word) {
-            try { $word.Quit() } catch { Write-Verbose "Owned Word quit failed: $($_.Exception.Message)" }
-            try { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($word) } catch { Write-Verbose "Owned Word release failed: $($_.Exception.Message)" }
-            [GC]::Collect()
-            [GC]::WaitForPendingFinalizers()
+        try {
+            if ($null -ne $document) { try { $document.Close(0) } catch { Write-Verbose "Owned Word document close failed: $($_.Exception.Message)" } }
         }
-    }
-    foreach ($processId in $ownedProcessIds) {
-        for ($attempt = 0; $attempt -lt 100; $attempt++) {
-            if (-not (Get-Process -Id $processId -ErrorAction SilentlyContinue)) { break }
-            Start-Sleep -Milliseconds 100
+        finally {
+            try {
+                if ($null -ne $word) { try { $word.Quit() } catch { Write-Verbose "Owned Word quit failed: $($_.Exception.Message)" } }
+            }
+            finally {
+                try {
+                    if ($null -ne $document) { try { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($document) } catch { Write-Verbose "Owned Word document release failed: $($_.Exception.Message)" } }
+                }
+                finally {
+                    if ($null -ne $word) { try { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($word) } catch { Write-Verbose "Owned Word release failed: $($_.Exception.Message)" } }
+                    [GC]::Collect()
+                    [GC]::WaitForPendingFinalizers()
+                }
+            }
         }
-        if (Get-Process -Id $processId -ErrorAction SilentlyContinue) {
-            throw "Owned WINWORD process remains after validation: $processId"
+        foreach ($processId in $ownedProcessIds) {
+            for ($attempt = 0; $attempt -lt 100; $attempt++) {
+                if (-not (Get-Process -Id $processId -ErrorAction SilentlyContinue)) { break }
+                Start-Sleep -Milliseconds 100
+            }
+            if (Get-Process -Id $processId -ErrorAction SilentlyContinue) {
+                throw "Owned WINWORD process remains after DOCX page counting: $processId"
+            }
         }
     }
 }
@@ -75,7 +95,7 @@ function Get-RelativeHashRecord {
 }
 
 function Write-Phase7BManifest {
-    param([string]$ProjectRoot)
+    param([string]$ProjectRoot, [int]$DocxPageCount)
     $sourcePaths = @(
         'docs/presentation/phase7b_template.json',
         'docs/report/build_manifest.json',
@@ -107,7 +127,7 @@ function Write-Phase7BManifest {
         generatedAt = '2026-08-21T00:00:00Z'
         sources = @($sourcePaths | ForEach-Object { Get-RelativeHashRecord -ProjectRoot $ProjectRoot -Path (Join-Path $ProjectRoot $_) } | Sort-Object path)
         outputs = @($outputPaths | ForEach-Object { Get-RelativeHashRecord -ProjectRoot $ProjectRoot -Path (Join-Path $ProjectRoot $_) } | Sort-Object path)
-        document = [ordered]@{ notesCount = 10; slideCount = 10; summaryPageCount = 1 }
+        document = [ordered]@{ notesCount = 10; slideCount = 10; summaryPageCount = $DocxPageCount }
     }
     $manifestRoot = Join-Path $ProjectRoot 'docs\presentation'
     $temporaryManifest = Join-Path $manifestRoot ('.phase7b_build_manifest.' + [Guid]::NewGuid().ToString('N') + '.tmp.json')
@@ -154,8 +174,6 @@ try {
     $env:RUNTIME_NODE = $bundledNode
     $env:RUNTIME_NODE_MODULES = $runtimeNodeModules
     $env:RUNTIME_BIN_DIR = $runtimeBinDir
-    Test-WordAvailability
-
     Invoke-Checked { & $bundledPython '.\scripts\export_phase7b_package.py' --project-root '.' } 'Phase 7B evidence export failed'
     if (-not $SkipTests) {
         Invoke-Checked { & $bundledPython -m unittest '.\tests\presentation\test_phase7b_evidence.py' '.\tests\presentation\test_phase7b_office.py' -v } 'Pre-build Phase 7B Python tests failed'
@@ -165,12 +183,19 @@ try {
     Invoke-Checked { & $bundledPython '.\scripts\normalize_phase7b_office.py' --path '.\presentation\final_presentation.pptx' --suffix '.pptx' } 'Phase 7B PPTX normalization failed'
 
     $rebuildRoot = Join-Path $projectRoot 'tmp\phase7b\rebuild'
+    if (Test-Path -LiteralPath $rebuildRoot) { Remove-Item -LiteralPath $rebuildRoot -Force -Recurse }
     New-Item -ItemType Directory -Path $rebuildRoot -Force | Out-Null
     $rebuiltDocx = Join-Path $rebuildRoot 'research_summary.docx'
-    Invoke-Checked { & $bundledPython '.\scripts\build_research_summary.py' --project-root '.' --output $rebuiltDocx } 'Phase 7B DOCX rebuild failed'
-    $finalDocx = Join-Path $projectRoot 'docs\summary\research_summary.docx'
-    if ((Get-Sha256 -Path $rebuiltDocx) -ne (Get-Sha256 -Path $finalDocx)) {
-        throw 'Rebuilt Phase 7B DOCX does not match the reviewed final DOCX.'
+    try {
+        Invoke-Checked { & $bundledPython '.\scripts\build_research_summary.py' --project-root '.' --output $rebuiltDocx } 'Phase 7B DOCX rebuild failed'
+        $finalDocx = Join-Path $projectRoot 'docs\summary\research_summary.docx'
+        if ((Get-Sha256 -Path $rebuiltDocx) -ne (Get-Sha256 -Path $finalDocx)) {
+            throw 'Rebuilt Phase 7B DOCX does not match the reviewed final DOCX.'
+        }
+        $docxPageCount = Get-DocxPageCount -DocxPath $rebuiltDocx
+    }
+    finally {
+        if (Test-Path -LiteralPath $rebuildRoot) { Remove-Item -LiteralPath $rebuildRoot -Force -Recurse }
     }
 
     $summaryRoot = Join-Path $projectRoot 'docs\summary'
@@ -190,7 +215,7 @@ try {
         }
     }
 
-    Write-Phase7BManifest -ProjectRoot $projectRoot
+    Write-Phase7BManifest -ProjectRoot $projectRoot -DocxPageCount $docxPageCount
 
     if (-not $SkipTests) {
         Invoke-Checked { & $bundledPython -m unittest discover -s '.\tests\presentation' -p 'test_*.py' -v } 'Full Phase 7B presentation tests failed'
@@ -233,14 +258,13 @@ print(json.dumps({
     'slides': len(slides),
     'notes': len(notes),
     'notesWithSources': sum('[Sources]' in ' '.join(ElementTree.fromstring(ZipFile(pptx).read(name)).itertext()) for name in notes),
-    'docxPages': 1,
     'pdfPages': len(reader.pages),
     'placeholders': placeholders,
 }))
 '@
     $summary = (& $bundledPython -c $summaryCode $projectRoot) | ConvertFrom-Json
     if ($LASTEXITCODE -ne 0) { throw "Phase 7B output structural summary failed with exit code $LASTEXITCODE" }
-    if ($summary.slides -ne 10 -or $summary.notes -ne 10 -or $summary.notesWithSources -ne 10 -or $summary.docxPages -ne 1 -or $summary.pdfPages -ne 1 -or $summary.placeholders -ne 0) {
+    if ($summary.slides -ne 10 -or $summary.notes -ne 10 -or $summary.notesWithSources -ne 10 -or $docxPageCount -ne 1 -or $summary.pdfPages -ne 1 -or $summary.placeholders -ne 0) {
         throw "Phase 7B output contract failed: $($summary | ConvertTo-Json -Compress)"
     }
     Write-Output 'PHASE7B_VERIFIED slides=10 notes=10 summary_docx_pages=1 summary_pdf_pages=1 placeholders=0'

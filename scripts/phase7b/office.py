@@ -51,6 +51,11 @@ _CREATION_ID_ATTRIBUTE = re.compile(
 _CREATION_VALUE_ATTRIBUTE = re.compile(
     rb"(<(?:[A-Za-z_][A-Za-z0-9_.-]*:)?creationId\b[^>]*\bval\s*=\s*)(['\"])[^'\"]*\2"
 )
+_XML_ATTRIBUTE = re.compile(
+    rb"(?P<name>[A-Za-z_][A-Za-z0-9_.-]*(?::[A-Za-z_][A-Za-z0-9_.-]*)?)\s*=\s*"
+    rb"(?P<quote>['\"])(?P<value>.*?)(?P=quote)"
+)
+_RELATIONSHIP_NAMESPACE = b"http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 _XSI_TYPE = "{http://www.w3.org/2001/XMLSchema-instance}type"
 
 
@@ -343,12 +348,108 @@ def _relationship_source_part(name: str) -> str | None:
     return f"{parent}/{leaf[:-5]}"
 
 
-def _replace_quoted_values(payload: bytes, replacements: Mapping[bytes, bytes]) -> bytes:
-    """Replace complete quoted XML attribute values without touching text nodes."""
-    for old, new in replacements.items():
-        payload = payload.replace(b'"' + old + b'"', b'"' + new + b'"')
-        payload = payload.replace(b"'" + old + b"'", b"'" + new + b"'")
-    return payload
+def _replace_byte_ranges(
+    payload: bytes,
+    replacements: Sequence[tuple[int, int, bytes]],
+) -> bytes:
+    """Apply non-overlapping byte replacements while preserving every other byte."""
+    rewritten = bytearray()
+    cursor = 0
+    for start, end, replacement in sorted(replacements):
+        rewritten.extend(payload[cursor:start])
+        rewritten.extend(replacement)
+        cursor = end
+    rewritten.extend(payload[cursor:])
+    return bytes(rewritten)
+
+
+def _canonicalize_relationship_part_ids(
+    payload: bytes,
+) -> tuple[bytes, dict[bytes, bytes]]:
+    """Canonicalize only `Relationship/@Id` fields in a relationship part."""
+    replacements: dict[bytes, bytes] = {}
+    ranges: list[tuple[int, int, bytes]] = []
+    for index, match in enumerate(_RELATIONSHIP_ID.finditer(payload), start=1):
+        old = match.group(2)
+        new = f"rId{index}".encode("ascii")
+        replacements[old] = new
+        ranges.append((match.start(2), match.end(2), new))
+    return _replace_byte_ranges(payload, ranges), replacements
+
+
+def _canonicalize_relationship_reference_attributes(
+    payload: bytes,
+    replacements: Mapping[bytes, bytes],
+) -> bytes:
+    """Rewrite only attributes in the Office relationships namespace.
+
+    Namespaces are resolved with the lexical scope in effect for each start tag,
+    so unrelated attributes and text with coincidentally equal values are left
+    byte-for-byte intact.
+    """
+    frames: list[dict[bytes, bytes]] = []
+    ranges: list[tuple[int, int, bytes]] = []
+    cursor = 0
+    while True:
+        start = payload.find(b"<", cursor)
+        if start < 0:
+            break
+        if payload.startswith(b"<!--", start):
+            end = payload.find(b"-->", start + 4)
+            if end < 0:
+                raise Phase7BOfficeError("unterminated XML comment in relationship source")
+            cursor = end + 3
+            continue
+        if payload.startswith(b"<?", start):
+            end = payload.find(b"?>", start + 2)
+            if end < 0:
+                raise Phase7BOfficeError("unterminated XML processing instruction")
+            cursor = end + 2
+            continue
+        if payload.startswith(b"<![CDATA[", start):
+            end = payload.find(b"]]>", start + 9)
+            if end < 0:
+                raise Phase7BOfficeError("unterminated XML CDATA section")
+            cursor = end + 3
+            continue
+
+        end = _tag_end(payload, start)
+        raw = payload[start + 1:end]
+        content = raw.strip()
+        cursor = end + 1
+        if not content or content.startswith(b"!"):
+            continue
+        if content.startswith(b"/"):
+            if not frames:
+                raise Phase7BOfficeError("unbalanced XML element in relationship source")
+            frames.pop()
+            continue
+
+        self_closing = content.endswith(b"/")
+        body = content[:-1].rstrip() if self_closing else content
+        name = body.split(None, 1)[0]
+        parent_scope = frames[-1] if frames else {}
+        scope = parent_scope.copy()
+        for prefix, _, uri in _NAMESPACE_DECLARATION.findall(body):
+            scope[prefix] = uri
+        body_start = start + 1 + len(raw) - len(raw.lstrip())
+        for attribute in _XML_ATTRIBUTE.finditer(body):
+            lexical_name = attribute.group("name")
+            if lexical_name == b"xmlns" or lexical_name.startswith(b"xmlns:"):
+                continue
+            namespace, _ = _expanded_name(lexical_name, scope)
+            old = attribute.group("value")
+            if namespace == _RELATIONSHIP_NAMESPACE and old in replacements:
+                ranges.append((
+                    body_start + attribute.start("value"),
+                    body_start + attribute.end("value"),
+                    replacements[old],
+                ))
+        if not self_closing:
+            frames.append(scope)
+    if frames:
+        raise Phase7BOfficeError("unterminated XML element in relationship source")
+    return _replace_byte_ranges(payload, ranges)
 
 
 def _canonicalize_pptx_generated_ids(
@@ -361,18 +462,15 @@ def _canonicalize_pptx_generated_ids(
         if not name.endswith(".rels"):
             continue
         source_part = _relationship_source_part(name)
-        payload = rewritten[name]
-        replacements = {
-            match.group(2): f"rId{index}".encode("ascii")
-            for index, match in enumerate(_RELATIONSHIP_ID.finditer(payload), start=1)
-        }
-        rewritten[name] = _replace_quoted_values(payload, replacements)
+        rewritten[name], replacements = _canonicalize_relationship_part_ids(rewritten[name])
         if source_part is not None:
             relationship_maps[source_part] = replacements
 
     for source_part, replacements in relationship_maps.items():
         if source_part in rewritten:
-            rewritten[source_part] = _replace_quoted_values(rewritten[source_part], replacements)
+            rewritten[source_part] = _canonicalize_relationship_reference_attributes(
+                rewritten[source_part], replacements
+            )
 
     creation_index = 1
 
