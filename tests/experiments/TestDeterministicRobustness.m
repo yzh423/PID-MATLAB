@@ -5,7 +5,7 @@ classdef TestDeterministicRobustness < matlab.unittest.TestCase
             outputRoot = tempname;
             mkdir(outputRoot);
             testCase.addTeardown(@() rmdir(outputRoot,"s"));
-            robustnessMode = "smoke";
+            robustnessMode = "smoke"; %#ok<NASGU>
 
             run(fullfile(projectRoot,"experiments", ...
                 "run_deterministic_robustness.m"));

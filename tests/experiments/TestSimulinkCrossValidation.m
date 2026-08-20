@@ -5,7 +5,7 @@ classdef TestSimulinkCrossValidation < matlab.unittest.TestCase
             outputRoot = tempname;
             mkdir(outputRoot);
             testCase.addTeardown(@() rmdir(outputRoot,"s"));
-            simulinkValidationMode = "smoke";
+            simulinkValidationMode = "smoke"; %#ok<NASGU>
 
             run(fullfile(projectRoot,"experiments", ...
                 "run_simulink_cross_validation.m"));
@@ -60,7 +60,7 @@ classdef TestSimulinkCrossValidation < matlab.unittest.TestCase
             outputRoot = tempname;
             mkdir(outputRoot);
             testCase.addTeardown(@() rmdir(outputRoot,"s"));
-            simulinkValidationMode = "smoke";
+            simulinkValidationMode = "smoke"; %#ok<NASGU>
             staleController = struct( ...
                 "name","stale-controller", ...
                 "controller",rrm.config.makePidController( ...

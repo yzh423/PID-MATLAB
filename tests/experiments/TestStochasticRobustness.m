@@ -5,7 +5,7 @@ classdef TestStochasticRobustness < matlab.unittest.TestCase
             outputRoot = tempname;
             mkdir(outputRoot);
             testCase.addTeardown(@() rmdir(outputRoot,"s"));
-            stochasticMode = "smoke";
+            stochasticMode = "smoke"; %#ok<NASGU>
 
             run(fullfile(projectRoot,"experiments", ...
                 "run_stochastic_robustness.m"));

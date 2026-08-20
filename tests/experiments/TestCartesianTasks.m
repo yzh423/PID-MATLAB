@@ -5,7 +5,7 @@ classdef TestCartesianTasks < matlab.unittest.TestCase
             outputRoot = tempname;
             mkdir(outputRoot);
             testCase.addTeardown(@() rmdir(outputRoot,"s"));
-            cartesianMode = "smoke";
+            cartesianMode = "smoke"; %#ok<NASGU>
 
             run(fullfile(projectRoot,"experiments", ...
                 "run_cartesian_tasks.m"));

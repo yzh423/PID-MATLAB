@@ -3,7 +3,7 @@ classdef TestBuildPidCrossValidationModel < matlab.unittest.TestCase
         function buildsLoadableOrganizedModel(testCase)
             root = tempname;
             mkdir(root);
-            cleanup = onCleanup(@() removeDirectory(root)); %#ok<NASGU>
+            cleanup = onCleanup(@() removeDirectory(root));
             modelPath = fullfile(root,"cross_validation.slx");
 
             modelName = rrm.simulink.buildPidCrossValidationModel(modelPath);
@@ -11,7 +11,7 @@ classdef TestBuildPidCrossValidationModel < matlab.unittest.TestCase
             testCase.verifyTrue(isfile(modelPath));
             load_system(modelPath);
             modelCleanup = onCleanup( ...
-                @() closeLoadedModel(modelName)); %#ok<NASGU>
+                @() closeLoadedModel(modelName));
             testCase.verifyEqual(string(get_param(modelName,"Solver")),"ode4");
             testCase.verifyEqual( ...
                 str2double(get_param(modelName,"FixedStep")),0.001);
@@ -29,7 +29,7 @@ classdef TestBuildPidCrossValidationModel < matlab.unittest.TestCase
         function builderIsIdempotent(testCase)
             root = tempname;
             mkdir(root);
-            cleanup = onCleanup(@() removeDirectory(root)); %#ok<NASGU>
+            cleanup = onCleanup(@() removeDirectory(root));
             modelPath = fullfile(root,"repeatable.slx");
 
             firstName = rrm.simulink.buildPidCrossValidationModel(modelPath);
@@ -43,12 +43,12 @@ classdef TestBuildPidCrossValidationModel < matlab.unittest.TestCase
         function modelContainsNativeClosedLoopAndCompiles(testCase)
             root = tempname;
             mkdir(root);
-            cleanup = onCleanup(@() removeDirectory(root)); %#ok<NASGU>
+            cleanup = onCleanup(@() removeDirectory(root));
             modelPath = fullfile(root,"structured.slx");
             modelName = rrm.simulink.buildPidCrossValidationModel(modelPath);
             load_system(modelPath);
             modelCleanup = onCleanup( ...
-                @() closeLoadedModel(modelName)); %#ok<NASGU>
+                @() closeLoadedModel(modelName));
 
             controllerBlocks = ["Error","Rate Error","Derivative Filter", ...
                 "Integral State","Unsaturated Torque","Torque Limit"];
@@ -86,12 +86,12 @@ classdef TestBuildPidCrossValidationModel < matlab.unittest.TestCase
             relativePath = fullfile("models","relative_contract_test.slx");
             expectedPath = fullfile(projectRoot,relativePath);
             fileCleanup = onCleanup( ...
-                @() deleteIfPresent(expectedPath)); %#ok<NASGU>
+                @() deleteIfPresent(expectedPath));
             temporaryCurrentFolder = tempname;
             mkdir(temporaryCurrentFolder);
             originalFolder = cd(temporaryCurrentFolder);
             currentFolderCleanup = onCleanup(@() restoreAndRemove( ...
-                originalFolder,temporaryCurrentFolder)); %#ok<NASGU>
+                originalFolder,temporaryCurrentFolder));
 
             modelName = rrm.simulink.buildPidCrossValidationModel(relativePath);
 
