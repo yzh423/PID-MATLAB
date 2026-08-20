@@ -53,6 +53,10 @@ classdef TestExportReportEvidence < matlab.unittest.TestCase
             testCase.verifyEqual(evidence.system.payloadKg,0.5);
             testCase.verifyEqual(evidence.system.torqueLimitsNm,[25;15]);
             testCase.verifyEqual(evidence.protocol.sampleTimeS,0.001);
+            testCase.verifyEqual(evidence.protocol.testCount,145);
+            testCase.verifyEqual(evidence.protocol.totalTestCountAtExport,150);
+            testCase.verifyEqual(evidence.protocol.testCountSource, ...
+                "MATLAB testsuite excluding tests/report");
             testCase.verifyEqual( ...
                 evidence.protocol.steadyRmsThresholdRad,[0.02;0.02]);
             testCase.verifyEqual(evidence.controllers.manualPid.Kp,[120;100]);
