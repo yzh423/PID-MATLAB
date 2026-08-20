@@ -38,3 +38,8 @@ if ($LASTEXITCODE -ne 0) {
 if ($LASTEXITCODE -ne 0) {
     throw "Report verification failed with exit code $LASTEXITCODE"
 }
+
+& (Join-Path $PSScriptRoot 'verify_phase7b.ps1')
+if ($LASTEXITCODE -ne 0) {
+    throw "Phase 7B verification failed with exit code $LASTEXITCODE"
+}

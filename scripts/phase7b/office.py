@@ -42,6 +42,15 @@ _XML_SCHEMA_DATETIME = re.compile(
     r"(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})"
     r"(?P<fraction>\.\d+)?(?P<timezone>Z|[+-]\d{2}:\d{2})?\Z"
 )
+_RELATIONSHIP_ID = re.compile(
+    rb"<Relationship\b[^>]*\bId\s*=\s*(['\"])([^'\"]+)\1[^>]*>"
+)
+_CREATION_ID_ATTRIBUTE = re.compile(
+    rb"(<(?:[A-Za-z_][A-Za-z0-9_.-]*:)?creationId\b[^>]*\bid\s*=\s*)(['\"])[^'\"]*\2"
+)
+_CREATION_VALUE_ATTRIBUTE = re.compile(
+    rb"(<(?:[A-Za-z_][A-Za-z0-9_.-]*:)?creationId\b[^>]*\bval\s*=\s*)(['\"])[^'\"]*\2"
+)
 _XSI_TYPE = "{http://www.w3.org/2001/XMLSchema-instance}type"
 
 
@@ -324,6 +333,69 @@ def _validate_opc_part_names(infos: Sequence[ZipInfo]) -> None:
             raise Phase7BOfficeError(f"invalid OPC part name: {name}")
 
 
+def _relationship_source_part(name: str) -> str | None:
+    """Return the OPC source part addressed by one relationship part name."""
+    if name == "_rels/.rels":
+        return None
+    parent, marker, leaf = name.rpartition("/_rels/")
+    if not marker or not leaf.endswith(".rels"):
+        return None
+    return f"{parent}/{leaf[:-5]}"
+
+
+def _replace_quoted_values(payload: bytes, replacements: Mapping[bytes, bytes]) -> bytes:
+    """Replace complete quoted XML attribute values without touching text nodes."""
+    for old, new in replacements.items():
+        payload = payload.replace(b'"' + old + b'"', b'"' + new + b'"')
+        payload = payload.replace(b"'" + old + b"'", b"'" + new + b"'")
+    return payload
+
+
+def _canonicalize_pptx_generated_ids(
+    entries: Sequence[tuple[str, int, bytes]],
+) -> list[tuple[str, int, bytes]]:
+    """Remove artifact-tool-generated relationship and creation identifier entropy."""
+    rewritten = {name: payload for name, _, payload in entries}
+    relationship_maps: dict[str, dict[bytes, bytes]] = {}
+    for name in sorted(rewritten):
+        if not name.endswith(".rels"):
+            continue
+        source_part = _relationship_source_part(name)
+        payload = rewritten[name]
+        replacements = {
+            match.group(2): f"rId{index}".encode("ascii")
+            for index, match in enumerate(_RELATIONSHIP_ID.finditer(payload), start=1)
+        }
+        rewritten[name] = _replace_quoted_values(payload, replacements)
+        if source_part is not None:
+            relationship_maps[source_part] = replacements
+
+    for source_part, replacements in relationship_maps.items():
+        if source_part in rewritten:
+            rewritten[source_part] = _replace_quoted_values(rewritten[source_part], replacements)
+
+    creation_index = 1
+
+    def replace_creation_id(match: re.Match[bytes]) -> bytes:
+        nonlocal creation_index
+        value = f"{{00000000-0000-0000-0000-{creation_index:012d}}}".encode("ascii")
+        creation_index += 1
+        return match.group(1) + match.group(2) + value + match.group(2)
+
+    def replace_creation_value(match: re.Match[bytes]) -> bytes:
+        nonlocal creation_index
+        value = str(creation_index).encode("ascii")
+        creation_index += 1
+        return match.group(1) + match.group(2) + value + match.group(2)
+
+    for name in sorted(rewritten):
+        if not name.endswith(".xml"):
+            continue
+        payload = _CREATION_ID_ATTRIBUTE.sub(replace_creation_id, rewritten[name])
+        rewritten[name] = _CREATION_VALUE_ATTRIBUTE.sub(replace_creation_value, payload)
+    return [(name, compression, rewritten[name]) for name, compression, _ in entries]
+
+
 def normalize_openxml_package(path: Path, suffix: str) -> None:
     """Rewrite one Open XML package with reproducible ZIP and core metadata."""
     path = path.resolve(strict=True)
@@ -352,6 +424,8 @@ def normalize_openxml_package(path: Path, suffix: str) -> None:
     for index, (name, compression, payload) in enumerate(entries):
         if name == "docProps/core.xml":
             entries[index] = (name, compression, normalize_core_properties(payload))
+    if expected_suffix == ".pptx":
+        entries = _canonicalize_pptx_generated_ids(entries)
 
     descriptor, temporary_name = tempfile.mkstemp(
         prefix=f".{path.name}.normalized.", suffix=".tmp", dir=path.parent

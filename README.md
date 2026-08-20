@@ -117,6 +117,18 @@ For targeted report work:
 
 The current verified PDF is 8 pages with 6 figures, 9 tables, and 8 references. The report evidence path records 39 deterministic runs, 360 paired stochastic trials, 6 Cartesian task runs, 2 Simulink comparisons, 2 Multibody comparisons, 145 pre-report MATLAB tests, and 5 report-specific MATLAB tests at export time. This package communicates simulation evidence; it is not new hardware validation.
 
+## Phase 7B Presentation and Research Summary
+
+Use the full technical report when a reader needs methods, acceptance criteria, and the complete evidence record. Use the editable 10-slide deck for an advisor or faculty discussion, and the one-page summary for a concise distribution copy. The final deliverables are [the deck](presentation/final_presentation.pptx), [the editable summary](docs/summary/research_summary.docx), and [the distribution PDF](docs/summary/research_summary.pdf).
+
+From the repository root, verify the already-current Phase 7A evidence and all Phase 7B deliverables with:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_phase7b.ps1
+```
+
+Every visible Phase 7B value resolves from the same admitted Phase 7A evidence package. Each deck slide also carries a `[Sources]` block in its speaker notes, so its claims remain traceable during presentation use. These deliverables communicate simulation-only evidence and do not extend the study to hardware validation.
+
 ## Compose a Custom Study
 
 When a study needs a different robot, command, controller, or evidence slice than the verified default, use the package APIs while preserving the same lifecycle. The eight scripts listed in Quick Start remain the default reproducible entry points, and `scripts/verify.ps1` runs them as one verification gate so that custom composition does not silently replace the study's common protocol:

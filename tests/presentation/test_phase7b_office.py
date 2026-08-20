@@ -136,6 +136,50 @@ def semantic_core_properties(
 
 
 class Phase7BOfficeTests(unittest.TestCase):
+    def test_pptx_normalization_canonicalizes_generated_relationship_and_creation_ids(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            first = Path(directory) / "first.pptx"
+            second = Path(directory) / "second.pptx"
+
+            def write_pptx(path: Path, relationship_id: str, creation_id: str, slide_id: str) -> None:
+                entries = {
+                    "[Content_Types].xml": b"<Types/>",
+                    "docProps/core.xml": CORE_PROPERTIES.format(
+                        timestamp="2026-08-21T00:00:00Z",
+                        last_printed="2026-08-21T00:00:00Z",
+                    ).encode("utf-8"),
+                    "ppt/presentation.xml": (
+                        f'<p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" '
+                        f'xmlns:p14="http://schemas.microsoft.com/office/powerpoint/2010/main">'
+                        f'<p:extLst><p:ext><p14:creationId val="{slide_id}"/></p:ext></p:extLst></p:presentation>'
+                    ).encode("utf-8"),
+                    "ppt/slides/slide1.xml": (
+                        f'<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" '
+                        f'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" '
+                        f'xmlns:a16="http://schemas.microsoft.com/office/drawing/2014/main">'
+                        f'<p:pic r:embed="{relationship_id}"/><a16:creationId id="{{{creation_id}}}"/></p:sld>'
+                    ).encode("utf-8"),
+                    "ppt/slides/_rels/slide1.xml.rels": (
+                        f'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+                        f'<Relationship Id="{relationship_id}" Type="image" Target="../media/image1.png"/>'
+                        f'</Relationships>'
+                    ).encode("utf-8"),
+                    "ppt/media/image1.png": b"admitted image",
+                }
+                with ZipFile(path, "w", compression=ZIP_DEFLATED) as archive:
+                    for name, payload in entries.items():
+                        archive.writestr(name, payload)
+
+            write_pptx(first, "RrandomA", "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA", "987654321")
+            write_pptx(second, "RrandomB", "BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB", "123456789")
+            normalize_openxml_package(first, ".pptx")
+            normalize_openxml_package(second, ".pptx")
+
+            self.assertEqual(sha256_file(first), sha256_file(second))
+            with ZipFile(first) as archive:
+                self.assertIn(b'Id="rId1"', archive.read("ppt/slides/_rels/slide1.xml.rels"))
+                self.assertIn(b'r:embed="rId1"', archive.read("ppt/slides/slide1.xml"))
+
     def test_semantically_invalid_dates_fail_before_replacing_target(self) -> None:
         invalid_values = (
             "2024-02-30T00:00:00Z",

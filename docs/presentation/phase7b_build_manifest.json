@@ -1,0 +1,101 @@
+{
+    "schemaVersion":  1,
+    "generatedAt":  "2026-08-21T00:00:00Z",
+    "sources":  [
+                    {
+                        "path":  "docs/presentation/phase7b_template.json",
+                        "sha256":  "18f357c1da9349e3a07690959eb8794f556df8485fb35e1c39b0d1ada5146fe8"
+                    },
+                    {
+                        "path":  "docs/report/build_manifest.json",
+                        "sha256":  "1c9d3be2ee11027d1e068cdf59c27d96e42987dce1b2526a48c342dce8f13417"
+                    },
+                    {
+                        "path":  "results/figures/cartesian_tasks_paths.png",
+                        "sha256":  "7765ca66a9dde0f9cdb20bee13bd89182d1f3a4767c2a9e6d4d66c1160487d13"
+                    },
+                    {
+                        "path":  "results/figures/deterministic_robustness_summary.png",
+                        "sha256":  "92a0c6889e6171d1b4f5811d20cc28a272aca7990a45a6483fa6bf74718d2759"
+                    },
+                    {
+                        "path":  "results/figures/multibody_cross_validation_tracking.png",
+                        "sha256":  "3bd780e3dfddb099659271c277ec1c133040178d54b69d1c9a43a48cb50da4f9"
+                    },
+                    {
+                        "path":  "results/figures/nominal_pid_vs_fuzzy_tracking.png",
+                        "sha256":  "af83a683500dc25559464801dae66fde87eeaa1b03dbd918180bfb4e3c55d84a"
+                    },
+                    {
+                        "path":  "results/figures/pid_optimization_objective.png",
+                        "sha256":  "95215e3025e328f6ce4d36e5ba39c57d00da99b6feeb9a233fbb1e9533d05058"
+                    },
+                    {
+                        "path":  "results/figures/stochastic_robustness_chattering.png",
+                        "sha256":  "ac368ef40a76090faec46a7b79ab0ea8df5490ac1c7d24d0f7929d7239930303"
+                    },
+                    {
+                        "path":  "results/presentation/phase7b_package.json",
+                        "sha256":  "10d663a1c0a849e2956c7838617e51c8b696ea5944061f04b3509042d8f49146"
+                    },
+                    {
+                        "path":  "results/report/report_evidence.json",
+                        "sha256":  "9495b9193b484f0622a3513779bcd2ed4b75d24e9710f4412b89a68da8237678"
+                    },
+                    {
+                        "path":  "scripts/build_presentation.mjs",
+                        "sha256":  "ab1d27f9633d6d8f32c7a731000f6c41e70ef702dd30b96200baec3c8c7e26ff"
+                    },
+                    {
+                        "path":  "scripts/build_research_summary.py",
+                        "sha256":  "fb8e77bc9eac29c87171dbf6c17b204bd07680e75396eea4615012a24dd74d05"
+                    },
+                    {
+                        "path":  "scripts/build_research_summary_pdf.py",
+                        "sha256":  "0ba374c133d2ec179cd4f2c6e69300e0a42bacf6680112a964569696767ae6a0"
+                    },
+                    {
+                        "path":  "scripts/export_research_summary_pdf.ps1",
+                        "sha256":  "63ccd12f13b2d2cf3d691a2ef5c9b5ec64af940720493b6f6bcedb660ba35a12"
+                    },
+                    {
+                        "path":  "scripts/normalize_phase7b_office.py",
+                        "sha256":  "d0f80ea7ec2c93b7b6c9e9911539bd03ef1aced620758c950f44a9285ab56710"
+                    },
+                    {
+                        "path":  "scripts/normalize_research_summary_pdf.py",
+                        "sha256":  "1d0f14c1d2935eb5a49732cbf29139f20f88a42bc275c2feafc256b7409bbc0d"
+                    },
+                    {
+                        "path":  "scripts/phase7b/evidence.py",
+                        "sha256":  "a9428a373f99e6a7714347331dcbfa0f8bc30bee9cf9466a829b0ee839124dd1"
+                    },
+                    {
+                        "path":  "scripts/phase7b/office.py",
+                        "sha256":  "7f5e6c03f473fd7b752490763a6c4e988ff29094726cb51ed7a7633d24b76843"
+                    },
+                    {
+                        "path":  "scripts/phase7b/summary.py",
+                        "sha256":  "2c005d9833a0bac9dc1902bac6759f717ea2aea415df303065e294fba73728fe"
+                    }
+                ],
+    "outputs":  [
+                    {
+                        "path":  "docs/summary/research_summary.docx",
+                        "sha256":  "90b5030c39ac41564e1bfac79c1f1b744b7d77b3d5d44241b47736c5f256265c"
+                    },
+                    {
+                        "path":  "docs/summary/research_summary.pdf",
+                        "sha256":  "8ff175dcbdf71e66ed036bd64116be27a18261814f7a4254611d563fb156652d"
+                    },
+                    {
+                        "path":  "presentation/final_presentation.pptx",
+                        "sha256":  "2a70ecc754c1b19318d15e2d11406624e27088eaa6d03868902213723ee4cf22"
+                    }
+                ],
+    "document":  {
+                     "notesCount":  10,
+                     "slideCount":  10,
+                     "summaryPageCount":  1
+                 }
+}
