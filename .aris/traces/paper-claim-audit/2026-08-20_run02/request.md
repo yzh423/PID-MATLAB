@@ -1,0 +1,3 @@
+# Paper claim audit request — run 02
+
+Perform a new zero-context audit of `docs/report/technical_report.md`. Read the entire paper; all 14 formal MAT/CSV sources under `results/data`; the six selected figures; `results/report/report_evidence.json`; the exporter; report build, evidence, and content-gate implementation and tests; MATLAB test discovery; and the tracked non-document source tree needed to check absence/scope statements. Recompute all numbers and aggregations, inspect all captions, verify source-backed process claims, and return PASS/WARN/FAIL plus the complete list of non-exact findings.

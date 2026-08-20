@@ -1,0 +1,81 @@
+{
+  "audit_skill": "paper-claim-audit",
+  "verdict": "PASS",
+  "reason_code": "all_numbers_match",
+  "summary": "All 15 audited claim groups reconcile to raw results, figures, manifest, tests, report tooling, and source-tree scope evidence.",
+  "audited_input_hashes": {
+    "references.json": "sha256:5f4397716d25e3235003064a863b4154132c05ef9283b0777eb6db680c4eb019",
+    "technical_report.md": "sha256:4cb46b3254588d8880ceccad327977ea24aa13c2133cff8200eb5c3549e5f3f8",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/+rrm/+report/exportEvidence.m": "sha256:240c653219130cec676b36f8174c08d0b9a7497bc3d35deaee76f6b180d2e3b6",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/cartesian_tasks_runs.csv": "sha256:51d038f74682f3f371d13a95f883cff731517389b29425aae14255ba1535faa9",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/cartesian_tasks.mat": "sha256:8a5ce3e1a77e2ce136a56cf2e2f34ba6ea4442d70431bc53da932454d03cd8ce",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/deterministic_robustness_runs.csv": "sha256:9d0ddfd0c297fa43df351695d54c8a3ad427845ece588eaee79f4635c99dc8e0",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/deterministic_robustness_summary.csv": "sha256:1041f7b8a57b382bdd4ce7dc152f029cebac40b428f05f03b1de7085dd8c702c",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/deterministic_robustness.mat": "sha256:a3363ffe564d8336f4f6ba2138f722c3209d33abfd3b8e16e5d88c6db91a9829",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/multibody_cross_validation_runs.csv": "sha256:c69a5daa5552f2ed79ba176c3935b3dfe3157e3e9334e4dcee21f8b3fda112d0",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/multibody_cross_validation.mat": "sha256:3482d10b737efb4881f77895024272fe3ef0e174cfaf791a35ecb0e32cfdbf15",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/nominal_pid_vs_fuzzy.mat": "sha256:b1148b6548be31709133542800501a665f671524b579cc1ce25571a77ce8916e",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/pid_optimization.mat": "sha256:7ae8cc2a6a5f30ddac48eab337ed0b98d53394232b2737706839f6bf5bdb402f",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/simulink_cross_validation_runs.csv": "sha256:6427d4d6f85c75dc0b7f4cc836a3360b0ba963d1eea513f9289a179d1ded2e43",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/simulink_cross_validation.mat": "sha256:dbe955d8da6e55149e7e5062d0231d635355914a07ac354579edd66c3d91c4df",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/stochastic_robustness_summary.csv": "sha256:083188735f2e5636f3f7272825188f6f02a45185a19936e4e603021663c257cd",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/stochastic_robustness_trials.csv": "sha256:5beaa1a23eb26b83f810ecae9f1937c8c1926870627d00bd590edf1ffde8b3e6",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/stochastic_robustness.mat": "sha256:d9f11c10311e269fddec00a199c96f6305a0926fd1c366bf42cc894a6ec1e0f4",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/figures/cartesian_tasks_paths.png": "sha256:fda5df09a14e5e515c5f0d800430a76d5e0bd5ceb123c3c3769290e10b22ae3a",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/figures/deterministic_robustness_summary.png": "sha256:4dc2219687f00cd189571b53151f76c61a68018c0519ef552dc63e20a6719871",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/figures/multibody_cross_validation_tracking.png": "sha256:6a9fba47ceec5125ffea58fc35016f2e1add9558e57740fc45f981e86bdef57b",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/figures/nominal_pid_vs_fuzzy_tracking.png": "sha256:7f3eacb73063f5dfcec9adeedd3f86b662516de775ab25a05135abf7115cf00c",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/figures/pid_optimization_objective.png": "sha256:b37658d49fd8df8757ff394722ffc92a8c5ae6b57d0bcb1edf92e49c8ac0f048",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/figures/stochastic_robustness_chattering.png": "sha256:572796dc9a284ec21e3c823d6710d64239d1dcfc10b5673c32cd29fc2a3f80b4",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/report/report_evidence.json": "sha256:b0e765ce9aa0c9850573862dc4296577f3f5c8e0c27501c7b740d5ed914dfdf4",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/scripts/build_report.py": "sha256:abaa56e2c00cf68de341aa55fe9cb378dc9a26a6c9a3e0c55973b48763be02d0",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/scripts/reporting/content.py": "sha256:b086e18c2b0d588502da388e4ef29cf17e794ac930217987d2107d3cf10ac482",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/scripts/reporting/evidence.py": "sha256:8ced51b3eb930caeaae2b811793293766dc00948875e4766c3fa330d2edc5f23",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/tests/report/TestExportReportEvidence.m": "sha256:1ed236d7ae0c778644649bd5b16f1289f1d2dcafd04027dbf78fc6ca8eb3dc47",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/tests/report/test_report_content.py": "sha256:25942b3704ed085b23f59c1ebcc593dcfef347a4a9673b5dfb7148721d5624cd",
+    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/tests/report/test_report_evidence.py": "sha256:bc365c5ebd530332581c3b0dc3c0f393392bd4f7e374626e44fff5ee6845e2f5"
+  },
+  "trace_path": ".aris/traces/paper-claim-audit/2026-08-20_run02/",
+  "thread_id": "/root/phase7a_claim_audit_rerun",
+  "reviewer_model": "gpt-5.5",
+  "reviewer_reasoning": "xhigh",
+  "generated_at": "2026-08-20T14:43:45Z",
+  "details": {
+    "claim_unit": "claim_group",
+    "total_claims": 15,
+    "mismatches": [],
+    "warnings": [],
+    "raw_source_counts": {
+      "mat": 7,
+      "csv": 7
+    },
+    "figures_checked": 6,
+    "python_report_tests": 14,
+    "matlab_tests": {
+      "pre_report": 145,
+      "report_specific": 5,
+      "total_at_export": 150
+    },
+    "prior_run": {
+      "verdict": "WARN",
+      "trace_path": ".aris/traces/paper-claim-audit/2026-08-20_run01/",
+      "resolution": "Expanded the declared evidence set and reran in a new zero-context reviewer thread."
+    },
+    "result_files": [
+      "cartesian_tasks.mat",
+      "cartesian_tasks_runs.csv",
+      "deterministic_robustness.mat",
+      "deterministic_robustness_runs.csv",
+      "deterministic_robustness_summary.csv",
+      "multibody_cross_validation.mat",
+      "multibody_cross_validation_runs.csv",
+      "nominal_pid_vs_fuzzy.mat",
+      "pid_optimization.mat",
+      "simulink_cross_validation.mat",
+      "simulink_cross_validation_runs.csv",
+      "stochastic_robustness.mat",
+      "stochastic_robustness_summary.csv",
+      "stochastic_robustness_trials.csv"
+    ]
+  }
+}

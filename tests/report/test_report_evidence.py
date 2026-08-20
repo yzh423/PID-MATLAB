@@ -40,6 +40,18 @@ class EvidenceTests(unittest.TestCase):
                 "{{nominal.missing|.3f}}", load_evidence(EVIDENCE_PATH)
             )
 
+    def test_resolves_zero_based_list_index(self) -> None:
+        text, used = resolve_tokens(
+            "Link lengths: {{system.linkLengthsM.0|.2f}} and "
+            "{{system.linkLengthsM.1|.2f}} m.",
+            load_evidence(EVIDENCE_PATH),
+        )
+
+        self.assertEqual(text, "Link lengths: 0.45 and 0.35 m.")
+        self.assertEqual(
+            used, {"system.linkLengthsM.0", "system.linkLengthsM.1"}
+        )
+
     def test_unsupported_format_is_rejected(self) -> None:
         with self.assertRaisesRegex(EvidenceError, "unsupported token format"):
             resolve_tokens("{{value|.2x}}", {"value": 1.0})

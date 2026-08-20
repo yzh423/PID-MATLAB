@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 import unittest
 
 from scripts.reporting.content import ContentError, load_references, validate_report
@@ -50,16 +51,53 @@ class ReferenceTests(unittest.TestCase):
 
 
 class BuiltReportTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        if not REPORT_PATH.is_file():
-            raise unittest.SkipTest("technical_report.md not built")
-
     def test_resolved_report_passes_content_gate(self) -> None:
+        self.assertTrue(REPORT_PATH.is_file(), "technical_report.md not built")
         validate_report(
             REPORT_PATH.read_text(encoding="utf-8"),
             load_references(REFERENCES_PATH),
         )
+
+    def test_resolved_report_has_required_evidence_density(self) -> None:
+        self.assertTrue(REPORT_PATH.is_file(), "technical_report.md not built")
+        markdown = REPORT_PATH.read_text(encoding="utf-8")
+        body = markdown.split("## References", maxsplit=1)[0]
+        words = re.findall(r"[A-Za-z]+(?:[-'][A-Za-z]+)*", body)
+        figures = re.findall(r"!\[[^\]]+\]\(([^)]+)\)", markdown)
+        tables = re.findall(
+            r"^\|(?:\s*:?-{3,}:?\s*\|)+$", markdown, flags=re.MULTILINE
+        )
+
+        self.assertGreaterEqual(len(words), 2800)
+        self.assertLessEqual(len(words), 5500)
+        self.assertEqual(
+            figures,
+            [
+                "../../results/figures/nominal_pid_vs_fuzzy_tracking.png",
+                "../../results/figures/pid_optimization_objective.png",
+                "../../results/figures/deterministic_robustness_summary.png",
+                "../../results/figures/stochastic_robustness_chattering.png",
+                "../../results/figures/cartesian_tasks_paths.png",
+                "../../results/figures/multibody_cross_validation_tracking.png",
+            ],
+        )
+        self.assertGreaterEqual(len(tables), 7)
+        self.assertNotIn("{{", markdown)
+        self.assertNotIn("}}", markdown)
+        for citation_id in range(1, 9):
+            self.assertIn(f"[{citation_id}]", markdown)
+        for statement in (
+            "39 deterministic runs",
+            "360 paired stochastic trials",
+            "8/13, 9/13, and 10/13 deterministic successes",
+            "0/30 combined-stress successes for every controller",
+            "manual and Fuzzy-PID pick-transfer-place runs were unsuccessful",
+            "145 tests",
+            "not hardware validation",
+        ):
+            self.assertIn(statement, markdown)
+        for unit in (" rad", " N m", " m", " s"):
+            self.assertIn(unit, markdown)
 
 
 if __name__ == "__main__":

@@ -99,12 +99,18 @@ def validate_evidence(evidence: Mapping[str, object]) -> None:
 
 
 def lookup(evidence: Mapping[str, object], dotted_path: str) -> object:
-    """Resolve a dotted path without attribute access or expression evaluation."""
+    """Resolve mapping fields and zero-based list indices without evaluation."""
     value: object = evidence
     for part in dotted_path.split("."):
-        if not isinstance(value, Mapping) or part not in value:
-            raise EvidenceError(f"unknown evidence token: {dotted_path}")
-        value = value[part]
+        if isinstance(value, Mapping) and part in value:
+            value = value[part]
+            continue
+        if isinstance(value, list) and part.isdecimal():
+            index = int(part)
+            if index < len(value):
+                value = value[index]
+                continue
+        raise EvidenceError(f"unknown evidence token: {dotted_path}")
     return value
 
 
