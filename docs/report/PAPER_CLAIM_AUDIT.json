@@ -1,101 +1,307 @@
 {
   "audit_skill": "paper-claim-audit",
   "verdict": "PASS",
-  "reason_code": "all_numbers_match",
-  "summary": "All 15 independent claim groups reconcile to current raw evidence and source scope; zero findings.",
+  "reason_code": "all_claim_groups_match",
+  "summary": "All 15 required claim groups reconcile with current raw evidence, build artifacts, citations, and repository scope; zero findings, WARN, FAIL, unsupported claims, or ambiguous mappings.",
   "audited_input_hashes": {
-    "technical_report.md": "sha256:b3a7da4d611c7e8ced71285309b4a9960c38155bf9670fe9fee46114361b4674",
-    "technical_report_template.md": "sha256:e7e88982b4ca1ab31dc82e6c4138022fffc32674eff221065283b15fa6ef0d7d",
-    "references.json": "sha256:5f4397716d25e3235003064a863b4154132c05ef9283b0777eb6db680c4eb019",
-    "build_manifest.json": "sha256:8d332308b5614d9413b595e17f3c2e379cfec135ba45bd74fcee3781a4b6b787",
-    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/report/report_evidence.json": "sha256:1ae79caf7bf58fb71b77c4f58f18358ea4b7cdb540885f8fec55305cc2e8205d",
-    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/nominal_pid_vs_fuzzy.mat": "sha256:b5beae1aea41673ce3ee781c8f5d0f51351e8a645c943a24004f4964d347b2d6",
-    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/pid_optimization.mat": "sha256:260fb7ef05b2efcb3924013b8d5d9d2b5245d92acffe6d2235b7fa77c3d6b1a5",
-    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/deterministic_robustness.mat": "sha256:2a3d0d810226cfb6e7da3494a4d10a6d40975ade57fc19ed0b1986119a1130d4",
-    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/stochastic_robustness.mat": "sha256:6fa9320669bd241ccebafff5dc65e5164028e29d3e7b78ac3ca86e155c2a7912",
-    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/cartesian_tasks.mat": "sha256:fc1a531af0f1f5b79c70294f03d91f2467038cf5c762494c9ba9d915666200d4",
-    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/simulink_cross_validation.mat": "sha256:49e7603e2e24dab3151d753d0a969cf9fda1c0815f99f80e75c7c39ae98eab50",
-    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/multibody_cross_validation.mat": "sha256:ea7de093220bddba82bbb22f6cb3c8403f9dc232b5a61db89c3e9c21ad64c436",
-    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/deterministic_robustness_runs.csv": "sha256:9d0ddfd0c297fa43df351695d54c8a3ad427845ece588eaee79f4635c99dc8e0",
-    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/deterministic_robustness_summary.csv": "sha256:1041f7b8a57b382bdd4ce7dc152f029cebac40b428f05f03b1de7085dd8c702c",
-    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/stochastic_robustness_trials.csv": "sha256:5beaa1a23eb26b83f810ecae9f1937c8c1926870627d00bd590edf1ffde8b3e6",
-    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/stochastic_robustness_summary.csv": "sha256:083188735f2e5636f3f7272825188f6f02a45185a19936e4e603021663c257cd",
-    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/cartesian_tasks_runs.csv": "sha256:51d038f74682f3f371d13a95f883cff731517389b29425aae14255ba1535faa9",
-    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/simulink_cross_validation_runs.csv": "sha256:6427d4d6f85c75dc0b7f4cc836a3360b0ba963d1eea513f9289a179d1ded2e43",
-    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/data/multibody_cross_validation_runs.csv": "sha256:c69a5daa5552f2ed79ba176c3935b3dfe3157e3e9334e4dcee21f8b3fda112d0",
-    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/figures/nominal_pid_vs_fuzzy_tracking.png": "sha256:cac5f9ec719e270142d9c5b7c98e840ad87e4343d443509d949dcc8d61fab900",
-    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/figures/pid_optimization_objective.png": "sha256:d05113ac3c02ca3aa54c3558ebe741d13f36f127ee93e851c312258407758ed5",
-    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/figures/deterministic_robustness_summary.png": "sha256:144d52b65285e37cf7e1cb7d6cba4237e223ea8399be79ff350edd59bb1ca300",
-    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/figures/stochastic_robustness_chattering.png": "sha256:abe9cc2c5451e5650c12b3ed68b5ce6f7af05a510c25bd4d28366b3b6fba3ae7",
-    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/figures/cartesian_tasks_paths.png": "sha256:2dcaa14c41b63c087c871fb7e2f3cf2699d92e47a865476e50e5d3b64ff6a2ac",
-    "E:/YZH123123/PID vs Fuzzy PID/.worktrees/phase-7a-technical-report/results/figures/multibody_cross_validation_tracking.png": "sha256:598b4f89069ca9198255c5db98736ef43476db1763f02e1d388353304db0a22d"
+    ".gitattributes": "sha256-canonical-git-text:8db7a57ce82d3866f8e2d967ebac12098bfa864368a3b77e042ac84088dee6e2",
+    "README.md": "sha256-canonical-git-text:be07cbe6fa1f26b12f82062152bcf7c9863f22d2a8041fa1d490590b2a891357",
+    "docs/report/technical_report_template.md": "sha256-canonical-git-text:e7e88982b4ca1ab31dc82e6c4138022fffc32674eff221065283b15fa6ef0d7d",
+    "docs/report/references.json": "sha256-canonical-git-text:5f4397716d25e3235003064a863b4154132c05ef9283b0777eb6db680c4eb019",
+    "+rrm/+report/exportEvidence.m": "sha256-canonical-git-text:c388e10a650b406aced7832612779881c1ede644b32442b0459e914d29f031fb",
+    "experiments/export_report_evidence.m": "sha256-canonical-git-text:9793cb8fa7fdddfd15e80e96fcce727c793d8148954290178fa6e3c25a4391b6",
+    "scripts/build_report.py": "sha256-canonical-git-text:1f98b5c1ae99e0f0e4143a9fd65137123e22722caf0ad835e5e6fe7ff9d885dd",
+    "scripts/export_report_pdf.ps1": "sha256-canonical-git-text:444b9e417bd333138dae751f46f9283a025f8e6b36c94f1069e18fcd227a3f97",
+    "scripts/normalize_report_pdf.py": "sha256-canonical-git-text:91b7d63b3e5bec2745aa3c646eef7d596d7e513c21fe50b0aba328a19c21f29a",
+    "scripts/reporting/__init__.py": "sha256-canonical-git-text:c5ffc8d13d0f25aa617536cb112b51edb02df209abc4c8864378844c4fbf1aa8",
+    "scripts/reporting/content.py": "sha256-canonical-git-text:b086e18c2b0d588502da388e4ef29cf17e794ac930217987d2107d3cf10ac482",
+    "scripts/reporting/document.py": "sha256-canonical-git-text:2196455d2cb87645e53436a618a3b7c3722f17c2c0bf9ab5027eb1ed2bed465f",
+    "scripts/reporting/evidence.py": "sha256-canonical-git-text:8ced51b3eb930caeaae2b811793293766dc00948875e4766c3fa330d2edc5f23",
+    "scripts/verify.ps1": "sha256-canonical-git-text:0fcf48286f97a6d0a38521053724cd61690e5593d9b16b7939e3139f39ae6466",
+    "scripts/verify_report.ps1": "sha256-canonical-git-text:7cd2d77575a4e3ee7711812fbeedd7794b98eb402bd7add0d1e2d5e235828e48",
+    "tests/report/TestExportReportEvidence.m": "sha256-canonical-git-text:d78ebb706151adcfe5d8ca9d7a11b58caaf6e9fc2b909d82165852371321438c",
+    "tests/report/test_report_content.py": "sha256-canonical-git-text:25942b3704ed085b23f59c1ebcc593dcfef347a4a9673b5dfb7148721d5624cd",
+    "tests/report/test_report_document.py": "sha256-canonical-git-text:f988d2d24172bcfb6e9ed7c29c18b06958015f6aa0a490daa1743c8fd34f3eb8",
+    "tests/report/test_report_evidence.py": "sha256-canonical-git-text:bc365c5ebd530332581c3b0dc3c0f393392bd4f7e374626e44fff5ee6845e2f5",
+    "+rrm/+optimization/scorePidResult.m": "sha256-canonical-git-text:616466f87cb441139b5235b75534e9c5bbd297052170482f735c9f251a8a0665",
+    "+rrm/+config/makePidOptimization.m": "sha256-canonical-git-text:2270e0b3922b60b1de18810834597e6864e15dd97359ecba6865bdd09148ddd6",
+    "+rrm/+metrics/evaluateCartesianTask.m": "sha256-canonical-git-text:a5dfec8af6a7f3de15d67000c19cab8e732533522b77f54e73da99087de18fef",
+    "docs/report/technical_report.md": "sha256:b3a7da4d611c7e8ced71285309b4a9960c38155bf9670fe9fee46114361b4674",
+    "docs/report/build_manifest.json": "sha256:1c9d3be2ee11027d1e068cdf59c27d96e42987dce1b2526a48c342dce8f13417",
+    "docs/report/technical_report.docx": "sha256:a534067ed12a0ac7c38ebf6167b9acf8e0ef661bf1d62ec472d7b495e8916ce0",
+    "docs/report/technical_report.pdf": "sha256:231c36bea38b24375aa47937eeb2967068367c98763b3a61db01ed668254c71e",
+    "results/report/report_evidence.json": "sha256:9495b9193b484f0622a3513779bcd2ed4b75d24e9710f4412b89a68da8237678",
+    "results/data/nominal_pid_vs_fuzzy.mat": "sha256:5334b5344b1089009e7063ddcb843e7aa1aa81d44aa24f6f52175fc90cdb33bd",
+    "results/data/pid_optimization.mat": "sha256:f060d7c1a14bc60eb97b8a7c9873718a6a6abfbddf03eca827aeb0731be08647",
+    "results/data/deterministic_robustness.mat": "sha256:c4d25630f156c5a2ce6232294fc606b611fb4d4026ef715f9c0e155a68cf8bfa",
+    "results/data/stochastic_robustness.mat": "sha256:e722de33dba46709d06b45a4157b2c51ba3ee1d0e5c1c9c4a3cd3f65b781ceee",
+    "results/data/cartesian_tasks.mat": "sha256:203dd409ab71936e25d5f4124f5c51dfad9c2456e90413fe9621c5831d00a5ba",
+    "results/data/simulink_cross_validation.mat": "sha256:9529a56b5f4fca77cb9efacb936771e1205b5af33ba1012cb250c7d06d7fda2b",
+    "results/data/multibody_cross_validation.mat": "sha256:51f1b808048ecb32c82368e912c82acacfa76a225717b35cfd743bf30341bc50",
+    "results/data/deterministic_robustness_runs.csv": "sha256:9d0ddfd0c297fa43df351695d54c8a3ad427845ece588eaee79f4635c99dc8e0",
+    "results/data/deterministic_robustness_summary.csv": "sha256:1041f7b8a57b382bdd4ce7dc152f029cebac40b428f05f03b1de7085dd8c702c",
+    "results/data/stochastic_robustness_trials.csv": "sha256:5beaa1a23eb26b83f810ecae9f1937c8c1926870627d00bd590edf1ffde8b3e6",
+    "results/data/stochastic_robustness_summary.csv": "sha256:083188735f2e5636f3f7272825188f6f02a45185a19936e4e603021663c257cd",
+    "results/data/cartesian_tasks_runs.csv": "sha256:51d038f74682f3f371d13a95f883cff731517389b29425aae14255ba1535faa9",
+    "results/data/simulink_cross_validation_runs.csv": "sha256:6427d4d6f85c75dc0b7f4cc836a3360b0ba963d1eea513f9289a179d1ded2e43",
+    "results/data/multibody_cross_validation_runs.csv": "sha256:c69a5daa5552f2ed79ba176c3935b3dfe3157e3e9334e4dcee21f8b3fda112d0",
+    "results/figures/nominal_pid_vs_fuzzy_tracking.png": "sha256:af83a683500dc25559464801dae66fde87eeaa1b03dbd918180bfb4e3c55d84a",
+    "results/figures/pid_optimization_objective.png": "sha256:95215e3025e328f6ce4d36e5ba39c57d00da99b6feeb9a233fbb1e9533d05058",
+    "results/figures/deterministic_robustness_summary.png": "sha256:92a0c6889e6171d1b4f5811d20cc28a272aca7990a45a6483fa6bf74718d2759",
+    "results/figures/stochastic_robustness_chattering.png": "sha256:ac368ef40a76090faec46a7b79ab0ea8df5490ac1c7d24d0f7929d7239930303",
+    "results/figures/cartesian_tasks_paths.png": "sha256:7765ca66a9dde0f9cdb20bee13bd89182d1f3a4767c2a9e6d4d66c1160487d13",
+    "results/figures/multibody_cross_validation_tracking.png": "sha256:3bd780e3dfddb099659271c277ec1c133040178d54b69d1c9a43a48cb50da4f9"
   },
-  "trace_path": ".aris/traces/paper-claim-audit/2026-08-21_run04/",
-  "thread_id": "/root/phase7a_claim_audit_pass",
-  "reviewer_model": "gpt-5.6-sol",
+  "trace_path": ".aris/traces/paper-claim-audit/2026-08-21_run05/",
+  "thread_id": "fresh-agent:/root/phase7a_claim_audit_run05",
+  "reviewer_model": "GPT-5.6-sol",
   "reviewer_reasoning": "high",
-  "generated_at": "2026-08-20T17:06:02Z",
+  "generated_at": "2026-08-20T17:58:05Z",
   "details": {
-    "total_claims": 15,
-    "exact_match": 15,
-    "rounding_ok": 0,
-    "warn": 0,
-    "fail": 0,
-    "unsupported_claim": 0,
-    "ambiguous_mapping": 0,
-    "missing_evidence": 0,
-    "mismatches": [],
-    "findings": [],
-    "claim_groups": [
-      {"claim_id": 1, "group": "protocol", "status": "exact_match"},
-      {"claim_id": 2, "group": "nominal", "status": "exact_match"},
-      {"claim_id": 3, "group": "optimization", "status": "exact_match"},
-      {"claim_id": 4, "group": "deterministic", "status": "exact_match"},
-      {"claim_id": 5, "group": "stochastic", "status": "exact_match"},
-      {"claim_id": 6, "group": "Cartesian", "status": "exact_match"},
-      {"claim_id": 7, "group": "rigid-body", "status": "exact_match"},
-      {"claim_id": 8, "group": "Simulink", "status": "exact_match"},
-      {"claim_id": 9, "group": "Multibody", "status": "exact_match"},
-      {"claim_id": 10, "group": "report structure", "status": "exact_match"},
-      {"claim_id": 11, "group": "figure captions", "status": "exact_match"},
-      {"claim_id": 12, "group": "citations", "status": "exact_match"},
-      {"claim_id": 13, "group": "evidence admission", "status": "exact_match"},
-      {"claim_id": 14, "group": "reproducibility/build", "status": "exact_match"},
-      {"claim_id": 15, "group": "scope/absence", "status": "exact_match"}
+    "local_audit_date": "2026-08-21",
+    "fresh_zero_context": true,
+    "prior_audit_artifacts_used_as_evidence": false,
+    "group_order": [
+      "protocol",
+      "nominal",
+      "optimization",
+      "deterministic",
+      "stochastic",
+      "Cartesian",
+      "rigid-body",
+      "Simulink",
+      "Multibody",
+      "report structure",
+      "figure captions",
+      "citations",
+      "evidence admission",
+      "reproducibility/build",
+      "scope/absence"
     ],
-    "verification": {
-      "markdown_render_exact": true,
-      "resolved_markdown_sha256": "b3a7da4d611c7e8ced71285309b4a9960c38155bf9670fe9fee46114361b4674",
-      "used_evidence_token_count": 126,
-      "used_evidence_tokens_match_manifest": true,
-      "unresolved_token_count": 0,
-      "raw_evidence_reexport_bytes_exact": true,
-      "manifest_hash_records_current": 12,
-      "python_report_tests": {"passed": 21, "failed": 0},
-      "matlab_report_tests": {"passed": 5, "failed": 0, "incomplete": 0},
-      "pre_report_matlab_test_count": 145,
-      "report_matlab_test_count": 5,
-      "document": {"body_words": 3105, "required_headings": 13, "tables": 9, "figures": 6, "references": 8}
+    "counts": {
+      "total_claim_groups": 15,
+      "exact_match": 7,
+      "rounding_ok": 8,
+      "findings": 0,
+      "warn": 0,
+      "fail": 0,
+      "unsupported_claim": 0,
+      "ambiguous_mapping": 0,
+      "missing_evidence": 0,
+      "config_mismatch": 0,
+      "aggregation_mismatch": 0,
+      "number_mismatch": 0,
+      "scope_overclaim": 0
     },
-    "tooling_hashes": {
-      "README.md": "sha256:5e0d5c1f7eb1c56a02c080e084cc9681aa748a6a642e228e1ae6236fb0f0bc4f",
-      "+rrm/+report/exportEvidence.m": "sha256:b96b5eedbbbcc90fdd6da3670dc8ee952c9deff2d999b1e6e8e9764f3263002a",
-      "experiments/export_report_evidence.m": "sha256:9793cb8fa7fdddfd15e80e96fcce727c793d8148954290178fa6e3c25a4391b6",
-      "scripts/build_report.py": "sha256:5e279b2e250ae44482291e87107d3c7646ef479b5bbc585b8a7f9aed60568292",
-      "scripts/reporting/content.py": "sha256:b086e18c2b0d588502da388e4ef29cf17e794ac930217987d2107d3cf10ac482",
-      "scripts/reporting/document.py": "sha256:5146034be2ade201bb7cd743997600aa6b34cd45e1b082933b6092dcefecfeff",
-      "scripts/reporting/evidence.py": "sha256:8ced51b3eb930caeaae2b811793293766dc00948875e4766c3fa330d2edc5f23",
-      "scripts/verify_report.ps1": "sha256:7cd2d77575a4e3ee7711812fbeedd7794b98eb402bd7add0d1e2d5e235828e48",
-      "tests/report/TestExportReportEvidence.m": "sha256:042f99edc0fe8720ca3bad382e3314f788d0940ff4b93aa8e8e7ef7a1c3c12dc",
-      "tests/report/test_report_content.py": "sha256:25942b3704ed085b23f59c1ebcc593dcfef347a4a9673b5dfb7148721d5624cd",
-      "tests/report/test_report_document.py": "sha256:1c68ffd81fa14853046458cea7913ecfd37a496f57fc99af6c6a9a0bcc399531",
-      "tests/report/test_report_evidence.py": "sha256:bc365c5ebd530332581c3b0dc3c0f393392bd4f7e374626e44fff5ee6845e2f5"
+    "evidence_snapshot": {
+      "schemaVersion": 1,
+      "generatedAt": "2026-08-21T00:00:00Z",
+      "generatedAt_semantics": "Version timestamp for the frozen Phase 7A evidence snapshot; not wall-clock export time.",
+      "fresh_export_byte_identical": true,
+      "fresh_export_sha256": "9495b9193b484f0622a3513779bcd2ed4b75d24e9710f4412b89a68da8237678",
+      "admitted_raw_source_count": 14
     },
-    "source_scope": {
-      "file_count": 121,
-      "sha256": "sha256:8957108c6142a036dd82bf1f5cf02da312dad36f7b50f04dcb23aaffea1e2bcd",
-      "canonicalization": "sorted UTF-8 lines <repo-relative-path>=<lowercase-sha256>\\n over README.md, +rrm/**/*.m, experiments/*.m, models/*.slx, scripts/**/*.{py,ps1}, tests/**/*.{m,py}"
+    "tests": {
+      "matlab": {
+        "total": 150,
+        "passed": 150,
+        "failed": 0,
+        "incomplete": 0,
+        "report": 5,
+        "pre_report": 145
+      },
+      "python_report": {
+        "total": 24,
+        "passed": 24,
+        "failed": 0
+      }
     },
+    "template_resolution": {
+      "matches_current_markdown_exactly": true,
+      "token_occurrences": 151,
+      "unique_used_evidence_tokens": 126,
+      "manifest_token_set_matches": true,
+      "unresolved_tokens": 0
+    },
+    "report_structure": {
+      "level2_sections": 13,
+      "tables": 9,
+      "figures": 6,
+      "references": 8,
+      "pdf_pages": 8,
+      "docx_inline_shapes": 6,
+      "docx_tables": 9
+    },
+    "png_normalization": {
+      "selected_pngs": 6,
+      "pixels_preserved": 6,
+      "metadata_free": 6,
+      "byte_idempotent": 6,
+      "volatile_metadata_findings": 0
+    },
+    "line_endings": {
+      "controlled_sources_checked": [
+        "docs/report/technical_report_template.md",
+        "docs/report/references.json"
+      ],
+      "controlled_sources_lf_only": true,
+      "build_normalizes_controlled_sources_before_hashing": true,
+      "gitattributes_pins_phase7a_report_text_to_lf": true,
+      "source_tool_hash_convention": "sha256 over current Git-text content after CRLF/CR to LF canonicalization",
+      "raw_hash_convention": "sha256 over exact file bytes"
+    },
+    "manifest_verification": {
+      "source_records": 9,
+      "output_records": 3,
+      "matching_source_hashes": 9,
+      "matching_output_hashes": 3,
+      "mismatches": 0
+    },
+    "artifact_output_hashes": {
+      "docs/report/technical_report.md": "b3a7da4d611c7e8ced71285309b4a9960c38155bf9670fe9fee46114361b4674",
+      "docs/report/technical_report.docx": "a534067ed12a0ac7c38ebf6167b9acf8e0ef661bf1d62ec472d7b495e8916ce0",
+      "docs/report/technical_report.pdf": "231c36bea38b24375aa47937eeb2967068367c98763b3a61db01ed668254c71e"
+    },
+    "scope_search": {
+      "roots": [
+        "+rrm",
+        "experiments",
+        "scripts",
+        "tests",
+        "models"
+      ],
+      "file_count": 120,
+      "path_set_sha256": "66bb5aed27d67e4ed79fb8a1f3fdd9840af30c650d7ff108cf3910f3f6946bb0",
+      "canonical_content_aggregate_sha256": "ac3e1fb3876cc231ded421b196a1247eea13fb9edf193ce653042100bf5676b1",
+      "excluded_implementation_hits": 0,
+      "excluded_implementations": [
+        "camera/perception pipeline",
+        "object detector",
+        "language or VLA model",
+        "task-and-motion planner",
+        "grasp planner",
+        "collision-avoidance system",
+        "online safety supervisor"
+      ]
+    },
+    "citation_verification": {
+      "citation_ids": [1, 2, 3, 4, 5, 6, 7, 8],
+      "contiguous": true,
+      "metadata_mismatches": 0,
+      "support_mismatches": 0,
+      "doi_metadata_verified": [1, 2, 3, 4],
+      "official_mathworks_documentation": [5, 6],
+      "arxiv_record_verified": [7],
+      "pmlr_record_verified": [8]
+    },
+    "claims": [
+      {
+        "claim_id": 1,
+        "group": "protocol",
+        "location": "technical_report.md:37-83",
+        "status": "exact_match",
+        "evidence": "report_evidence.json protocol/system/controller fields and raw-source re-export"
+      },
+      {
+        "claim_id": 2,
+        "group": "nominal",
+        "location": "technical_report.md:85-94",
+        "status": "rounding_ok",
+        "evidence": "nominal_pid_vs_fuzzy.mat and evidence nominal fields"
+      },
+      {
+        "claim_id": 3,
+        "group": "optimization",
+        "location": "technical_report.md:54-66,96-105",
+        "status": "rounding_ok",
+        "evidence": "pid_optimization.mat, scorePidResult.m, makePidOptimization.m"
+      },
+      {
+        "claim_id": 4,
+        "group": "deterministic",
+        "location": "technical_report.md:107-115",
+        "status": "rounding_ok",
+        "evidence": "deterministic MAT/run CSV/summary CSV"
+      },
+      {
+        "claim_id": 5,
+        "group": "stochastic",
+        "location": "technical_report.md:117-127",
+        "status": "rounding_ok",
+        "evidence": "stochastic MAT/trials CSV/summary CSV"
+      },
+      {
+        "claim_id": 6,
+        "group": "Cartesian",
+        "location": "technical_report.md:129-140",
+        "status": "rounding_ok",
+        "evidence": "cartesian MAT/run CSV and evaluateCartesianTask.m"
+      },
+      {
+        "claim_id": 7,
+        "group": "rigid-body",
+        "location": "technical_report.md:142-146",
+        "status": "rounding_ok",
+        "evidence": "simulink_cross_validation.mat dynamicsReport"
+      },
+      {
+        "claim_id": 8,
+        "group": "Simulink",
+        "location": "technical_report.md:142-151",
+        "status": "rounding_ok",
+        "evidence": "Simulink MAT/run CSV and evidence validation fields"
+      },
+      {
+        "claim_id": 9,
+        "group": "Multibody",
+        "location": "technical_report.md:146-155",
+        "status": "rounding_ok",
+        "evidence": "Multibody MAT/run CSV and evidence validation fields"
+      },
+      {
+        "claim_id": 10,
+        "group": "report structure",
+        "location": "technical_report.md and final DOCX/PDF",
+        "status": "exact_match",
+        "evidence": "in-memory template resolution, document inspection, build tests"
+      },
+      {
+        "claim_id": 11,
+        "group": "figure captions",
+        "location": "technical_report.md:94,105,115,127,140,153",
+        "status": "exact_match",
+        "evidence": "visual inspection of six selected PNGs"
+      },
+      {
+        "claim_id": 12,
+        "group": "citations",
+        "location": "technical_report.md:13-21,191-207",
+        "status": "exact_match",
+        "evidence": "references.json, DOI metadata, official documentation, arXiv, PMLR"
+      },
+      {
+        "claim_id": 13,
+        "group": "evidence admission",
+        "location": "report abstract/design and exportEvidence.m",
+        "status": "exact_match",
+        "evidence": "14-source requiredSources list, CSV mirror validation, full-mode gates, byte-identical re-export"
+      },
+      {
+        "claim_id": 14,
+        "group": "reproducibility/build",
+        "location": "tooling/tests/.gitattributes/build_manifest.json",
+        "status": "exact_match",
+        "evidence": "150 MATLAB tests, 24 Python tests, PNG/LF/determinism checks, 12 manifest hash records"
+      },
+      {
+        "claim_id": 15,
+        "group": "scope/absence",
+        "location": "technical_report.md:23-35,157-189",
+        "status": "exact_match",
+        "evidence": "simulation-only text and zero-hit bound 120-file implementation/test/model scope search"
+      }
+    ],
+    "findings": [],
     "result_files": [
       "results/data/nominal_pid_vs_fuzzy.mat",
       "results/data/pid_optimization.mat",
@@ -111,6 +317,14 @@
       "results/data/cartesian_tasks_runs.csv",
       "results/data/simulink_cross_validation_runs.csv",
       "results/data/multibody_cross_validation_runs.csv"
+    ],
+    "selected_figures": [
+      "results/figures/nominal_pid_vs_fuzzy_tracking.png",
+      "results/figures/pid_optimization_objective.png",
+      "results/figures/deterministic_robustness_summary.png",
+      "results/figures/stochastic_robustness_chattering.png",
+      "results/figures/cartesian_tasks_paths.png",
+      "results/figures/multibody_cross_validation_tracking.png"
     ]
   }
 }

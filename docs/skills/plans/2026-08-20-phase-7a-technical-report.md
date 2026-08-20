@@ -776,7 +776,7 @@ git commit -m "feat: export verified technical report PDF"
 
 ## Task 7: Document, Regress, Review, and Integrate Phase 7A
 
-**Evidence-backed deviation recorded after Task 6:** Repeat builds initially changed manifest, DOCX, and PDF hashes even when all experimental evidence and rendered content were unchanged. The final implementation therefore preserves `generatedAt` only for an otherwise identical evidence manifest, normalizes DOCX ZIP entry metadata and ordering, and normalizes volatile Word PDF metadata and document identifiers. Focused tests and two complete report-only builds demonstrated identical SHA-256 hashes for the evidence JSON, DOCX, PDF, and build manifest. This strengthens the planned reproducibility boundary without changing report content or experimental results.
+**Evidence-backed deviation recorded after Task 6:** Repeat builds initially changed manifest, DOCX, and PDF hashes even when all experimental evidence and rendered content were unchanged. The final implementation therefore versions the frozen evidence snapshot with a stable timestamp, strips volatile MATLAB PNG metadata while preserving pixels, pins report text checkout endings, normalizes DOCX ZIP entry metadata and ordering, and normalizes volatile Word PDF metadata and document identifiers. Focused red-green tests and a complete Phase 1 through Phase 7A rebuild demonstrated identical SHA-256 hashes before and after formal experiment regeneration for the evidence JSON, DOCX, PDF, and build manifest. This strengthens the planned reproducibility boundary without changing report content or experimental results.
 
 **Files:**
 - Modify: `README.md`

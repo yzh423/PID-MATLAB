@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-20T15:08:39Z",
+  "generatedAt": "2026-08-21T00:00:00Z",
   "stylePreset": "technical_report_a4_compact (compact_reference_guide basis)",
   "sources": [
     {
@@ -13,31 +13,31 @@
     },
     {
       "path": "results/report/report_evidence.json",
-      "sha256": "1ae79caf7bf58fb71b77c4f58f18358ea4b7cdb540885f8fec55305cc2e8205d"
+      "sha256": "9495b9193b484f0622a3513779bcd2ed4b75d24e9710f4412b89a68da8237678"
     },
     {
       "path": "results/figures/nominal_pid_vs_fuzzy_tracking.png",
-      "sha256": "cac5f9ec719e270142d9c5b7c98e840ad87e4343d443509d949dcc8d61fab900"
+      "sha256": "af83a683500dc25559464801dae66fde87eeaa1b03dbd918180bfb4e3c55d84a"
     },
     {
       "path": "results/figures/pid_optimization_objective.png",
-      "sha256": "d05113ac3c02ca3aa54c3558ebe741d13f36f127ee93e851c312258407758ed5"
+      "sha256": "95215e3025e328f6ce4d36e5ba39c57d00da99b6feeb9a233fbb1e9533d05058"
     },
     {
       "path": "results/figures/deterministic_robustness_summary.png",
-      "sha256": "144d52b65285e37cf7e1cb7d6cba4237e223ea8399be79ff350edd59bb1ca300"
+      "sha256": "92a0c6889e6171d1b4f5811d20cc28a272aca7990a45a6483fa6bf74718d2759"
     },
     {
       "path": "results/figures/stochastic_robustness_chattering.png",
-      "sha256": "abe9cc2c5451e5650c12b3ed68b5ce6f7af05a510c25bd4d28366b3b6fba3ae7"
+      "sha256": "ac368ef40a76090faec46a7b79ab0ea8df5490ac1c7d24d0f7929d7239930303"
     },
     {
       "path": "results/figures/cartesian_tasks_paths.png",
-      "sha256": "2dcaa14c41b63c087c871fb7e2f3cf2699d92e47a865476e50e5d3b64ff6a2ac"
+      "sha256": "7765ca66a9dde0f9cdb20bee13bd89182d1f3a4767c2a9e6d4d66c1160487d13"
     },
     {
       "path": "results/figures/multibody_cross_validation_tracking.png",
-      "sha256": "598b4f89069ca9198255c5db98736ef43476db1763f02e1d388353304db0a22d"
+      "sha256": "3bd780e3dfddb099659271c277ec1c133040178d54b69d1c9a43a48cb50da4f9"
     }
   ],
   "outputs": [
@@ -47,7 +47,7 @@
     },
     {
       "path": "docs/report/technical_report.docx",
-      "sha256": "7bd9684121d075d461bcf8d75f3f74dbb2f925716d84dab7236e680f5b14e034"
+      "sha256": "a534067ed12a0ac7c38ebf6167b9acf8e0ef661bf1d62ec472d7b495e8916ce0"
     },
     {
       "path": "docs/report/technical_report.pdf",

@@ -21,7 +21,11 @@ from scripts.reporting.content import (
     validate_report,
 )
 from scripts.reporting.evidence import EvidenceError, load_evidence, resolve_tokens
-from scripts.reporting.document import DocumentBuildError, build_docx
+from scripts.reporting.document import (
+    DocumentBuildError,
+    _normalize_png_file,
+    build_docx,
+)
 
 
 REFERENCE_MARKER = "<!-- REFERENCE_LIST -->"
@@ -38,9 +42,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
     try:
         root = args.project_root.resolve(strict=True)
-        evidence = load_evidence(root / "results/report/report_evidence.json")
-        references = load_references(root / "docs/report/references.json")
+        references_path = root / "docs/report/references.json"
         template_path = root / "docs/report/technical_report_template.md"
+        for controlled_text_path in (references_path, template_path):
+            _normalize_text_file(controlled_text_path)
+        evidence = load_evidence(root / "results/report/report_evidence.json")
+        references = load_references(references_path)
         template = template_path.read_text(encoding="utf-8")
         template = insert_references(template, references)
         markdown, used = resolve_tokens(template, evidence)
@@ -91,6 +98,16 @@ def atomic_write(path: Path, text: str) -> None:
         raise
 
 
+def _normalize_text_file(path: Path) -> None:
+    """Atomically pin a controlled UTF-8 report source to LF bytes."""
+    raw = path.read_bytes()
+    normalized = raw.decode("utf-8").replace("\r\n", "\n").replace("\r", "\n")
+    encoded = normalized.encode("utf-8")
+    if encoded == raw:
+        return
+    atomic_write(path, normalized)
+
+
 def build_docx_outputs(
     root: Path,
     markdown: str,
@@ -98,14 +115,6 @@ def build_docx_outputs(
     used_tokens: set[str],
 ) -> None:
     report_dir = root / "docs/report"
-    docx_path = report_dir / "technical_report.docx"
-    metadata = build_docx(markdown, root, docx_path)
-
-    source_paths = [
-        root / "docs/report/technical_report_template.md",
-        root / "docs/report/references.json",
-        root / "results/report/report_evidence.json",
-    ]
     artifact_records = evidence.get("artifacts")
     if not isinstance(artifact_records, list):
         raise EvidenceError("evidence artifacts must be a list")
@@ -114,6 +123,17 @@ def build_docx_outputs(
         if not isinstance(record, dict) or not isinstance(record.get("relativePath"), str):
             raise EvidenceError("each evidence artifact requires relativePath")
         figure_paths.append(root / record["relativePath"])
+
+    for figure_path in figure_paths:
+        _normalize_png_file(figure_path)
+
+    docx_path = report_dir / "technical_report.docx"
+    metadata = build_docx(markdown, root, docx_path)
+    source_paths = [
+        root / "docs/report/technical_report_template.md",
+        root / "docs/report/references.json",
+        root / "results/report/report_evidence.json",
+    ]
     source_paths.extend(figure_paths)
 
     if tuple(path.relative_to(root).as_posix() for path in figure_paths) != metadata.figure_paths:

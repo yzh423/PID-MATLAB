@@ -33,7 +33,6 @@ validateCsvSources(sources,deterministic,stochastic,cartesian, ...
 evidence = collectEvidence(nominal,optimization,deterministic, ...
     stochastic,cartesian,simulink,multibody,sources);
 validateEvidence(evidence);
-evidence = preserveGeneratedAt(outputPath,evidence);
 writeJson(outputPath,evidence);
 evidence.outputPath = outputPath;
 end
@@ -152,9 +151,7 @@ function evidence = collectEvidence(nominal,optimization,deterministic, ...
         stochastic,cartesian,simulink,multibody,sources)
 evidence = struct;
 evidence.schemaVersion = 1;
-timestamp = datetime("now","TimeZone","UTC", ...
-    "Format","yyyy-MM-dd'T'HH:mm:ss'Z'");
-evidence.generatedAt = string(timestamp);
+evidence.generatedAt = formalEvidenceTimestamp();
 [baselineTestCount,totalTestCount] = testCounts(sources.absolutePath(1));
 evidence.protocol = struct( ...
     "testCount",baselineTestCount, ...
@@ -437,28 +434,9 @@ end
 clear cleanup;
 end
 
-function evidence = preserveGeneratedAt(outputPath,evidence)
-if ~isfile(outputPath)
-    return;
-end
-try
-    priorPayload = strtrim(fileread(outputPath));
-    timestampToken = regexp(priorPayload, ...
-        '"generatedAt"\s*:\s*"([^"]+)"','tokens','once');
-    if isempty(timestampToken)
-        return;
-    end
-    priorTimestamp = string(timestampToken{1});
-    candidatePayload = jsonencode(sanitizeForJson(evidence), ...
-        'PrettyPrint',true);
-    normalizedPrior = strrep(priorPayload, ...
-        char(priorTimestamp),char(evidence.generatedAt));
-    if strcmp(normalizedPrior,candidatePayload)
-        evidence.generatedAt = priorTimestamp;
-    end
-catch
-    % A malformed prior output is replaced by the newly validated evidence.
-end
+function timestamp = formalEvidenceTimestamp()
+% Version timestamp for the frozen Phase 7A evidence snapshot.
+timestamp = "2026-08-21T00:00:00Z";
 end
 
 function value = sanitizeForJson(value)

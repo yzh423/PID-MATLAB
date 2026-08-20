@@ -499,6 +499,33 @@ def _is_within(path: Path, directory: Path) -> bool:
     return True
 
 
+def _normalize_png_file(path: Path) -> None:
+    """Atomically strip volatile PNG metadata while preserving rendered pixels."""
+    path = path.resolve(strict=True)
+    with Image.open(path) as source:
+        source.load()
+        mode = "RGBA" if "A" in source.getbands() else "RGB"
+        normalized = source.convert(mode)
+
+    with tempfile.NamedTemporaryFile(
+        suffix=".png", dir=path.parent, delete=False
+    ) as temporary:
+        temporary_path = Path(temporary.name)
+    try:
+        normalized.save(
+            temporary_path,
+            format="PNG",
+            optimize=False,
+            compress_level=9,
+        )
+        with Image.open(temporary_path) as reopened:
+            reopened.verify()
+        temporary_path.replace(path)
+    except BaseException:
+        temporary_path.unlink(missing_ok=True)
+        raise
+
+
 def _normalize_docx_archive(path: Path) -> None:
     """Rewrite the OOXML package with stable ordering and ZIP timestamps."""
     normalized_path = path.with_name(path.stem + ".normalized.docx")

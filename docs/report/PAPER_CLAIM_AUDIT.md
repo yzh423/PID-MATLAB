@@ -1,90 +1,66 @@
-# Paper Claim Audit Report
+# Paper Claim Audit Report — run05
 
-**Date:** 2026-08-21
+**Date:** 2026-08-21 (Asia/Shanghai)
 
-**Auditor:** GPT-5.6-sol, high reasoning (fresh independent zero-context reviewer)
+**Auditor:** GPT-5.6-sol, high reasoning, fresh zero-context reviewer
 
 **Paper:** *Reliable Robotic Manipulation Through Evidence-Grounded PID and Fuzzy-PID Evaluation*
-**Inputs:** current `technical_report.md`, `technical_report_template.md`, `report_evidence.json`, 14 frozen MAT/CSV sources, six selected figures, `references.json`, `build_manifest.json`, report tooling/tests, and a 121-file source-scope inventory. Prior paper-claim audit outputs and traces were excluded.
+
+**Trace:** `.aris/traces/paper-claim-audit/2026-08-21_run05/`
 
 ## Overall Verdict: PASS
 
-All 15 independent claim groups reconcile to current raw evidence and source scope.
+All 15 required claim groups reconcile with the current admitted evidence and repository scope. There are **0 findings**, **0 WARN**, **0 FAIL**, **0 unsupported claims**, and **0 ambiguous mappings**.
 
-- exact_match: 15
-- rounding_ok: 0
-- WARN: 0
-- FAIL: 0
-- unsupported_claim: 0
-- ambiguous_mapping: 0
-- findings: 0
+## Counts
 
-## Claim Groups
+| Measure | Count |
+|---|---:|
+| Required claim groups reviewed | 15 |
+| Exact matches | 7 |
+| Standard-rounding matches | 8 |
+| Findings | 0 |
+| WARN | 0 |
+| FAIL | 0 |
+| Unsupported claims | 0 |
+| Ambiguous mappings | 0 |
 
-| # | Group | Status | Independent check |
+The eight `rounding_ok` groups contain displayed decimal/scientific-notation values that reproduce the raw evidence under the template's declared formatting. No non-standard rounding, cherry-picking, aggregation mismatch, configuration mismatch, or scope inflation was found.
+
+## Evidence chain verified
+
+- A fresh MATLAB export read the **14 admitted MAT/CSV sources**, enforced the MAT-to-CSV mirror checks, full-mode study shapes, uniqueness gates, and required failure disclosures, and produced a JSON file byte-for-byte identical to `results/report/report_evidence.json` (`sha256:9495b9193b484f0622a3513779bcd2ed4b75d24e9710f4412b89a68da8237678`).
+- `generatedAt = 2026-08-21T00:00:00Z` is explicitly implemented by `formalEvidenceTimestamp()` as the **version timestamp for the frozen Phase 7A evidence snapshot**. It is not presented or used as a wall-clock export-time claim. The repeat-export test overwrites a prior timestamp and verifies restoration of this frozen version.
+- The template resolves in memory to the checked-in Markdown exactly. It has 151 token occurrences resolving to 126 unique evidence identities; the manifest records the same 126-token set and the rendered report contains no unresolved braces.
+- MATLAB: **150/150 passed**, comprising **5 report tests** and **145 pre-report tests**, with 0 failed and 0 incomplete. Python report suite: **24/24 passed**.
+- All six selected PNGs are metadata-free and byte-idempotent under the normalizer. Decoded mode, dimensions, and every pixel byte are preserved; volatile metadata is removed.
+- The controlled report sources `technical_report_template.md` and `references.json` are LF-only. The build normalizes both before hashing, and `.gitattributes` pins Phase 7A report source/tool/test text to `eol=lf`. Source/tool hashes in the JSON sibling are SHA-256 over canonical Git-text bytes, so they are checkout-EOL independent. Generated/raw evidence and final-artifact hashes are SHA-256 over raw bytes.
+- Every one of the 9 manifest source hashes and 3 manifest output hashes matches the current file. Final outputs are Markdown `b3a7…4674`, DOCX `a534…6ce0`, and PDF `231c…c71e`; the PDF is 8 pages and the DOCX contains 6 numbered figures and 9 numbered tables.
+
+## The 15 required claim groups
+
+| # | Group | Status | Verification result |
 |---:|---|---|---|
-| 1 | protocol | PASS | Recomputed 5.0 s, 5001 samples, 0.001 s step, 0.50 s final window, 0.020/0.050 rad gates, full-study dimensions, and 145 pre-report plus 5 report MATLAB tests. |
-| 2 | nominal | PASS | MAT values reproduce both success flags, zero saturation, steady RMS 0.001268/0.013762 and 0.009792/0.013174 rad, and torque RMS 12.5025/2.6202 and 12.4321/2.6316 N m. |
-| 3 | optimization | PASS | Recomputed 0.202427 to 0.187684, 7.283147860% reduction, held-out 0.214504 to 0.197284, exit flag 1, 12 iterations, 96 evaluations, bounded six-gain mapping, and unchanged torque limits. |
-| 4 | deterministic | PASS | Independently aggregated 39 unique rows: 13 scenarios per controller, success 8/9/10, failure 5/4/3, rates 0.6154/0.6923/0.7692, all table metrics, and three completed combined-condition failures. |
-| 5 | stochastic | PASS | Independently aggregated 360 unique rows: 4 scenarios × 3 controllers × 30 trials; controller seed lists match within every scenario; all isolated trials pass; combined is 0/30 each; high-noise RMS, slew, saturation, and all 12 Wilson intervals recompute. |
-| 6 | Cartesian | PASS | Six unique completed runs reproduce the table; straight-line passes 3/3; manual and Fuzzy-PID pick-transfer-place runs fail the unchanged gate; optimized PID passes. |
-| 7 | rigid-body | PASS | Dynamics source matches the displayed equation; independent MAT audit gives M/Cq_dot/G maxima 2.2204e-16, 4.3021e-15, and 3.5527e-15. |
-| 8 | Simulink | PASS | Two unique comparisons, two agreement passes, two tracking passes; manual QRmsJ1 5.3425e-17 and highlighted QMaxJ2 2.2204e-16 rad reconcile. |
-| 9 | Multibody | PASS | Two unique comparisons, two agreement passes, two tracking passes; worst EE difference 3.3422e-16 m and out-of-plane maximum 0.0 m reconcile. |
-| 10 | report structure | PASS | In-memory render is byte-equivalent to the current Markdown: 13 required headings, 3105 body words, 9 tables, 6 figures, 8 references, and no unresolved tokens. |
-| 11 | figure captions | PASS | Visual inspection of all six PNGs confirms each caption describes its plotted controllers, metric, task, or cross-validation path. |
-| 12 | citations | PASS | IDs 1–8 are contiguous, cited, and supported; bibliographic metadata and claim roles were checked against the four publisher records, official MathWorks pages, arXiv, and PMLR. |
-| 13 | evidence admission | PASS | Corrected abstract wording is precise: 126 designated evidence paths are token-resolved; `load_evidence` enforces frozen dimensions/modes/source and figure counts, while `validate_report` separately enforces required failure and scope disclosures. Tests exercise both gates. |
-| 14 | reproducibility/build | PASS | Evidence re-export from the 14 raw artifacts is byte-exact when preserving `generatedAt`; all manifest input/output hashes are current; Python report tests pass 21/21 and MATLAB report tests pass 5/5. |
-| 15 | scope/absence | PASS | Claims remain simulation-only and explicitly exclude hardware validity. Search across the hashed 121-file implementation/test scope finds no camera, detector, language/VLA model, task-and-motion/grasp planner, collision system, or online safety supervisor implementation. |
+| 1 | protocol | exact_match | The evidence fixes 0.001 s sampling, 5.0 s duration, 5001 samples, a 0.50 s final window, 0.020 rad RMS and 0.050 rad maximum gates, and full study sizes 39/360/6/2/2. The stochastic design is 4 scenarios × 3 controllers × 30 paired trials. |
+| 2 | nominal | rounding_ok | Manual/Fuzzy steady RMS values 0.001268/0.013762 and 0.009792/0.013174 rad, torque RMS values, zero saturation, two passes, and the mixed joint-specific direction all reproduce the admitted nominal MAT evidence. |
+| 3 | optimization | rounding_ok | 0.202427→0.187684 gives 7.28314786% (reported 7.283%); held-out 0.214504→0.197284, exit flag 1, 12 iterations, 96 evaluations, bounded gains, unchanged torque limits, and one frozen objective/search budget all match MAT evidence and scoring/configuration source. |
+| 4 | deterministic | rounding_ok | 39 rows/13 scenarios yield 8/13, 9/13, and 10/13 successes, rates 0.6154/0.6923/0.7692, the displayed mean/worst values, and three combined-condition failures exactly as reported. |
+| 5 | stochastic | rounding_ok | 360 paired trials comprise 4 scenarios × 3 controllers × 30 seeds. Every isolated-noise cell is 30/30; each combined-stress cell is 0/30. High-noise RMS, torque slew 1520.28/1631.16/2888.34 N m/s, and saturation values match the trial/summary artifacts. |
+| 6 | Cartesian | rounding_ok | Six completed runs give three straight-line passes and pick-transfer-place outcomes fail/fail/pass. Every RMS, maximum, pickup, and place value rounds from the admitted row; failures are retained rather than suppressed. |
+| 7 | rigid-body | rounding_ok | The independent rigid-body audit reports maxima 2.2204e-16, 4.3021e-15, and 3.5527e-15 for inertia, velocity product, and gravity, respectively. |
+| 8 | Simulink | rounding_ok | Two rows pass agreement and tracking. The manual first-row joint-position RMS is 5.3425e-17 rad and the highlighted maximum is 2.2204e-16 rad; all values remain at floating-point scale under the fixed nominal protocol. |
+| 9 | Multibody | rounding_ok | Two rows pass agreement and tracking; worst end-effector difference is 3.3422e-16 m and maximum out-of-plane motion is 0.0 m. The claim is model consistency, not hardware fidelity. |
+| 10 | report structure | exact_match | The generated Markdown has 13 required level-2 sections, 9 tables, 6 figures, 8 references, 126 unique used evidence tokens, and no unresolved tokens. The DOCX/PDF checks pass and numbering is contiguous. |
+| 11 | figure captions | exact_match | Visual inspection of all six normalized PNGs confirms that each caption names the plotted content: nominal tracking, objective history, deterministic summary, stochastic chattering, Cartesian paths, and Multibody tracking. No caption-content mismatch was found. |
+| 12 | citations | exact_match | IDs [1]–[8] are contiguous and used in supported contexts. DOI metadata for [1]–[4] matches authors/title/journal/year/volume/issue/pages; [5]–[6] use official MathWorks documentation; [7] matches arXiv 2303.03378; [8] matches the PMLR 229 proceedings record. |
+| 13 | evidence admission | exact_match | The exporter requires exactly 14 formal sources, verifies CSV mirrors against their MAT tables, requires every mode to be `full`, enforces frozen dimensions and unique row keys, and preserves failed completed runs. A fresh re-export is byte-identical to the admitted JSON. |
+| 14 | reproducibility/build | exact_match | Frozen evidence-version semantics, 150 MATLAB and 24 Python test counts, LF source normalization, canonical source/tool hashes, metadata-normalized PNGs, deterministic DOCX/PDF packaging tests, and all manifest/output hashes were verified. |
+| 15 | scope/absence | exact_match | The report consistently limits conclusions to simulation and explicitly denies hardware validation/safety. A zero-hit search over the hashed 120-file implementation/test/model scope finds no camera or perception pipeline, object detector, language/VLA implementation, task-and-motion or grasp planner, collision-avoidance system, or online safety supervisor. |
 
 ## Findings
 
 None.
 
-## Exact Hash Ledger
+## Hash conventions
 
-Canonical inputs:
-
-```text
-technical_report.md sha256:b3a7da4d611c7e8ced71285309b4a9960c38155bf9670fe9fee46114361b4674
-technical_report_template.md sha256:e7e88982b4ca1ab31dc82e6c4138022fffc32674eff221065283b15fa6ef0d7d
-references.json sha256:5f4397716d25e3235003064a863b4154132c05ef9283b0777eb6db680c4eb019
-build_manifest.json sha256:8d332308b5614d9413b595e17f3c2e379cfec135ba45bd74fcee3781a4b6b787
-report_evidence.json sha256:1ae79caf7bf58fb71b77c4f58f18358ea4b7cdb540885f8fec55305cc2e8205d
-```
-
-Fourteen formal sources:
-
-```text
-nominal_pid_vs_fuzzy.mat sha256:b5beae1aea41673ce3ee781c8f5d0f51351e8a645c943a24004f4964d347b2d6
-pid_optimization.mat sha256:260fb7ef05b2efcb3924013b8d5d9d2b5245d92acffe6d2235b7fa77c3d6b1a5
-deterministic_robustness.mat sha256:2a3d0d810226cfb6e7da3494a4d10a6d40975ade57fc19ed0b1986119a1130d4
-stochastic_robustness.mat sha256:6fa9320669bd241ccebafff5dc65e5164028e29d3e7b78ac3ca86e155c2a7912
-cartesian_tasks.mat sha256:fc1a531af0f1f5b79c70294f03d91f2467038cf5c762494c9ba9d915666200d4
-simulink_cross_validation.mat sha256:49e7603e2e24dab3151d753d0a969cf9fda1c0815f99f80e75c7c39ae98eab50
-multibody_cross_validation.mat sha256:ea7de093220bddba82bbb22f6cb3c8403f9dc232b5a61db89c3e9c21ad64c436
-deterministic_robustness_runs.csv sha256:9d0ddfd0c297fa43df351695d54c8a3ad427845ece588eaee79f4635c99dc8e0
-deterministic_robustness_summary.csv sha256:1041f7b8a57b382bdd4ce7dc152f029cebac40b428f05f03b1de7085dd8c702c
-stochastic_robustness_trials.csv sha256:5beaa1a23eb26b83f810ecae9f1937c8c1926870627d00bd590edf1ffde8b3e6
-stochastic_robustness_summary.csv sha256:083188735f2e5636f3f7272825188f6f02a45185a19936e4e603021663c257cd
-cartesian_tasks_runs.csv sha256:51d038f74682f3f371d13a95f883cff731517389b29425aae14255ba1535faa9
-simulink_cross_validation_runs.csv sha256:6427d4d6f85c75dc0b7f4cc836a3360b0ba963d1eea513f9289a179d1ded2e43
-multibody_cross_validation_runs.csv sha256:c69a5daa5552f2ed79ba176c3935b3dfe3157e3e9334e4dcee21f8b3fda112d0
-```
-
-Six figures:
-
-```text
-nominal_pid_vs_fuzzy_tracking.png sha256:cac5f9ec719e270142d9c5b7c98e840ad87e4343d443509d949dcc8d61fab900
-pid_optimization_objective.png sha256:d05113ac3c02ca3aa54c3558ebe741d13f36f127ee93e851c312258407758ed5
-deterministic_robustness_summary.png sha256:144d52b65285e37cf7e1cb7d6cba4237e223ea8399be79ff350edd59bb1ca300
-stochastic_robustness_chattering.png sha256:abe9cc2c5451e5650c12b3ed68b5ce6f7af05a510c25bd4d28366b3b6fba3ae7
-cartesian_tasks_paths.png sha256:2dcaa14c41b63c087c871fb7e2f3cf2699d92e47a865476e50e5d3b64ff6a2ac
-multibody_cross_validation_tracking.png sha256:598b4f89069ca9198255c5db98736ef43476db1763f02e1d388353304db0a22d
-```
-
-The complete machine-readable input and tooling hashes are in `PAPER_CLAIM_AUDIT.json`. The 121-file source-scope aggregate is `sha256:8957108c6142a036dd82bf1f5cf02da312dad36f7b50f04dcb23aaffea1e2bcd`, computed over sorted UTF-8 lines `<repo-relative-path>=<lowercase-sha256>\n`.
-
-**Trace:** `.aris/traces/paper-claim-audit/2026-08-21_run04/`
+The machine-readable sibling contains the complete declared-input hash ledger. Entries labeled `sha256-canonical-git-text` hash current text after Git-equivalent CRLF/CR→LF normalization. Entries labeled `sha256` hash the raw bytes of generated evidence, raw MAT/CSV inputs, PNGs, the manifest, and final report artifacts. The 120-file source-scope aggregate is bound by path-set hash `66bb5aed27d67e4ed79fb8a1f3fdd9840af30c650d7ff108cf3910f3f6946bb0` and canonical/raw content aggregate `ac3e1fb3876cc231ded421b196a1247eea13fb9edf193ce653042100bf5676b1`.

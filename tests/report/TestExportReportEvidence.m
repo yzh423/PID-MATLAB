@@ -17,6 +17,8 @@ classdef TestExportReportEvidence < matlab.unittest.TestCase
             testCase.verifyTrue(all(evidence.multibody.agreementPass));
             testCase.verifyTrue(all(evidence.multibody.trackingSuccess));
             testCase.verifyEqual(evidence.multibody.maximumOutOfPlane,0);
+            testCase.verifyEqual(evidence.generatedAt, ...
+                "2026-08-21T00:00:00Z");
 
             priorPayload = fileread(output);
             timestampToken = regexp(priorPayload, ...
@@ -32,7 +34,7 @@ classdef TestExportReportEvidence < matlab.unittest.TestCase
             clear cleanup;
             repeated = rrm.report.exportEvidence(root,output);
             testCase.verifyEqual(repeated.generatedAt, ...
-                "2000-01-01T00:00:00Z");
+                "2026-08-21T00:00:00Z");
         end
 
         function preservesKnownFormalValues(testCase)

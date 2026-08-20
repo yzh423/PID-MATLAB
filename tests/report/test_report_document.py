@@ -9,8 +9,11 @@ import unittest
 from zipfile import ZipFile
 
 from docx import Document
+from PIL import Image, PngImagePlugin
 from pypdf import PdfReader
 
+from scripts import build_report as report_builder
+from scripts.reporting import document as report_document
 from scripts.reporting.document import build_docx
 from scripts.normalize_report_pdf import FIXED_PDF_DATE, normalize_pdf
 
@@ -160,6 +163,51 @@ class BuiltDocumentTests(unittest.TestCase):
             normalize_pdf(PDF_PATH, second_pdf, PROJECT_ROOT)
             self.assertEqual(sha256(first_pdf), sha256(second_pdf))
             self.assertEqual(PdfReader(first_pdf).metadata.get("/CreationDate"), FIXED_PDF_DATE)
+
+    def test_png_normalization_removes_volatile_matlab_metadata(self) -> None:
+        with tempfile.TemporaryDirectory(dir=REPORT_DIR) as temporary_directory:
+            temporary = Path(temporary_directory)
+            paths = [temporary / "first.png", temporary / "second.png"]
+            for path, timestamp in zip(paths, ("first-run", "second-run"), strict=True):
+                metadata = PngImagePlugin.PngInfo()
+                metadata.add_text("Software", "MATLAB, The MathWorks, Inc.")
+                metadata.add_text("Creation Time", timestamp)
+                Image.new("RGB", (4, 3), (12, 34, 56)).save(
+                    path, format="PNG", pnginfo=metadata, dpi=(180, 180)
+                )
+
+            self.assertNotEqual(sha256(paths[0]), sha256(paths[1]))
+            for path in paths:
+                report_document._normalize_png_file(path)
+
+            self.assertEqual(sha256(paths[0]), sha256(paths[1]))
+            for path in paths:
+                with Image.open(path) as normalized:
+                    self.assertNotIn("Creation Time", normalized.info)
+
+    def test_phase7a_text_files_pin_lf_checkout_endings(self) -> None:
+        attributes_path = PROJECT_ROOT / ".gitattributes"
+        self.assertTrue(attributes_path.is_file())
+        attributes = attributes_path.read_text(encoding="utf-8")
+        for pattern in (
+            "/+rrm/+report/** text eol=lf",
+            "/docs/report/*.md text eol=lf",
+            "/docs/report/*.json text eol=lf",
+            "/docs/report/*.docx binary",
+            "/docs/report/*.pdf binary",
+            "/scripts/reporting/** text eol=lf",
+            "/tests/report/** text eol=lf",
+        ):
+            self.assertIn(pattern, attributes)
+
+    def test_report_source_normalization_rewrites_crlf_bytes(self) -> None:
+        with tempfile.TemporaryDirectory(dir=REPORT_DIR) as temporary_directory:
+            source = Path(temporary_directory) / "source.md"
+            source.write_bytes(b"first\r\nsecond\r\n")
+
+            report_builder._normalize_text_file(source)
+
+            self.assertEqual(source.read_bytes(), b"first\nsecond\n")
 
 
 if __name__ == "__main__":
