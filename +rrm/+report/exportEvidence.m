@@ -33,6 +33,7 @@ validateCsvSources(sources,deterministic,stochastic,cartesian, ...
 evidence = collectEvidence(nominal,optimization,deterministic, ...
     stochastic,cartesian,simulink,multibody,sources);
 validateEvidence(evidence);
+evidence = preserveGeneratedAt(outputPath,evidence);
 writeJson(outputPath,evidence);
 evidence.outputPath = outputPath;
 end
@@ -434,6 +435,30 @@ if ~moved
         "Could not finalize report evidence output: %s",message));
 end
 clear cleanup;
+end
+
+function evidence = preserveGeneratedAt(outputPath,evidence)
+if ~isfile(outputPath)
+    return;
+end
+try
+    priorPayload = strtrim(fileread(outputPath));
+    timestampToken = regexp(priorPayload, ...
+        '"generatedAt"\s*:\s*"([^"]+)"','tokens','once');
+    if isempty(timestampToken)
+        return;
+    end
+    priorTimestamp = string(timestampToken{1});
+    candidatePayload = jsonencode(sanitizeForJson(evidence), ...
+        'PrettyPrint',true);
+    normalizedPrior = strrep(priorPayload, ...
+        char(priorTimestamp),char(evidence.generatedAt));
+    if strcmp(normalizedPrior,candidatePayload)
+        evidence.generatedAt = priorTimestamp;
+    end
+catch
+    % A malformed prior output is replaced by the newly validated evidence.
+end
 end
 
 function value = sanitizeForJson(value)

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-20T14:33:49Z",
+  "generatedAt": "2026-08-20T15:08:39Z",
   "stylePreset": "technical_report_a4_compact (compact_reference_guide basis)",
   "sources": [
     {
@@ -13,7 +13,7 @@
     },
     {
       "path": "results/report/report_evidence.json",
-      "sha256": "b0e765ce9aa0c9850573862dc4296577f3f5c8e0c27501c7b740d5ed914dfdf4"
+      "sha256": "1ae79caf7bf58fb71b77c4f58f18358ea4b7cdb540885f8fec55305cc2e8205d"
     },
     {
       "path": "results/figures/nominal_pid_vs_fuzzy_tracking.png",
@@ -47,7 +47,11 @@
     },
     {
       "path": "docs/report/technical_report.docx",
-      "sha256": "09e891b33219f8e9e61d12521109a74bdef78fcce3466dfed0699cb7fc7eeb29"
+      "sha256": "264e26d1e13b0a28efe461c0ad7f48e3b689938238508cd895f9eb1d339dcad8"
+    },
+    {
+      "path": "docs/report/technical_report.pdf",
+      "sha256": "0ceee9b596c7dc7d225d2a669e693a27f22e1c38ef2e7d4691f62350bc8cbf43"
     }
   ],
   "usedEvidenceTokens": [

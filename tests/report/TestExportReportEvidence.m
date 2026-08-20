@@ -17,6 +17,22 @@ classdef TestExportReportEvidence < matlab.unittest.TestCase
             testCase.verifyTrue(all(evidence.multibody.agreementPass));
             testCase.verifyTrue(all(evidence.multibody.trackingSuccess));
             testCase.verifyEqual(evidence.multibody.maximumOutOfPlane,0);
+
+            priorPayload = fileread(output);
+            timestampToken = regexp(priorPayload, ...
+                '"generatedAt"\s*:\s*"([^"]+)"','tokens','once');
+            testCase.assertNotEmpty(timestampToken);
+            priorPayload = strrep(priorPayload,timestampToken{1}, ...
+                '2000-01-01T00:00:00Z');
+            fileId = fopen(output,'w','n','UTF-8');
+            testCase.assertGreaterThan(fileId,0);
+            cleanup = onCleanup(@() fcloseIfOpen(fileId));
+            fprintf(fileId,'%s',priorPayload);
+            fclose(fileId);
+            clear cleanup;
+            repeated = rrm.report.exportEvidence(root,output);
+            testCase.verifyEqual(repeated.generatedAt, ...
+                "2000-01-01T00:00:00Z");
         end
 
         function preservesKnownFormalValues(testCase)
@@ -86,6 +102,7 @@ classdef TestExportReportEvidence < matlab.unittest.TestCase
                 fixture,fullfile(fixture,"report.json")), ...
                 "rrm:report:UnexpectedStudyShape");
         end
+
     end
 end
 
@@ -111,5 +128,12 @@ end
 function deleteIfPresent(path)
 if isfile(path)
     delete(path);
+end
+end
+
+function fcloseIfOpen(fileId)
+[filename,~] = fopen(fileId);
+if ~isempty(filename)
+    fclose(fileId);
 end
 end

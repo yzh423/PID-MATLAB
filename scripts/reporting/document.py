@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 import tempfile
+from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 from docx import Document
 from docx.document import Document as DocumentType
@@ -69,7 +70,9 @@ def build_docx(
 
     document = Document()
     _configure_document(document)
-    metadata = _assemble_markdown(document, markdown, project_root, output_path.parent)
+    metadata = _assemble_markdown(
+        document, markdown, project_root, project_root / "docs/report"
+    )
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(
@@ -78,6 +81,7 @@ def build_docx(
         temporary_path = Path(temporary.name)
     try:
         document.save(temporary_path)
+        _normalize_docx_archive(temporary_path)
         Document(temporary_path)
         temporary_path.replace(output_path)
     except BaseException:
@@ -493,3 +497,22 @@ def _is_within(path: Path, directory: Path) -> bool:
     except ValueError:
         return False
     return True
+
+
+def _normalize_docx_archive(path: Path) -> None:
+    """Rewrite the OOXML package with stable ordering and ZIP timestamps."""
+    normalized_path = path.with_name(path.stem + ".normalized.docx")
+    try:
+        with ZipFile(path, "r") as source:
+            entries = [(item, source.read(item.filename)) for item in source.infolist()]
+        with ZipFile(normalized_path, "w", compression=ZIP_DEFLATED, compresslevel=9) as target:
+            for source_info, payload in sorted(entries, key=lambda item: item[0].filename):
+                info = ZipInfo(source_info.filename, date_time=(1980, 1, 1, 0, 0, 0))
+                info.compress_type = ZIP_DEFLATED
+                info.create_system = 0
+                info.external_attr = source_info.external_attr
+                target.writestr(info, payload)
+        normalized_path.replace(path)
+    except BaseException:
+        normalized_path.unlink(missing_ok=True)
+        raise

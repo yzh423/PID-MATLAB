@@ -4,15 +4,21 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import tempfile
 import unittest
 from zipfile import ZipFile
 
 from docx import Document
+from pypdf import PdfReader
+
+from scripts.reporting.document import build_docx
+from scripts.normalize_report_pdf import FIXED_PDF_DATE, normalize_pdf
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 REPORT_DIR = PROJECT_ROOT / "docs/report"
 DOCX_PATH = REPORT_DIR / "technical_report.docx"
+PDF_PATH = REPORT_DIR / "technical_report.pdf"
 MANIFEST_PATH = REPORT_DIR / "build_manifest.json"
 
 
@@ -114,6 +120,46 @@ class BuiltDocumentTests(unittest.TestCase):
                 path = PROJECT_ROOT / record["path"]
                 self.assertTrue(path.is_file(), record["path"])
                 self.assertEqual(record["sha256"], sha256(path), record["path"])
+
+    def test_final_pdf_is_complete_and_extractable(self) -> None:
+        self.assertTrue(PDF_PATH.is_file(), "technical_report.pdf not exported")
+        reader = PdfReader(PDF_PATH)
+        self.assertGreaterEqual(len(reader.pages), 8)
+        self.assertLessEqual(len(reader.pages), 12)
+        page_text = [(page.extract_text() or "").strip() for page in reader.pages]
+        self.assertTrue(all(len(text) > 40 for text in page_text))
+        text = "\n".join(page_text)
+        self.assertIn("Reliable Robotic Manipulation", text)
+        self.assertIn("Limitations and Future Work", text)
+        self.assertIn("References", text)
+        self.assertNotIn("{{", text)
+        self.assertNotIn("}}", text)
+        manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        self.assertIn(
+            "docs/report/technical_report.pdf",
+            [record["path"] for record in manifest["outputs"]],
+        )
+        for citation_id in range(1, 9):
+            self.assertRegex(text, rf"(?m)^\[{citation_id}\] ")
+
+        self.assertEqual(reader.metadata.creation_date.strftime("D:%Y%m%d%H%M%S%z"), "D:20260820000000+0800")
+
+    def test_docx_and_pdf_packaging_is_binary_deterministic(self) -> None:
+        markdown = (REPORT_DIR / "technical_report.md").read_text(encoding="utf-8")
+        with tempfile.TemporaryDirectory(dir=REPORT_DIR) as temporary_directory:
+            temporary = Path(temporary_directory)
+            first_docx = temporary / "first.docx"
+            second_docx = temporary / "second.docx"
+            build_docx(markdown, PROJECT_ROOT, first_docx)
+            build_docx(markdown, PROJECT_ROOT, second_docx)
+            self.assertEqual(sha256(first_docx), sha256(second_docx))
+
+            first_pdf = temporary / "first.pdf"
+            second_pdf = temporary / "second.pdf"
+            normalize_pdf(PDF_PATH, first_pdf, PROJECT_ROOT)
+            normalize_pdf(PDF_PATH, second_pdf, PROJECT_ROOT)
+            self.assertEqual(sha256(first_pdf), sha256(second_pdf))
+            self.assertEqual(PdfReader(first_pdf).metadata.get("/CreationDate"), FIXED_PDF_DATE)
 
 
 if __name__ == "__main__":
