@@ -7,7 +7,7 @@
       {
         "id": "opening",
         "title": "Reliable execution connects plans to physical action",
-        "subtitle": "Evidence-grounded PID and Fuzzy-PID evaluation for a two-link manipulator",
+        "subtitle": "Evidence-grounded PID and Fuzzy-PID evaluation for a {{phase7b.linkCount}}-link manipulator",
         "figure": "results/figures/multibody_cross_validation_tracking.png",
         "figureAlt": "MATLAB and Simscape Multibody end-effector tracking comparison",
         "figureFrame": {"left": 680, "top": 92, "width": 540, "height": 500},
@@ -62,7 +62,7 @@
         "claim": "Success rises from {{deterministic.successCount.manualPid}}/{{deterministic.scenarioCount}} for manual PID to {{deterministic.successCount.fuzzyPid}}/{{deterministic.scenarioCount}} for Fuzzy-PID and {{deterministic.successCount.optimizedPid}}/{{deterministic.scenarioCount}} for optimized PID.",
         "body": [
           "The matrix contains {{deterministic.runCount}} controller-scenario runs across payload, configuration, disturbance, actuator, and combined conditions.",
-          "All three controllers fail the combined deterministic case, so the ranking is comparative rather than a safety guarantee."
+          "All {{phase7b.controllerCount}} controllers fail the combined deterministic case, so the ranking is comparative rather than a safety guarantee."
         ],
         "figure": "results/figures/deterministic_robustness_summary.png",
         "figureAlt": "Deterministic robustness success counts and error summary",
@@ -73,9 +73,9 @@
       {
         "id": "stochastic",
         "title": "Noise alone is manageable; combined stress is not",
-        "claim": "Each isolated-noise cell passes 30/30 paired trials, while every combined-stress cell passes 0/30.",
+        "claim": "Each isolated-noise cell passes {{phase7b.stochastic.isolatedNoise.successCount}}/{{phase7b.stochastic.isolatedNoise.trialCount}} paired trials, while every combined-stress cell passes {{phase7b.stochastic.combinedStress.successCount}}/{{phase7b.stochastic.combinedStress.trialCount}}.",
         "body": [
-          "The full study contains {{stochastic.trialCount}} trials: {{stochastic.scenarioCount}} scenarios x 3 controllers x {{protocol.stochasticTrialsPerScenario}} fixed seeds.",
+          "The full study contains {{stochastic.trialCount}} trials: {{stochastic.scenarioCount}} scenarios x {{phase7b.controllerCount}} controllers x {{protocol.stochasticTrialsPerScenario}} fixed seeds.",
           "At high noise, optimized PID has the lowest tracking error but the highest mean torque slew ({{stochastic.highNoiseMeanTorqueSlew.optimizedPid|.2f}} N m/s)."
         ],
         "figure": "results/figures/stochastic_robustness_chattering.png",
@@ -87,7 +87,7 @@
       {
         "id": "cartesian",
         "title": "Task-space evaluation exposes failures hidden by joint metrics",
-        "claim": "All three controllers pass the straight-line task; only optimized PID passes pick-transfer-place, so 4 of 6 completed task runs meet every gate.",
+        "claim": "All {{phase7b.controllerCount}} controllers pass the straight-line task; only optimized PID passes pick-transfer-place, so {{phase7b.cartesian.successCount}} of {{phase7b.cartesian.completedRunCount}} completed task runs meet every gate.",
         "body": [
           "Manual and Fuzzy-PID complete the pick-transfer-place simulation but fail its quantitative pickup/place criteria.",
           "Optimized PID records {{cartesian.runRows.5.CartesianRms|.5f}} m RMS and {{cartesian.runRows.5.CartesianMax|.5f}} m maximum Cartesian error."
@@ -95,7 +95,7 @@
         "figure": "results/figures/cartesian_tasks_paths.png",
         "figureAlt": "Straight-line and pick-transfer-place Cartesian paths",
         "figureFrame": {"left": 620, "top": 138, "width": 600, "height": 470},
-        "presenterNote": "Completed does not mean successful; retain the two failed completed runs.",
+        "presenterNote": "Completed does not mean successful; retain the {{phase7b.cartesian.failureCount}} failed completed runs.",
         "sources": ["docs/report/technical_report.md", "results/figures/cartesian_tasks_paths.png", "results/data/cartesian_tasks_runs.csv"]
       },
       {
@@ -142,11 +142,11 @@
     "title": "Reliable Robotic Manipulation Through Evidence-Grounded Control",
     "takeaway": "Across identical simulation protocols, optimized PID produced the strongest aggregate reliability while no controller dominated every condition.",
     "problem": "Reliable manipulation requires more than nominal trajectory tracking: controllers must remain interpretable under payload, configuration, disturbance, noise, and actuator changes.",
-    "method": "A two-link arm compares manual PID, Mamdani Fuzzy-PID, and bounded optimization-assisted PID under identical 0.001 s simulation, trajectory, torque-limit, threshold, and paired-seed protocols.",
+    "method": "A {{phase7b.linkCount}}-link arm compares manual PID, Mamdani Fuzzy-PID, and bounded optimization-assisted PID under identical {{protocol.sampleTimeS|.3f}} s simulation, trajectory, torque-limit, threshold, and paired-seed protocols.",
     "results": [
       {"value": "{{optimization.objectiveReductionPercent|.3f}}%", "label": "nominal objective reduction"},
       {"value": "{{deterministic.successCount.optimizedPid}}/{{deterministic.scenarioCount}}", "label": "deterministic scenarios passed"},
-      {"value": "30/30 vs 0/30", "label": "isolated-noise vs combined-stress trials"}
+      {"value": "{{phase7b.stochastic.isolatedNoise.successCount}}/{{phase7b.stochastic.isolatedNoise.trialCount}} vs {{phase7b.stochastic.combinedStress.successCount}}/{{phase7b.stochastic.combinedStress.trialCount}}", "label": "isolated-noise vs combined-stress trials"}
     ],
     "figure": "results/figures/deterministic_robustness_summary.png",
     "figureCaption": "Deterministic stress testing separates aggregate controller reliability while preserving failed cases.",

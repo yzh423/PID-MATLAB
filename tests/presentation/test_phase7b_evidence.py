@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import shutil
 import tempfile
 import unittest
 
@@ -9,11 +10,41 @@ from scripts.phase7b.evidence import (
     Phase7BEvidenceError,
     build_phase7b_package,
     load_phase7b_template,
+    sha256_file,
+    write_phase7b_package,
 )
 
 
 ROOT = Path(__file__).resolve().parents[2]
 TEMPLATE = ROOT / "docs/presentation/phase7b_template.json"
+MANIFEST = ROOT / "docs/report/build_manifest.json"
+EVIDENCE = ROOT / "results/report/report_evidence.json"
+
+
+def stage_phase7a_fixture(root: Path) -> None:
+    """Create a valid, independently mutable Phase 7A package fixture."""
+    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    for record in manifest["sources"]:
+        source = ROOT / record["path"]
+        destination = root / record["path"]
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+    template = root / "docs/presentation/phase7b_template.json"
+    template.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(TEMPLATE, template)
+    manifest_path = root / "docs/report/build_manifest.json"
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(MANIFEST, manifest_path)
+
+
+def leaf_strings(value: object) -> list[str]:
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, list):
+        return [text for item in value for text in leaf_strings(item)]
+    if isinstance(value, dict):
+        return [text for item in value.values() for text in leaf_strings(item)]
+    return []
 
 
 class Phase7BEvidenceTests(unittest.TestCase):
@@ -25,26 +56,125 @@ class Phase7BEvidenceTests(unittest.TestCase):
         self.assertEqual(template["deck"]["slides"][-1]["id"], "next-steps")
         self.assertIn("summary", template)
 
-    def test_package_resolves_required_claims_and_failures(self) -> None:
+    def test_package_has_exact_schema_resolved_tokens_and_source_hashes(self) -> None:
         package = build_phase7b_package(ROOT)
+        self.assertEqual(
+            set(package),
+            {
+                "schemaVersion",
+                "generatedAt",
+                "deck",
+                "summary",
+                "selectedFigures",
+                "usedEvidenceTokens",
+                "phase7aSourceHashes",
+            },
+        )
+        self.assertEqual(package["schemaVersion"], 1)
+        self.assertEqual(package["generatedAt"], "2026-08-21T00:00:00Z")
+        self.assertEqual(len(package["deck"]["slides"]), 10)
+        self.assertEqual(
+            set(package["summary"]),
+            {
+                "title", "takeaway", "problem", "method", "results", "figure",
+                "figureCaption", "significance", "limitations", "nextSteps", "sources",
+            },
+        )
         text = json.dumps(package, ensure_ascii=False)
-        for claim in ("8/13", "9/13", "10/13", "30/30", "0/30", "7.283%"):
+        for claim in ("8/13", "9/13", "10/13", "30/30", "0/30", "4 of 6", "0.001 s", "7.283%"):
             self.assertIn(claim, text)
         self.assertIn("simulation", text.lower())
-        self.assertNotIn("{{", text)
-        self.assertNotIn("}}", text)
+        self.assertTrue(
+            all("{{" not in item and "}}" not in item for item in leaf_strings(package))
+        )
+        source_hashes = package["phase7aSourceHashes"]
+        self.assertEqual(set(source_hashes), {"manifest", "evidence", "sources"})
+        self.assertEqual(source_hashes["manifest"], {
+            "path": "docs/report/build_manifest.json", "sha256": sha256_file(MANIFEST),
+        })
+        self.assertEqual(source_hashes["evidence"], {
+            "path": "results/report/report_evidence.json", "sha256": sha256_file(EVIDENCE),
+        })
+        self.assertEqual(len(source_hashes["sources"]), 9)
+        self.assertEqual(len(package["selectedFigures"]), 6)
+        self.assertEqual(package["summary"]["figure"], "results/figures/deterministic_robustness_summary.png")
 
-    def test_missing_figure_is_rejected(self) -> None:
-        package = build_phase7b_package(ROOT)
-        figure = ROOT / package["selectedFigures"][0]["path"]
+    def test_changed_evidence_hash_is_rejected_before_claim_resolution(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             fake_root = Path(directory)
-            (fake_root / "docs/presentation").mkdir(parents=True)
-            (fake_root / "docs/presentation/phase7b_template.json").write_text(
-                TEMPLATE.read_text(encoding="utf-8"), encoding="utf-8"
-            )
-            with self.assertRaisesRegex(Phase7BEvidenceError, "Phase 7A"):
+            stage_phase7a_fixture(fake_root)
+            evidence_path = fake_root / "results/report/report_evidence.json"
+            evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+            evidence["optimization"]["objectiveReductionPercent"] = 999.0
+            evidence_path.write_text(json.dumps(evidence), encoding="utf-8")
+            with self.assertRaisesRegex(Phase7BEvidenceError, "evidence hash mismatch"):
                 build_phase7b_package(fake_root)
+
+    def test_missing_or_changed_slide_figure_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            fake_root = Path(directory)
+            stage_phase7a_fixture(fake_root)
+            figure = fake_root / "results/figures/nominal_pid_vs_fuzzy_tracking.png"
+            figure.write_bytes(figure.read_bytes() + b"tampered")
+            with self.assertRaisesRegex(Phase7BEvidenceError, "figure hash mismatch"):
+                build_phase7b_package(fake_root)
+
+            stage_phase7a_fixture(fake_root)
+            figure.unlink()
+            with self.assertRaisesRegex(Phase7BEvidenceError, "Phase 7A source"):
+                build_phase7b_package(fake_root)
+
+    def test_unadmitted_summary_figure_is_rejected_and_figures_are_deduplicated(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            fake_root = Path(directory)
+            stage_phase7a_fixture(fake_root)
+            template_path = fake_root / "docs/presentation/phase7b_template.json"
+            template = json.loads(template_path.read_text(encoding="utf-8"))
+            template["summary"]["figure"] = "results/data/unadmitted.mat"
+            template_path.write_text(json.dumps(template), encoding="utf-8")
+            with self.assertRaisesRegex(Phase7BEvidenceError, "not admitted"):
+                build_phase7b_package(fake_root)
+
+        package = build_phase7b_package(ROOT)
+        paths = [record["path"] for record in package["selectedFigures"]]
+        self.assertEqual(len(paths), len(set(paths)))
+        self.assertIn(package["summary"]["figure"], paths)
+
+    def test_invalid_template_schema_or_summary_shape_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            fake_root = Path(directory)
+            stage_phase7a_fixture(fake_root)
+            template_path = fake_root / "docs/presentation/phase7b_template.json"
+            template = json.loads(template_path.read_text(encoding="utf-8"))
+            template["schemaVersion"] = 2
+            template_path.write_text(json.dumps(template), encoding="utf-8")
+            with self.assertRaisesRegex(Phase7BEvidenceError, "schemaVersion"):
+                build_phase7b_package(fake_root)
+
+            template["schemaVersion"] = 1
+            del template["summary"]["figure"]
+            template_path.write_text(json.dumps(template), encoding="utf-8")
+            with self.assertRaisesRegex(Phase7BEvidenceError, "summary"):
+                build_phase7b_package(fake_root)
+
+            template = json.loads(TEMPLATE.read_text(encoding="utf-8"))
+            template["summary"]["results"] = "not a result list"
+            template_path.write_text(json.dumps(template), encoding="utf-8")
+            with self.assertRaisesRegex(Phase7BEvidenceError, "summary"):
+                build_phase7b_package(fake_root)
+
+    def test_write_is_deterministic_and_atomically_replaces_output(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "nested/phase7b_package.json"
+            output.parent.mkdir(parents=True)
+            output.write_text("previous output", encoding="utf-8")
+            first = write_phase7b_package(ROOT, output)
+            first_hash = sha256_file(output)
+            second = write_phase7b_package(ROOT, output)
+            self.assertEqual(first, second)
+            self.assertEqual(first_hash, sha256_file(output))
+            self.assertEqual(json.loads(output.read_text(encoding="utf-8")), second)
+            self.assertEqual(list(output.parent.glob("*.tmp")), [])
 
     def test_sources_and_notes_are_complete(self) -> None:
         package = build_phase7b_package(ROOT)
