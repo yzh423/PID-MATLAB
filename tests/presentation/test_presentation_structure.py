@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
 import re
 import unittest
 from xml.etree import ElementTree
@@ -9,6 +10,7 @@ from zipfile import ZipFile
 
 ROOT = Path(__file__).resolve().parents[2]
 PPTX = ROOT / "presentation" / "final_presentation.pptx"
+LAYOUT_DIR = ROOT / "tmp" / "phase7b" / "slides"
 
 
 def xml_text(payload: bytes) -> str:
@@ -22,6 +24,13 @@ def pptx_text(pptx: Path) -> str:
             for name in archive.namelist()
             if name.endswith(".xml")
         )
+
+
+def layout_element(slide_number: int, name: str) -> dict[str, object]:
+    layout_path = LAYOUT_DIR / f"slide-{slide_number:02d}.layout.json"
+    with layout_path.open(encoding="utf-8") as layout_file:
+        layout = json.load(layout_file)
+    return next(element for element in layout["elements"] if element.get("name") == name)
 
 
 class PresentationStructureTests(unittest.TestCase):
@@ -50,6 +59,23 @@ class PresentationStructureTests(unittest.TestCase):
             self.assertIn(value, text)
         for forbidden in ("{{", "}}", "Lorem ipsum", "Title here", "placeholder"):
             self.assertNotIn(forbidden, text)
+
+    def test_resolved_title_and_claims_meet_layout_thresholds(self) -> None:
+        title = layout_element(9, "slide-9-title")
+        self.assertGreaterEqual(title["resolvedFontSize"], 35)
+        self.assertLessEqual(title["textLayout"]["lineCount"], 2)
+
+        for slide_number, name in (
+            (2, "problem-claim"),
+            (4, "optimization-claim"),
+            (7, "cartesian-claim"),
+        ):
+            claim = layout_element(slide_number, name)
+            self.assertGreaterEqual(claim["resolvedFontSize"], 24, name)
+
+            title = layout_element(slide_number, f"slide-{slide_number}-title")
+            title_bottom = title["bbox"][1] + title["bbox"][3]
+            self.assertGreaterEqual(claim["bbox"][1] - title_bottom, 72, name)
 
 
 if __name__ == "__main__":

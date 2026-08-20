@@ -30,16 +30,19 @@ function setNotes(slide, slideSpec) {
 }
 
 function addTitle(slide, title, number) {
+  const isTwoLineConclusion = number === 9;
   const box = slide.shapes.add({
     geometry: "textbox",
     name: `slide-${number}-title`,
-    position: { left: 52, top: 34, width: 1168, height: 72 },
+    position: isTwoLineConclusion
+      ? { left: 52, top: 24, width: 1168, height: 112 }
+      : { left: 52, top: 34, width: 1168, height: 72 },
     fill: "none",
     line: { style: "solid", fill: "none", width: 0 },
   });
-  box.text = title;
+  box.text = isTwoLineConclusion ? title.replace(", but ", ", but\n") : title;
   box.text.style = {
-    fontSize: 48,
+    fontSize: isTwoLineConclusion ? 36 : 48,
     bold: true,
     color: COLORS.ink,
     typeface: "Arial",
@@ -91,7 +94,7 @@ function buildEvidenceSplit(slide, spec) {
     slide,
     `${spec.id}-claim`,
     spec.claim,
-    { left: 52, top: 132, width: 520, height: 120 },
+    { left: 52, top: 180, width: 540, height: 160 },
     32,
     { bold: true },
   );
@@ -99,7 +102,7 @@ function buildEvidenceSplit(slide, spec) {
     slide,
     `${spec.id}-body`,
     spec.body.join("\n\n"),
-    { left: 52, top: 278, width: 520, height: 330 },
+    { left: 52, top: 360, width: 540, height: 248 },
     24,
   );
 }
