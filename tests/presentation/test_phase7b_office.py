@@ -142,6 +142,8 @@ class Phase7BOfficeTests(unittest.TestCase):
             "2025-13-01T29:00:00Z",
             "2025-01-01T00:00:00+99:99",
             "2025-01-01T00:00:00+14:01",
+            "2024-02-29T12:99Z",
+            "2024-02-29T12:34+14:01",
         )
         with tempfile.TemporaryDirectory() as directory:
             for index, invalid in enumerate(invalid_values):
@@ -175,6 +177,31 @@ class Phase7BOfficeTests(unittest.TestCase):
 
             normalize_openxml_package(package, ".pptx")
 
+            with ZipFile(package) as archive:
+                self.assertEqual(_core_date_values(archive.read("docProps/core.xml")), [
+                    FIXED_OFFICE_TIMESTAMP,
+                    FIXED_OFFICE_TIMESTAMP,
+                    FIXED_OFFICE_TIMESTAMP,
+                ])
+
+    def test_w3cdtf_minute_precision_dates_normalize_deterministically(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            package = Path(directory) / "minute-precision.pptx"
+            create_fixture_package(
+                package,
+                "2025-01-01T00:00:00Z",
+                (2026, 8, 21, 1, 2, 4),
+                core_properties=semantic_core_properties(
+                    created="2024-02-29T12:34Z",
+                    modified="2024-02-29T12:34+05:30",
+                ),
+            )
+
+            normalize_openxml_package(package, ".pptx")
+            first_digest = sha256_file(package)
+            normalize_openxml_package(package, ".pptx")
+
+            self.assertEqual(sha256_file(package), first_digest)
             with ZipFile(package) as archive:
                 self.assertEqual(_core_date_values(archive.read("docProps/core.xml")), [
                     FIXED_OFFICE_TIMESTAMP,

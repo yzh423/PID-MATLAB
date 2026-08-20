@@ -34,8 +34,8 @@ _XML_ENCODING = re.compile(
 )
 _W3CDTF = re.compile(
     r"(?P<year>\d{4})(?:-(?P<month>\d{2})(?:-(?P<day>\d{2})(?:T"
-    r"(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})"
-    r"(?P<fraction>\.\d+)?(?P<timezone>Z|[+-]\d{2}:\d{2}))?)?)?\Z"
+    r"(?P<hour>\d{2}):(?P<minute>\d{2})(?::(?P<second>\d{2})"
+    r"(?P<fraction>\.\d+)?)?(?P<timezone>Z|[+-]\d{2}:\d{2}))?)?)?\Z"
 )
 _XML_SCHEMA_DATETIME = re.compile(
     r"(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})T"
@@ -190,7 +190,9 @@ def _validate_date_components(match: re.Match[str]) -> None:
                 ) from exception
     hour = match["hour"]
     if hour is not None and (
-        int(hour) > 23 or int(match["minute"]) > 59 or int(match["second"]) > 59
+        int(hour) > 23
+        or int(match["minute"]) > 59
+        or (match["second"] is not None and int(match["second"]) > 59)
     ):
         raise Phase7BOfficeError("unsupported core property date representation")
     timezone = match["timezone"]
