@@ -1,12 +1,12 @@
 # Reliable Robotic Manipulation: PID vs Fuzzy-PID
 
-This repository implements the revised MATLAB robotics research plan in verified stages. Phases 1–4B provide a payload-aware planar two-link manipulator, analytical kinematics, nonlinear rigid-body dynamics, torque-limited PID and Mamdani Fuzzy-PID controllers, one shared simulator, optimization-assisted PID tuning, a deterministic robustness matrix, and locally seeded stochastic measurement-noise trials.
+This repository implements the revised MATLAB robotics research plan in verified stages. Phases 1–5 provide a payload-aware planar two-link manipulator, analytical and differential kinematics, nonlinear rigid-body dynamics, torque-limited PID and Mamdani Fuzzy-PID controllers, one shared simulator, optimization-assisted PID tuning, deterministic and stochastic robustness studies, and Cartesian task execution.
 
 The project studies reliable low-level execution for a **given** robot and trajectory. Robot morphology is a controlled robustness variable in later phases; it is not an optimization target.
 
 ## Current Status
 
-Implemented through Phase 4B:
+Implemented through Phase 5:
 
 - baseline 2-DOF planar robot configuration;
 - analytical forward and two-branch inverse kinematics;
@@ -28,11 +28,14 @@ Implemented through Phase 4B:
 - paired, locally seeded trials that leave MATLAB's global random state unchanged;
 - 360 stochastic runs with Wilson 95% success intervals and nearest-rank 95th percentiles;
 - true-state tracking variance and applied-torque slew metrics for noise sensitivity;
+- analytic Cartesian quintic segments and multi-waypoint path composition;
+- continuous analytical IK branch selection with Jacobian-based velocity and acceleration mapping;
+- straight-line and simplified pick-transfer-place execution with three frozen controllers;
+- Cartesian, waypoint, joint, effort, saturation, and task-success evidence;
 - MATLAB Unit Tests and reproducible controller and optimization experiments.
 
 Deferred to later verified phases:
 
-- Cartesian path tracking and simplified pick-and-place;
 - Simulink and Simscape Multibody cross-validation.
 
 ## Requirements
@@ -87,6 +90,12 @@ Run the full stochastic robustness study:
 & 'E:\MATLAB2026\bin\matlab.exe' -batch "cd('E:/YZH123123/PID vs Fuzzy PID'); addpath(pwd); run('experiments/run_stochastic_robustness.m');"
 ```
 
+Run the Cartesian task study:
+
+```powershell
+& 'E:\MATLAB2026\bin\matlab.exe' -batch "cd('E:/YZH123123/PID vs Fuzzy PID'); addpath(pwd); run('experiments/run_cartesian_tasks.m');"
+```
+
 The experiment writes:
 
 ```text
@@ -122,6 +131,13 @@ results/figures/stochastic_robustness_chattering.png
 results/figures/stochastic_robustness_saturation.png
 results/figures/stochastic_robustness_combined.png
 results/figures/stochastic_robustness_representative.png
+results/data/cartesian_tasks.mat
+results/data/cartesian_tasks_runs.csv
+results/figures/cartesian_tasks_paths.png
+results/figures/cartesian_tasks_errors.png
+results/figures/cartesian_tasks_joint_references.png
+results/figures/cartesian_tasks_torque.png
+results/figures/cartesian_tasks_summary.png
 ```
 
 Generated MAT, CSV, and PNG outputs are excluded from Git.
@@ -134,12 +150,12 @@ Generated MAT, CSV, and PNG outputs are excluded from Git.
   +control/      PID and Fuzzy-PID update functions
   +dynamics/     Rigid-body matrices and forward dynamics
   +fuzzy/        Five-set memberships and Mamdani inference
-  +kinematics/   Forward and analytical inverse kinematics
-  +metrics/      Common experiment metrics and success decision
+  +kinematics/   Forward/inverse and differential kinematics
+  +metrics/      Common, robustness, stochastic, and Cartesian-task metrics
   +optimization/ PID multiplier mapping, objective scoring, and fmincon tuning
   +robustness/   Deterministic and stochastic scenarios, metrics, execution, and summaries
   +simulation/   Shared closed-loop simulation and seeded measurement-noise generation
-  +trajectory/   Reference generation
+  +trajectory/   Joint and Cartesian path/reference generation
 docs/
   requirements/  Revised source plan in DOCX and Markdown
   skills/specs/  Approved engineering design
@@ -268,6 +284,25 @@ The verified full study produced:
 
 All controllers preserve the Phase 4A success criteria under isolated white measurement noise, and true-state tracking RMS remains nearly flat as noise increases. That success rate alone conceals a major actuator-side cost: torque slew rises steeply with noise, especially for the optimized PID. In the combined case all controllers fail, saturate for about 6 joint-summed seconds in the worst trial, and never meet the recovery criterion. The optimized PID retains the lowest tracking RMS but is also the most noise-sensitive by torque slew; no controller is universally superior.
 
+## Cartesian Path and Pick-and-Place Tasks
+
+Phase 5 accepts Cartesian commands from a hypothetical high-level planner while retaining the same low-level controllers. Each straight segment uses analytic rest-to-rest quintic position, velocity, and acceleration. Both analytical IK branches are considered at every sample; the joint-limit-valid solution nearest the previous state is selected. Joint velocities and accelerations are then calculated from `dq = J\v` and `ddq = J\(a-Jdot*dq)`. Unreachable, joint-limit-invalid, and singular paths fail explicitly instead of being clipped.
+
+The straight-line task moves from `[0.55;0.12] m` to `[0.22;0.48] m` in 3 s and holds for 1 s. The pick-transfer-place task follows start `[0.55;0.12]`, pickup `[0.45;-0.02]`, safe `[0.45;0.32]`, and place `[0.22;0.48] m`, with movement durations `[1.4;1.2;1.5] s` and post-arrival dwells `[0.4;0;0.8] s`. The gripper and object are semantic only; no grasp force or object dynamics are simulated.
+
+Task success requires completion, the existing joint steady-state criteria, Cartesian RMS at most 0.05 m, Cartesian maximum at most 0.15 m, requested waypoint errors at most 0.05 m, and zero saturation. The verified 1 ms study produced:
+
+| Task | Controller | Success | Cartesian RMS (m) | Cartesian max (m) | Pickup error (m) | Place error (m) | Mean joint RMS (rad) | Saturation (s) |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| Straight line | Manual PID | yes | 0.032545 | 0.060228 | — | — | 0.038524 | 0 |
+| Straight line | Mamdani Fuzzy-PID | yes | 0.031459 | 0.059513 | — | — | 0.037754 | 0 |
+| Straight line | Optimized PID | yes | 0.016456 | 0.031895 | — | — | 0.019430 | 0 |
+| Pick-transfer-place | Manual PID | no | 0.027739 | 0.054032 | 0.024388 | 0.007008 | 0.034577 | 0 |
+| Pick-transfer-place | Mamdani Fuzzy-PID | no | 0.026850 | 0.053590 | 0.022960 | 0.011902 | 0.033902 | 0 |
+| Pick-transfer-place | Optimized PID | yes | 0.014221 | 0.029698 | 0.011926 | 0.003641 | 0.017432 | 0 |
+
+All six simulations completed without saturation, and every controller stayed inside the Cartesian and waypoint thresholds. The manual and Fuzzy-PID pick-transfer-place runs are nevertheless unsuccessful because joint 2 final-window RMS errors were `0.02378 rad` and `0.02410 rad`, above the existing `0.02 rad` joint threshold. The optimized PID passed both tasks and roughly halved Cartesian RMS relative to manual PID. Fuzzy-PID slightly improved path-level accuracy over manual PID but had a larger placement error; the six nominal runs do not establish universal superiority.
+
 ## Design Rules
 
 - Package functions do not read base-workspace variables or perform file I/O.
@@ -278,7 +313,7 @@ All controllers preserve the Phase 4A success criteria under isolated white meas
 
 ## Limitations
 
-These remain simulation results, not evidence of real-robot performance or hardware safety. Optimization used one initial point and one training trajectory. Phase 4B models independent white Gaussian measurement noise only; it does not yet represent quantization, bias, drift, coloured noise, sensor filtering, sample-rate mismatch, delay, actuator dynamics, dry friction, backlash, flexible links, communication effects, or collision constraints. Thirty seeds support reproducible within-study comparisons, not universal probability claims.
+These remain simulation results, not evidence of real-robot performance or hardware safety. Optimization used one initial point and one training trajectory. Phase 4B models independent white Gaussian measurement noise only; it does not represent quantization, bias, drift, coloured noise, sensor filtering, sample-rate mismatch, or delay. Phase 5 assumes perfectly known reachable waypoints and omits perception, collision avoidance, gripper forces, object dynamics, and path replanning. The plant still omits actuator dynamics, dry friction, backlash, flexible links, and communication effects. Thirty noise seeds and two nominal Cartesian tasks support reproducible within-study comparisons, not universal probability claims.
 
 ## Research Baseline
 
@@ -288,4 +323,4 @@ The authoritative revised plan is stored at:
 docs/requirements/Daniel_MATLAB_Robotics_Project_Implementation_Guide_Revised.md
 ```
 
-The Phase 1–4B design and implementation plans are stored under `docs/skills/`.
+The Phase 1–5 design and implementation plans are stored under `docs/skills/`.

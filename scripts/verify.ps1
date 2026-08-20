@@ -21,6 +21,8 @@ clear outputRoot robustnessMode robustnessReference;
 run('experiments/run_deterministic_robustness.m');
 clear outputRoot stochasticMode stochasticReference;
 run('experiments/run_stochastic_robustness.m');
+clear outputRoot cartesianMode;
+run('experiments/run_cartesian_tasks.m');
 "@ -replace "`r?`n", ' '
 
 & $matlabExecutable -batch $matlabCommand
