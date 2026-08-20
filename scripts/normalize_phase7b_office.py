@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Sequence
+import lzma
 from pathlib import Path
 import sys
 from xml.etree import ElementTree
-from zipfile import BadZipFile
+from zipfile import BadZipFile, LargeZipFile
+import zlib
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
@@ -27,7 +29,18 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
     try:
         normalize_openxml_package(args.path, args.suffix)
-    except (BadZipFile, OSError, ValueError, ElementTree.ParseError) as exception:
+    except (
+        BadZipFile,
+        LargeZipFile,
+        OSError,
+        ValueError,
+        ElementTree.ParseError,
+        EOFError,
+        NotImplementedError,
+        RuntimeError,
+        lzma.LZMAError,
+        zlib.error,
+    ) as exception:
         print(f"Phase 7B Office normalization failed: {exception}", file=sys.stderr)
         return 2
     return 0

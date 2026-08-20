@@ -4,7 +4,10 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 import hashlib
+import os
 from pathlib import Path
+import re
+import tempfile
 from xml.etree import ElementTree
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
@@ -13,18 +16,19 @@ FIXED_OFFICE_TIMESTAMP = "2026-08-21T00:00:00Z"
 FIXED_ZIP_TIME = (1980, 1, 1, 0, 0, 0)
 
 _CORE_PROPERTIES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/metadata/core-properties"
-_DC_NAMESPACE = "http://purl.org/dc/elements/1.1/"
 _DCTERMS_NAMESPACE = "http://purl.org/dc/terms/"
-_XSI_NAMESPACE = "http://www.w3.org/2001/XMLSchema-instance"
-_CORE_DATE_TAGS = {
+_VOLATILE_CORE_DATE_TAGS = {
     f"{{{_DCTERMS_NAMESPACE}}}created",
     f"{{{_DCTERMS_NAMESPACE}}}modified",
+    f"{{{_CORE_PROPERTIES_NAMESPACE}}}lastPrinted",
 }
-
-ElementTree.register_namespace("cp", _CORE_PROPERTIES_NAMESPACE)
-ElementTree.register_namespace("dc", _DC_NAMESPACE)
-ElementTree.register_namespace("dcterms", _DCTERMS_NAMESPACE)
-ElementTree.register_namespace("xsi", _XSI_NAMESPACE)
+_NAMESPACE_DECLARATION = re.compile(
+    br"\s+xmlns:([A-Za-z_][A-Za-z0-9_.-]*)\s*=\s*['\"]([^'\"]+)['\"]"
+)
+_XML_ENCODING = re.compile(
+    br"\A\s*<\?xml\b[^>]*\bencoding\s*=\s*['\"]([^'\"]+)['\"]",
+    re.IGNORECASE,
+)
 
 
 def sha256_file(path: Path) -> str:
@@ -37,15 +41,70 @@ def sha256_file(path: Path) -> str:
 
 
 def normalize_core_properties(payload: bytes) -> bytes:
-    """Freeze only created and modified timestamps in core-properties XML."""
-    parser = ElementTree.XMLParser(
-        target=ElementTree.TreeBuilder(insert_comments=True, insert_pis=True)
+    """Freeze volatile core-property dates without rewriting other XML bytes."""
+    encoding = _XML_ENCODING.search(payload)
+    if encoding is not None and encoding.group(1).lower() not in {b"utf-8", b"utf8"}:
+        raise ValueError("core properties must use UTF-8 for byte-preserving normalization")
+
+    root = ElementTree.fromstring(payload)
+    if root.tag != f"{{{_CORE_PROPERTIES_NAMESPACE}}}coreProperties":
+        raise ValueError("core properties root is not an Open XML coreProperties element")
+    volatile_count = sum(
+        1 for element in root.iter() if element.tag in _VOLATILE_CORE_DATE_TAGS
     )
-    root = ElementTree.fromstring(payload, parser=parser)
-    for element in root.iter():
-        if element.tag in _CORE_DATE_TAGS:
-            element.text = FIXED_OFFICE_TIMESTAMP
-    return ElementTree.tostring(root, encoding="utf-8", xml_declaration=True)
+    if not volatile_count:
+        return payload
+
+    namespaces = {
+        prefix: uri
+        for prefix, uri in _NAMESPACE_DECLARATION.findall(payload)
+    }
+    names = [
+        prefix + b":" + local.encode("ascii")
+        for prefix, uri in namespaces.items()
+        for namespace, local in (
+            (_DCTERMS_NAMESPACE, "created"),
+            (_DCTERMS_NAMESPACE, "modified"),
+            (_CORE_PROPERTIES_NAMESPACE, "lastPrinted"),
+        )
+        if uri == namespace.encode("ascii")
+    ]
+    if not names:
+        raise ValueError("unsupported core property date representation")
+    alternation = b"|".join(re.escape(name) for name in sorted(names, key=len, reverse=True))
+    element_pattern = re.compile(
+        br"(?P<open><(?P<name>" + alternation + br")\b[^>]*>)"
+        br"(?P<text>[^<]*)(?P<close></(?P=name)\s*>)"
+    )
+    normalized, substitutions = element_pattern.subn(
+        lambda match: match.group("open") + FIXED_OFFICE_TIMESTAMP.encode("ascii") + match.group("close"),
+        payload,
+    )
+    if substitutions != volatile_count:
+        raise ValueError("unsupported core property date representation")
+    return normalized
+
+
+def _validate_opc_part_names(infos: Sequence[ZipInfo]) -> None:
+    """Reject ambiguous or extractable-outside-package ZIP entries before writing."""
+    seen: set[str] = set()
+    for info in infos:
+        name = info.filename
+        original_name = info.orig_filename
+        if name in seen:
+            raise ValueError(f"duplicate OPC part name: {name}")
+        seen.add(name)
+        segments = name.split("/")
+        if (
+            original_name != name
+            or not name
+            or name.startswith("/")
+            or "\\" in name
+            or ":" in name
+            or name.endswith("/")
+            or any(not segment or segment in {".", ".."} for segment in segments)
+        ):
+            raise ValueError(f"invalid OPC part name: {name}")
 
 
 def normalize_openxml_package(path: Path, suffix: str) -> None:
@@ -56,16 +115,22 @@ def normalize_openxml_package(path: Path, suffix: str) -> None:
         raise ValueError(f"expected {suffix} package")
 
     with ZipFile(path) as source:
+        infos = source.infolist()
+        _validate_opc_part_names(infos)
         entries = [
             (info.filename, info.compress_type, source.read(info))
-            for info in source.infolist()
+            for info in infos
         ]
     for index, (name, compression, payload) in enumerate(entries):
         if name == "docProps/core.xml":
             entries[index] = (name, compression, normalize_core_properties(payload))
 
-    temporary = path.with_name(f".{path.name}.normalized.tmp")
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{path.name}.normalized.", suffix=".tmp", dir=path.parent
+    )
+    temporary = Path(temporary_name)
     try:
+        os.close(descriptor)
         with ZipFile(temporary, "w", compression=ZIP_DEFLATED, compresslevel=9) as target:
             target.comment = b""
             for name, compression, payload in sorted(entries, key=lambda entry: entry[0]):
@@ -76,7 +141,7 @@ def normalize_openxml_package(path: Path, suffix: str) -> None:
                 info.extra = b""
                 info.comment = b""
                 target.writestr(info, payload)
-        temporary.replace(path)
+        os.replace(temporary, path)
     except BaseException:
         temporary.unlink(missing_ok=True)
         raise
