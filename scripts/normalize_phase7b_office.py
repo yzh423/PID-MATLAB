@@ -4,18 +4,16 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Sequence
-import lzma
 from pathlib import Path
 import sys
 from xml.etree import ElementTree
 from zipfile import BadZipFile, LargeZipFile
-import zlib
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from scripts.phase7b.office import normalize_openxml_package
+from scripts.phase7b.office import Phase7BOfficeError, normalize_openxml_package
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -33,13 +31,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         BadZipFile,
         LargeZipFile,
         OSError,
-        ValueError,
+        Phase7BOfficeError,
         ElementTree.ParseError,
         EOFError,
-        NotImplementedError,
-        RuntimeError,
-        lzma.LZMAError,
-        zlib.error,
     ) as exception:
         print(f"Phase 7B Office normalization failed: {exception}", file=sys.stderr)
         return 2

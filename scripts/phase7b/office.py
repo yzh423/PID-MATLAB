@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 import hashlib
+import lzma
 import os
 from pathlib import Path
 import re
 import tempfile
 from xml.etree import ElementTree
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
+import zlib
 
 
 FIXED_OFFICE_TIMESTAMP = "2026-08-21T00:00:00Z"
@@ -23,12 +25,16 @@ _VOLATILE_CORE_DATE_TAGS = {
     f"{{{_CORE_PROPERTIES_NAMESPACE}}}lastPrinted",
 }
 _NAMESPACE_DECLARATION = re.compile(
-    br"\s+xmlns:([A-Za-z_][A-Za-z0-9_.-]*)\s*=\s*['\"]([^'\"]+)['\"]"
+    br"\s+xmlns(?::([A-Za-z_][A-Za-z0-9_.-]*))?\s*=\s*(['\"])([^'\"]*)\2"
 )
 _XML_ENCODING = re.compile(
     br"\A\s*<\?xml\b[^>]*\bencoding\s*=\s*['\"]([^'\"]+)['\"]",
     re.IGNORECASE,
 )
+
+
+class Phase7BOfficeError(ValueError):
+    """Raised when an Office package is invalid for deterministic normalization."""
 
 
 def sha256_file(path: Path) -> str:
@@ -44,45 +50,123 @@ def normalize_core_properties(payload: bytes) -> bytes:
     """Freeze volatile core-property dates without rewriting other XML bytes."""
     encoding = _XML_ENCODING.search(payload)
     if encoding is not None and encoding.group(1).lower() not in {b"utf-8", b"utf8"}:
-        raise ValueError("core properties must use UTF-8 for byte-preserving normalization")
+        raise Phase7BOfficeError(
+            "core properties must use UTF-8 for byte-preserving normalization"
+        )
 
     root = ElementTree.fromstring(payload)
     if root.tag != f"{{{_CORE_PROPERTIES_NAMESPACE}}}coreProperties":
-        raise ValueError("core properties root is not an Open XML coreProperties element")
+        raise Phase7BOfficeError(
+            "core properties root is not an Open XML coreProperties element"
+        )
     volatile_count = sum(
         1 for element in root.iter() if element.tag in _VOLATILE_CORE_DATE_TAGS
     )
     if not volatile_count:
         return payload
+    ranges = _volatile_date_ranges(payload)
+    if len(ranges) != volatile_count:
+        raise Phase7BOfficeError("unsupported core property date representation")
+    fixed = FIXED_OFFICE_TIMESTAMP.encode("ascii")
+    normalized = bytearray()
+    previous = 0
+    for start, end in ranges:
+        normalized.extend(payload[previous:start])
+        normalized.extend(fixed)
+        previous = end
+    normalized.extend(payload[previous:])
+    return bytes(normalized)
 
-    namespaces = {
-        prefix: uri
-        for prefix, uri in _NAMESPACE_DECLARATION.findall(payload)
+
+def _tag_end(payload: bytes, start: int) -> int:
+    """Return the closing `>` index without treating quoted attributes as markup."""
+    quote: int | None = None
+    for index in range(start + 1, len(payload)):
+        character = payload[index]
+        if quote is not None:
+            if character == quote:
+                quote = None
+        elif character in (ord("'"), ord('"')):
+            quote = character
+        elif character == ord(">"):
+            return index
+    raise Phase7BOfficeError("unterminated XML markup in core properties")
+
+
+def _expanded_name(name: bytes, scope: Mapping[bytes, bytes]) -> tuple[bytes | None, bytes]:
+    """Resolve a lexical XML name against its in-scope namespace bindings."""
+    prefix, separator, local = name.partition(b":")
+    if separator:
+        return scope.get(prefix), local
+    return scope.get(b""), prefix
+
+
+def _volatile_date_ranges(payload: bytes) -> list[tuple[int, int]]:
+    """Locate leaf date text with lexical namespace-scope tracking, without serialization."""
+    volatile_names = {
+        (_DCTERMS_NAMESPACE.encode("ascii"), b"created"),
+        (_DCTERMS_NAMESPACE.encode("ascii"), b"modified"),
+        (_CORE_PROPERTIES_NAMESPACE.encode("ascii"), b"lastPrinted"),
     }
-    names = [
-        prefix + b":" + local.encode("ascii")
-        for prefix, uri in namespaces.items()
-        for namespace, local in (
-            (_DCTERMS_NAMESPACE, "created"),
-            (_DCTERMS_NAMESPACE, "modified"),
-            (_CORE_PROPERTIES_NAMESPACE, "lastPrinted"),
-        )
-        if uri == namespace.encode("ascii")
-    ]
-    if not names:
-        raise ValueError("unsupported core property date representation")
-    alternation = b"|".join(re.escape(name) for name in sorted(names, key=len, reverse=True))
-    element_pattern = re.compile(
-        br"(?P<open><(?P<name>" + alternation + br")\b[^>]*>)"
-        br"(?P<text>[^<]*)(?P<close></(?P=name)\s*>)"
-    )
-    normalized, substitutions = element_pattern.subn(
-        lambda match: match.group("open") + FIXED_OFFICE_TIMESTAMP.encode("ascii") + match.group("close"),
-        payload,
-    )
-    if substitutions != volatile_count:
-        raise ValueError("unsupported core property date representation")
-    return normalized
+    frames: list[tuple[bytes, dict[bytes, bytes], int, bool]] = []
+    ranges: list[tuple[int, int]] = []
+    cursor = 0
+    while True:
+        start = payload.find(b"<", cursor)
+        if start < 0:
+            break
+        if payload.startswith(b"<!--", start):
+            end = payload.find(b"-->", start + 4)
+            if end < 0:
+                raise Phase7BOfficeError("unterminated XML comment in core properties")
+            cursor = end + 3
+            continue
+        if payload.startswith(b"<?", start):
+            end = payload.find(b"?>", start + 2)
+            if end < 0:
+                raise Phase7BOfficeError("unterminated XML processing instruction")
+            cursor = end + 2
+            continue
+        if payload.startswith(b"<![CDATA[", start):
+            end = payload.find(b"]]>", start + 9)
+            if end < 0:
+                raise Phase7BOfficeError("unterminated XML CDATA section")
+            cursor = end + 3
+            continue
+
+        end = _tag_end(payload, start)
+        content = payload[start + 1:end].strip()
+        cursor = end + 1
+        if not content or content.startswith(b"!"):
+            continue
+        if content.startswith(b"/"):
+            name = content[1:].strip()
+            if not frames or frames[-1][0] != name:
+                raise Phase7BOfficeError("unsupported core property date representation")
+            _, _, text_start, is_volatile = frames.pop()
+            if is_volatile:
+                text = payload[text_start:start]
+                if b"<" in text:
+                    raise Phase7BOfficeError("unsupported core property date representation")
+                ranges.append((text_start, start))
+            continue
+
+        self_closing = content.endswith(b"/")
+        body = content[:-1].rstrip() if self_closing else content
+        name = body.split(None, 1)[0]
+        scope = frames[-1][1].copy() if frames else {}
+        for prefix, _, uri in _NAMESPACE_DECLARATION.findall(body):
+            scope[prefix] = uri
+        is_volatile = _expanded_name(name, scope) in volatile_names
+        if self_closing:
+            if is_volatile:
+                raise Phase7BOfficeError("unsupported core property date representation")
+            continue
+        frames.append((name, scope, end + 1, is_volatile))
+
+    if frames:
+        raise Phase7BOfficeError("unterminated XML element in core properties")
+    return ranges
 
 
 def _validate_opc_part_names(infos: Sequence[ZipInfo]) -> None:
@@ -92,7 +176,7 @@ def _validate_opc_part_names(infos: Sequence[ZipInfo]) -> None:
         name = info.filename
         original_name = info.orig_filename
         if name in seen:
-            raise ValueError(f"duplicate OPC part name: {name}")
+            raise Phase7BOfficeError(f"duplicate OPC part name: {name}")
         seen.add(name)
         segments = name.split("/")
         if (
@@ -104,7 +188,7 @@ def _validate_opc_part_names(infos: Sequence[ZipInfo]) -> None:
             or name.endswith("/")
             or any(not segment or segment in {".", ".."} for segment in segments)
         ):
-            raise ValueError(f"invalid OPC part name: {name}")
+            raise Phase7BOfficeError(f"invalid OPC part name: {name}")
 
 
 def normalize_openxml_package(path: Path, suffix: str) -> None:
@@ -112,15 +196,26 @@ def normalize_openxml_package(path: Path, suffix: str) -> None:
     path = path.resolve(strict=True)
     expected_suffix = suffix.lower()
     if path.suffix.lower() != expected_suffix:
-        raise ValueError(f"expected {suffix} package")
+        raise Phase7BOfficeError(f"expected {suffix} package")
 
     with ZipFile(path) as source:
         infos = source.infolist()
         _validate_opc_part_names(infos)
-        entries = [
-            (info.filename, info.compress_type, source.read(info))
-            for info in infos
-        ]
+        try:
+            entries = [
+                (info.filename, info.compress_type, source.read(info))
+                for info in infos
+            ]
+        except (
+            EOFError,
+            NotImplementedError,
+            RuntimeError,
+            lzma.LZMAError,
+            zlib.error,
+        ) as exception:
+            raise Phase7BOfficeError(
+                "unable to decompress an Open XML package entry"
+            ) from exception
     for index, (name, compression, payload) in enumerate(entries):
         if name == "docProps/core.xml":
             entries[index] = (name, compression, normalize_core_properties(payload))

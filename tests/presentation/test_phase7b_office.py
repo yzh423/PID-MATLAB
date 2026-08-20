@@ -35,6 +35,16 @@ CORE_PROPERTIES = """<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"
 </cp:coreProperties>
 """
 
+DEFAULT_NAMESPACE_CORE_PROPERTIES = """<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>
+<!-- Default-core namespace comment retained byte-for-byte. -->
+<?phase7b preserve-default?>
+<coreProperties xmlns=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\" xmlns:dcterms=\"http://purl.org/dc/terms/\">
+  <lastPrinted>{last_printed}</lastPrinted>
+  <dcterms:created>{timestamp}</dcterms:created>
+  <dcterms:modified>{timestamp}</dcterms:modified>
+</coreProperties>
+"""
+
 
 def create_fixture_package(
     path: Path,
@@ -43,11 +53,12 @@ def create_fixture_package(
     *,
     last_printed: str | None = None,
     compression_by_name: dict[str, int] | None = None,
+    core_properties_template: str = CORE_PROPERTIES,
 ) -> None:
     """Create a valid minimal Open XML-like package with volatile ZIP metadata."""
     entries = {
         "[Content_Types].xml": b"<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"/>",
-        "docProps/core.xml": CORE_PROPERTIES.format(
+        "docProps/core.xml": core_properties_template.format(
             timestamp=timestamp,
             last_printed=last_printed or timestamp,
         ).encode("utf-8"),
@@ -65,6 +76,50 @@ def create_fixture_package(
 
 
 class Phase7BOfficeTests(unittest.TestCase):
+    def test_default_core_namespace_dates_are_normalized_byte_preservingly(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            first = Path(directory) / "default-first.pptx"
+            second = Path(directory) / "default-second.pptx"
+            create_fixture_package(
+                first,
+                "2026-08-21T01:02:03Z",
+                (2026, 8, 21, 1, 2, 4),
+                last_printed="2026-08-21T01:02:05Z",
+                core_properties_template=DEFAULT_NAMESPACE_CORE_PROPERTIES,
+            )
+            create_fixture_package(
+                second,
+                "2026-08-21T05:06:07Z",
+                (2026, 8, 21, 5, 6, 8),
+                last_printed="2026-08-21T05:06:09Z",
+                core_properties_template=DEFAULT_NAMESPACE_CORE_PROPERTIES,
+            )
+
+            normalize_openxml_package(first, ".pptx")
+            normalize_openxml_package(second, ".pptx")
+
+            self.assertEqual(sha256_file(first), sha256_file(second))
+            with ZipFile(first) as archive:
+                core = archive.read("docProps/core.xml")
+            self.assertIn(b'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>', core)
+            self.assertIn(b"Default-core namespace comment retained byte-for-byte.", core)
+            self.assertIn(b"<?phase7b preserve-default?>", core)
+            root = ElementTree.fromstring(core)
+            dates = [
+                element.text
+                for element in root
+                if element.tag in {
+                    "{http://schemas.openxmlformats.org/package/2006/metadata/core-properties}lastPrinted",
+                    "{http://purl.org/dc/terms/}created",
+                    "{http://purl.org/dc/terms/}modified",
+                }
+            ]
+            self.assertEqual(dates, [
+                FIXED_OFFICE_TIMESTAMP,
+                FIXED_OFFICE_TIMESTAMP,
+                FIXED_OFFICE_TIMESTAMP,
+            ])
+
     def test_openxml_normalization_is_binary_deterministic(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             first = Path(directory) / "first.pptx"
@@ -227,6 +282,14 @@ class Phase7BOfficeTests(unittest.TestCase):
 
             self.assertEqual(result, 2)
             self.assertIn("Office normalization failed", stderr.getvalue())
+
+    def test_command_does_not_hide_programming_runtime_errors(self) -> None:
+        with mock.patch(
+            "scripts.normalize_phase7b_office.normalize_openxml_package",
+            side_effect=RuntimeError("programming defect"),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "programming defect"):
+                normalize_main(["--path", "fixture.pptx", "--suffix", ".pptx"])
 
     def test_canonical_manifest_hashes_relative_paths_in_stable_order(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
