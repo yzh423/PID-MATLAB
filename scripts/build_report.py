@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Sequence
+import hashlib
+import json
 from pathlib import Path
 import sys
 import tempfile
@@ -19,6 +21,7 @@ from scripts.reporting.content import (
     validate_report,
 )
 from scripts.reporting.evidence import EvidenceError, load_evidence, resolve_tokens
+from scripts.reporting.document import DocumentBuildError, build_docx
 
 
 REFERENCE_MARKER = "<!-- REFERENCE_LIST -->"
@@ -40,12 +43,19 @@ def main(argv: Sequence[str] | None = None) -> int:
         template_path = root / "docs/report/technical_report_template.md"
         template = template_path.read_text(encoding="utf-8")
         template = insert_references(template, references)
-        markdown, _used = resolve_tokens(template, evidence)
+        markdown, used = resolve_tokens(template, evidence)
         validate_report(markdown, references)
-        atomic_write(root / "docs/report/technical_report.md", markdown)
+        markdown_path = root / "docs/report/technical_report.md"
+        atomic_write(markdown_path, markdown)
         if not args.markdown_only:
-            raise ContentError("use --markdown-only until the DOCX builder is installed")
-    except (ContentError, EvidenceError, OSError, UnicodeError) as exception:
+            build_docx_outputs(root, markdown, evidence, used)
+    except (
+        ContentError,
+        DocumentBuildError,
+        EvidenceError,
+        OSError,
+        UnicodeError,
+    ) as exception:
         print(f"report build failed: {exception}", file=sys.stderr)
         return 2
     return 0
@@ -79,6 +89,72 @@ def atomic_write(path: Path, text: str) -> None:
     except BaseException:
         temporary_path.unlink(missing_ok=True)
         raise
+
+
+def build_docx_outputs(
+    root: Path,
+    markdown: str,
+    evidence: dict[str, object],
+    used_tokens: set[str],
+) -> None:
+    report_dir = root / "docs/report"
+    docx_path = report_dir / "technical_report.docx"
+    metadata = build_docx(markdown, root, docx_path)
+
+    source_paths = [
+        root / "docs/report/technical_report_template.md",
+        root / "docs/report/references.json",
+        root / "results/report/report_evidence.json",
+    ]
+    artifact_records = evidence.get("artifacts")
+    if not isinstance(artifact_records, list):
+        raise EvidenceError("evidence artifacts must be a list")
+    figure_paths: list[Path] = []
+    for record in artifact_records:
+        if not isinstance(record, dict) or not isinstance(record.get("relativePath"), str):
+            raise EvidenceError("each evidence artifact requires relativePath")
+        figure_paths.append(root / record["relativePath"])
+    source_paths.extend(figure_paths)
+
+    if tuple(path.relative_to(root).as_posix() for path in figure_paths) != metadata.figure_paths:
+        raise DocumentBuildError("DOCX figures do not match the selected evidence figures")
+
+    generated_at = evidence.get("generatedAt")
+    if not isinstance(generated_at, str):
+        raise EvidenceError("evidence generatedAt must be a string")
+    manifest = {
+        "schemaVersion": 1,
+        "generatedAt": generated_at,
+        "stylePreset": "technical_report_a4_compact (compact_reference_guide basis)",
+        "sources": [_hash_record(path, root) for path in source_paths],
+        "outputs": [
+            _hash_record(report_dir / "technical_report.md", root),
+            _hash_record(docx_path, root),
+        ],
+        "usedEvidenceTokens": sorted(used_tokens),
+        "selectedFigures": list(metadata.figure_paths),
+        "document": {
+            "figureCount": metadata.figure_count,
+            "tableCount": metadata.table_count,
+        },
+    }
+    atomic_write(
+        report_dir / "build_manifest.json",
+        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
+    )
+
+
+def _hash_record(path: Path, root: Path) -> dict[str, str]:
+    if not path.is_file():
+        raise OSError(f"manifest input does not exist: {path}")
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return {
+        "path": path.resolve().relative_to(root.resolve()).as_posix(),
+        "sha256": digest.hexdigest(),
+    }
 
 
 if __name__ == "__main__":
