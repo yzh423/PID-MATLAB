@@ -34,7 +34,7 @@ for frameIndex = 1:numel(frameTime)
     frame = getframe(figureHandle);
     expectedSize = videoOptions.frameSize([2 1]);
     if ~isequal(size(frame.cdata,[1 2]),expectedSize)
-        frame.cdata = imresize(frame.cdata,expectedSize);
+        frame.cdata = resizeFrame(frame.cdata,expectedSize);
     end
     writer.writeVideo(frame);
 end
@@ -57,7 +57,8 @@ if validRun
     validRun = isequal(size(run.time),[sampleCount 1]) && ...
         sampleCount >= 2 && isequal(size(run.q),[2 sampleCount]) && ...
         all(isfinite([run.time.';run.q]),"all") && ...
-        all(diff(run.time) > 0) && run.status == "completed" && ...
+        all(diff(run.time) > 0) && isstring(run.status) && ...
+        isscalar(run.status) && run.status == "completed" && ...
         run.completedSamples == sampleCount;
 end
 validVideo = all(isfield(videoOptions,requiredVideo));
@@ -79,6 +80,12 @@ if ~all(isfield(robot,requiredRobot)) || ...
     error("rrm:multibody:InvalidVideoInput", ...
         "Robot, Multibody run, or video options are invalid.");
 end
+end
+
+function resized = resizeFrame(image,expectedSize)
+rowIndex = round(linspace(1,size(image,1),expectedSize(1)));
+columnIndex = round(linspace(1,size(image,2),expectedSize(2)));
+resized = image(rowIndex,columnIndex,:);
 end
 
 function [figureHandle,graphics] = makeFigure(robot,frameSize)

@@ -7,7 +7,7 @@ classdef TestBuildCrossValidationModel < matlab.unittest.TestCase
             modelPath = fullfile(directory,"rrm_mb_shell_test.slx");
 
             modelName = rrm.multibody.buildCrossValidationModel(modelPath);
-            cleanup = onCleanup(@() closeLoadedModel(modelName)); %#ok<NASGU>
+            cleanup = onCleanup(@() closeLoadedModel(modelName));
 
             testCase.verifyTrue(isfile(modelPath));
             testCase.verifyEqual(string(get_param(modelName,"Solver")),"ode4");
@@ -55,6 +55,12 @@ classdef TestBuildCrossValidationModel < matlab.unittest.TestCase
                 "SearchDepth",1,"Name","Link 1 Solid"));
             testCase.verifyNotEmpty(find_system(plant, ...
                 "SearchDepth",1,"Name","Link 2 Solid"));
+            testCase.verifyEqual(string(get_param( ...
+                plant+"/Link 1 Solid","CenterOfMass")), ...
+                "[rrmMbCenterOfMass(1)-rrmMbLinkLength(1)/2 0 0]");
+            testCase.verifyEqual(string(get_param( ...
+                plant+"/Link 2 Solid","CenterOfMass")), ...
+                "[rrmMbCenterOfMass(2)-rrmMbLinkLength(2)/2 0 0]");
             testCase.verifyNotEmpty(find_system(plant, ...
                 "SearchDepth",1,"Name","Payload Inertia"));
             testCase.verifyNotEmpty(find_system(plant, ...
@@ -65,6 +71,8 @@ classdef TestBuildCrossValidationModel < matlab.unittest.TestCase
                 workspace,"rrmMbLinkLength"),[0.45;0.35]);
             testCase.verifyEqual(getVariable( ...
                 workspace,"rrmMbLinkMass"),[2.0;1.5]);
+            testCase.verifyEqual(getVariable( ...
+                workspace,"rrmMbCenterOfMass"),[0.225;0.175]);
             testCase.verifyEqual(getVariable( ...
                 workspace,"rrmMbPayload"),0.5);
             testCase.verifyEqual(getVariable( ...
@@ -90,7 +98,7 @@ classdef TestBuildCrossValidationModel < matlab.unittest.TestCase
             firstName = rrm.multibody.buildCrossValidationModel(modelPath);
             closeLoadedModel(firstName);
             secondName = rrm.multibody.buildCrossValidationModel(modelPath);
-            cleanup = onCleanup(@() closeLoadedModel(secondName)); %#ok<NASGU>
+            cleanup = onCleanup(@() closeLoadedModel(secondName));
 
             testCase.verifyEqual(secondName,firstName);
             testCase.verifyTrue(isfile(modelPath));
@@ -107,12 +115,12 @@ classdef TestBuildCrossValidationModel < matlab.unittest.TestCase
             projectRoot = fileparts(fileparts(fileparts(mfilename("fullpath"))));
             expectedPath = fullfile(projectRoot,relativePath);
             fileCleanup = onCleanup( ...
-                @() deleteIfPresent(expectedPath)); %#ok<NASGU>
+                @() deleteIfPresent(expectedPath));
             temporaryCurrentFolder = tempname;
             mkdir(temporaryCurrentFolder);
             originalFolder = cd(temporaryCurrentFolder);
             currentFolderCleanup = onCleanup(@() restoreAndRemove( ...
-                originalFolder,temporaryCurrentFolder)); %#ok<NASGU>
+                originalFolder,temporaryCurrentFolder));
 
             modelName = rrm.multibody.buildCrossValidationModel(relativePath);
 
