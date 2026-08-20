@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 TEMPLATE = ROOT / "docs/presentation/phase7b_template.json"
 MANIFEST = ROOT / "docs/report/build_manifest.json"
 EVIDENCE = ROOT / "results/report/report_evidence.json"
+PACKAGE = ROOT / "results/presentation/phase7b_package.json"
 
 
 def stage_phase7a_fixture(root: Path) -> None:
@@ -139,6 +140,12 @@ class Phase7BEvidenceTests(unittest.TestCase):
         self.assertEqual(
             package["summary"]["sources"][-1],
             source_hashes["manifest"]["path"],
+        )
+
+    def test_current_exported_package_matches_current_template_resolution(self) -> None:
+        self.assertEqual(
+            json.loads(PACKAGE.read_text(encoding="utf-8")),
+            build_phase7b_package(ROOT),
         )
 
     def test_changed_evidence_hash_is_rejected_before_claim_resolution(self) -> None:
