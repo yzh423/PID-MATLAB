@@ -1,0 +1,100 @@
+[
+  {
+    "id": 1,
+    "authors": "K. J. Åström and T. Hägglund",
+    "title": "The future of PID control",
+    "container": "Control Engineering Practice, vol. 9, no. 11",
+    "year": 2001,
+    "pages": "1163–1175",
+    "doi": "10.1016/S0967-0661(01)00062-4",
+    "url": "https://doi.org/10.1016/S0967-0661(01)00062-4",
+    "sourceType": "journal",
+    "supports": ["pid-context", "pid-design-tradeoffs"]
+  },
+  {
+    "id": 2,
+    "authors": "L. A. Zadeh",
+    "title": "Fuzzy sets",
+    "container": "Information and Control, vol. 8, no. 3",
+    "year": 1965,
+    "pages": "338–353",
+    "doi": "10.1016/S0019-9958(65)90241-X",
+    "url": "https://doi.org/10.1016/S0019-9958(65)90241-X",
+    "sourceType": "journal",
+    "supports": ["fuzzy-set-foundation"]
+  },
+  {
+    "id": 3,
+    "authors": "E. H. Mamdani and S. Assilian",
+    "title": "An experiment in linguistic synthesis with a fuzzy logic controller",
+    "container": "International Journal of Man-Machine Studies, vol. 7, no. 1",
+    "year": 1975,
+    "pages": "1–13",
+    "doi": "10.1016/S0020-7373(75)80002-2",
+    "url": "https://doi.org/10.1016/S0020-7373(75)80002-2",
+    "sourceType": "journal",
+    "supports": ["mamdani-controller-foundation"]
+  },
+  {
+    "id": 4,
+    "authors": "E. B. Wilson",
+    "title": "Probable inference, the law of succession, and statistical inference",
+    "container": "Journal of the American Statistical Association, vol. 22, no. 158",
+    "year": 1927,
+    "pages": "209–212",
+    "doi": "10.1080/01621459.1927.10502953",
+    "url": "https://doi.org/10.1080/01621459.1927.10502953",
+    "sourceType": "journal",
+    "supports": ["binomial-confidence-interval"]
+  },
+  {
+    "id": 5,
+    "authors": "MathWorks",
+    "title": "fmincon: Solve constrained nonlinear multivariable minimization problem",
+    "container": "Optimization Toolbox documentation",
+    "year": 2026,
+    "pages": "online",
+    "doi": "",
+    "url": "https://www.mathworks.com/help/optim/ug/fmincon.html",
+    "sourceType": "documentation",
+    "supports": ["constrained-pid-optimization"],
+    "accessedAt": "2026-08-20"
+  },
+  {
+    "id": 6,
+    "authors": "MathWorks",
+    "title": "Simscape Multibody: Model and simulate multibody mechanical systems",
+    "container": "Simscape Multibody documentation",
+    "year": 2026,
+    "pages": "online",
+    "doi": "",
+    "url": "https://www.mathworks.com/help/sm/",
+    "sourceType": "documentation",
+    "supports": ["independent-multibody-model"],
+    "accessedAt": "2026-08-20"
+  },
+  {
+    "id": 7,
+    "authors": "D. Driess et al.",
+    "title": "PaLM-E: An Embodied Multimodal Language Model",
+    "container": "arXiv preprint arXiv:2303.03378",
+    "year": 2023,
+    "pages": "online",
+    "doi": "",
+    "url": "https://arxiv.org/abs/2303.03378",
+    "sourceType": "preprint",
+    "supports": ["embodied-multimodal-planning-context"]
+  },
+  {
+    "id": 8,
+    "authors": "B. Zitkovich et al.",
+    "title": "RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control",
+    "container": "Proceedings of the 7th Conference on Robot Learning, PMLR 229",
+    "year": 2023,
+    "pages": "2165–2183",
+    "doi": "",
+    "url": "https://proceedings.mlr.press/v229/zitkovich23a.html",
+    "sourceType": "conference",
+    "supports": ["vision-language-action-context"]
+  }
+]

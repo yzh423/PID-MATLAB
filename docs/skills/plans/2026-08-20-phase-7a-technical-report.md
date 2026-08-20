@@ -367,7 +367,7 @@ Create `docs/report/references.json` with stable IDs 1 through 8 and these verif
 5. MathWorks, “fmincon: Solve constrained nonlinear multivariable minimization problem,” official documentation, `https://www.mathworks.com/help/optim/ug/fmincon.html`.
 6. MathWorks, “Simscape Multibody: Model and simulate multibody mechanical systems,” official documentation, `https://www.mathworks.com/help/sm/`.
 7. D. Driess et al., “PaLM-E: An Embodied Multimodal Language Model,” arXiv:`2303.03378`, 2023, `https://arxiv.org/abs/2303.03378`.
-8. A. Brohan et al., “RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control,” CoRL/PMLR 229, 2165–2183, 2023, `https://proceedings.mlr.press/v229/zitkovich23a.html`.
+8. B. Zitkovich et al., “RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control,” CoRL/PMLR 229, 2165–2183, 2023, `https://proceedings.mlr.press/v229/zitkovich23a.html`.
 
 Each record includes `id`, `authors`, `title`, `container`, `year`, `pages`, `doi`, `url`, `sourceType`, and at least one `supports` claim label. DOI records use `https://doi.org/<doi>` as the URL.
 
