@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import re
 import subprocess
 import unittest
 
@@ -51,6 +52,42 @@ class Phase7BOutputTests(unittest.TestCase):
         self.assertIn("ComputeStatistics(2)", source)
         self.assertNotIn("'docxPages': 1", source)
         self.assertIn("Remove-Item -LiteralPath $rebuildRoot -Force -Recurse", source)
+
+    def test_verifier_orders_manifest_paths_with_ordinal_comparison(self) -> None:
+        source = VERIFY.read_text(encoding="utf-8")
+        self.assertIn("Get-OrdinalSortedRecords", source)
+        self.assertIn("[System.StringComparer]::Ordinal.Compare", source)
+        self.assertNotIn("Sort-Object path", source)
+        function_match = re.search(
+            r"(function Get-OrdinalSortedRecords\s*\{.*?\n\}\r?\n\r?\n)(?=function Write-Phase7BManifest)",
+            source,
+            re.DOTALL,
+        )
+        self.assertIsNotNone(function_match)
+        assert function_match is not None
+        paths = [
+            "scripts/build_research_summary_pdf.py",
+            "scripts/build_research_summary.py",
+            "scripts/a_b.py",
+            "scripts/a.b.py",
+            "scripts/A.py",
+            "scripts/a.py",
+        ]
+        command = (
+            function_match.group(1)
+            + "$records = @(" + ",".join(
+                f"[PSCustomObject]@{{path='{path}';sha256='x'}}" for path in paths
+            ) + ")\n"
+            + "Get-OrdinalSortedRecords -Records $records | ForEach-Object { $_.path }\n"
+        )
+        completed = subprocess.run(
+            ["powershell", "-NoProfile", "-Command", command],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(completed.stdout.splitlines(), sorted(paths))
 
     def test_manifest_hashes_all_inputs_and_outputs(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))

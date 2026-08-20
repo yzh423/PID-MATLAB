@@ -63,6 +63,22 @@ class Phase7BEvidenceTests(unittest.TestCase):
             "nominal, payload, configuration, uncertainty, disturbance, actuator, and combined",
             deterministic["body"][0],
         )
+        self.assertIn(
+            "results/data/deterministic_robustness_runs.csv",
+            deterministic["sources"],
+        )
+        stochastic = template["deck"]["slides"][5]
+        self.assertIn(
+            "results/data/stochastic_robustness_trials.csv",
+            stochastic["sources"],
+        )
+        conclusion = template["deck"]["slides"][8]
+        self.assertEqual(
+            conclusion["interpretation"],
+            "Fuzzy-PID's nominal advantage is limited to joint-2 steady-state RMS; "
+            "optimized PID provides the best aggregate deterministic and Cartesian reliability, "
+            "with a torque-slew trade-off under noise.",
+        )
         summary = template["summary"]
         self.assertEqual(
             summary["sources"],

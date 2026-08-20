@@ -94,6 +94,20 @@ function Get-RelativeHashRecord {
     }
 }
 
+function Get-OrdinalSortedRecords {
+    param([object[]]$Records)
+    $ordered = [System.Collections.Generic.List[object]]::new()
+    foreach ($record in $Records) {
+        [void]$ordered.Add($record)
+    }
+    $comparison = [System.Comparison[object]]{
+        param($left, $right)
+        [System.StringComparer]::Ordinal.Compare([string]$left.path, [string]$right.path)
+    }
+    $ordered.Sort($comparison)
+    return $ordered.ToArray()
+}
+
 function Write-Phase7BManifest {
     param([string]$ProjectRoot, [int]$DocxPageCount)
     $sourcePaths = @(
@@ -125,8 +139,8 @@ function Write-Phase7BManifest {
     $manifest = [ordered]@{
         schemaVersion = 1
         generatedAt = '2026-08-21T00:00:00Z'
-        sources = @($sourcePaths | ForEach-Object { Get-RelativeHashRecord -ProjectRoot $ProjectRoot -Path (Join-Path $ProjectRoot $_) } | Sort-Object path)
-        outputs = @($outputPaths | ForEach-Object { Get-RelativeHashRecord -ProjectRoot $ProjectRoot -Path (Join-Path $ProjectRoot $_) } | Sort-Object path)
+        sources = @(Get-OrdinalSortedRecords -Records @($sourcePaths | ForEach-Object { Get-RelativeHashRecord -ProjectRoot $ProjectRoot -Path (Join-Path $ProjectRoot $_) }))
+        outputs = @(Get-OrdinalSortedRecords -Records @($outputPaths | ForEach-Object { Get-RelativeHashRecord -ProjectRoot $ProjectRoot -Path (Join-Path $ProjectRoot $_) }))
         document = [ordered]@{ notesCount = 10; slideCount = 10; summaryPageCount = $DocxPageCount }
     }
     $manifestRoot = Join-Path $ProjectRoot 'docs\presentation'

@@ -68,7 +68,7 @@
         "figureAlt": "Deterministic robustness success counts and error summary",
         "figureFrame": {"left": 620, "top": 138, "width": 600, "height": 470},
         "presenterNote": "State both the aggregate ranking and the shared combined-condition failure.",
-        "sources": ["docs/report/technical_report.md", "results/figures/deterministic_robustness_summary.png", "results/data/deterministic_robustness_summary.csv"]
+        "sources": ["docs/report/technical_report.md", "results/figures/deterministic_robustness_summary.png", "results/data/deterministic_robustness_summary.csv", "results/data/deterministic_robustness_runs.csv"]
       },
       {
         "id": "stochastic",
@@ -82,7 +82,7 @@
         "figureAlt": "Stochastic robustness torque-slew comparison",
         "figureFrame": {"left": 620, "top": 138, "width": 600, "height": 470},
         "presenterNote": "Use the paired-seed design to explain why the controller comparison is fair.",
-        "sources": ["docs/report/technical_report.md", "results/figures/stochastic_robustness_chattering.png", "results/data/stochastic_robustness_summary.csv"]
+        "sources": ["docs/report/technical_report.md", "results/figures/stochastic_robustness_chattering.png", "results/data/stochastic_robustness_summary.csv", "results/data/stochastic_robustness_trials.csv"]
       },
       {
         "id": "cartesian",
@@ -120,7 +120,7 @@
           {"value": "{{deterministic.successCount.fuzzyPid}}/{{deterministic.scenarioCount}}", "label": "Fuzzy-PID deterministic success"},
           {"value": "{{deterministic.successCount.optimizedPid}}/{{deterministic.scenarioCount}}", "label": "optimized PID deterministic success"}
         ],
-        "interpretation": "Fuzzy adaptation gives a small nominal joint-2 benefit; optimized PID provides the best aggregate deterministic and Cartesian reliability, with a torque-slew trade-off under noise.",
+        "interpretation": "Fuzzy-PID's nominal advantage is limited to joint-2 steady-state RMS; optimized PID provides the best aggregate deterministic and Cartesian reliability, with a torque-slew trade-off under noise.",
         "presenterNote": "Deliver a conditional conclusion, not a universal-controller claim.",
         "sources": ["docs/report/technical_report.md", "results/report/report_evidence.json"]
       },

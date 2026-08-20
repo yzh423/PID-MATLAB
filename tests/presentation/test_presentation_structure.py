@@ -52,6 +52,13 @@ class PresentationStructureTests(unittest.TestCase):
             for name in notes:
                 self.assertIn("[Sources]", xml_text(archive.read(name)))
 
+    def test_stress_slides_note_their_row_level_csv_evidence(self) -> None:
+        with ZipFile(PPTX) as archive:
+            deterministic_notes = xml_text(archive.read("ppt/notesSlides/notesSlide5.xml"))
+            stochastic_notes = xml_text(archive.read("ppt/notesSlides/notesSlide6.xml"))
+        self.assertIn("results/data/deterministic_robustness_runs.csv", deterministic_notes)
+        self.assertIn("results/data/stochastic_robustness_trials.csv", stochastic_notes)
+
     def test_deck_contains_contract_claims_and_no_placeholders(self) -> None:
         self.assertTrue(PPTX.is_file())
         text = pptx_text(PPTX)
@@ -64,6 +71,15 @@ class PresentationStructureTests(unittest.TestCase):
         text = pptx_text(PPTX)
         self.assertIn(
             "39 controller-scenario runs across nominal, payload, configuration, uncertainty, disturbance, actuator, and combined conditions.",
+            text,
+        )
+
+    def test_deck_limits_the_fuzzy_nominal_advantage_to_steady_state_rms(self) -> None:
+        text = pptx_text(PPTX)
+        self.assertIn(
+            "Fuzzy-PID's nominal advantage is limited to joint-2 steady-state RMS; "
+            "optimized PID provides the best aggregate deterministic and Cartesian reliability, "
+            "with a torque-slew trade-off under noise.",
             text,
         )
 
