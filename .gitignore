@@ -4,6 +4,8 @@
 results/data/*.mat
 results/data/*.csv
 results/figures/*.png
+results/videos/*.avi
+results/videos/*.mp4
 
 # MATLAB temporary and autosave files
 *.asv
