@@ -1,0 +1,53 @@
+classdef TestCartesianQuintic < matlab.unittest.TestCase
+    methods (Test)
+        function satisfiesEndpointAndStraightLineConditions(testCase)
+            p0 = [0.55;0.12];
+            pf = [0.22;0.48];
+
+            path = rrm.trajectory.cartesianQuintic( ...
+                p0,pf,3,0.001,4);
+
+            testCase.verifyEqual(path.position(:,1),p0,AbsTol=1e-12);
+            testCase.verifyEqual(path.position(:,end),pf,AbsTol=1e-12);
+            testCase.verifyEqual(path.velocity(:,[1 end]), ...
+                zeros(2,2),AbsTol=1e-10);
+            testCase.verifyEqual(path.acceleration(:,[1 end]), ...
+                zeros(2,2),AbsTol=1e-9);
+            delta = pf-p0;
+            offset = path.position-p0;
+            crossProduct = delta(1)*offset(2,:)- ...
+                delta(2)*offset(1,:);
+            testCase.verifyLessThan(max(abs(crossProduct)),1e-12);
+            testCase.verifySize(path.time,[4001 1]);
+        end
+
+        function holdsFinalPointAfterMotion(testCase)
+            pf = [0.22;0.48];
+            path = rrm.trajectory.cartesianQuintic( ...
+                [0.55;0.12],pf,3,0.01,4);
+            holdSamples = path.time >= 3;
+
+            testCase.verifyEqual(path.position(:,holdSamples), ...
+                repmat(pf,1,nnz(holdSamples)),AbsTol=1e-12);
+            testCase.verifyEqual(path.velocity(:,holdSamples), ...
+                zeros(2,nnz(holdSamples)),AbsTol=1e-12);
+            testCase.verifyEqual(path.acceleration(:,holdSamples), ...
+                zeros(2,nnz(holdSamples)),AbsTol=1e-12);
+        end
+
+        function rejectsInvalidVectorsDurationsAndGrids(testCase)
+            testCase.verifyError(@() rrm.trajectory.cartesianQuintic( ...
+                [0 0],[0.2;0.3],1,0.1,1), ...
+                "rrm:trajectory:InvalidCartesianPath");
+            testCase.verifyError(@() rrm.trajectory.cartesianQuintic( ...
+                [0;0],[0.2;0.3],1,0.1,0.9), ...
+                "rrm:trajectory:InvalidCartesianPath");
+            testCase.verifyError(@() rrm.trajectory.cartesianQuintic( ...
+                [0;0],[0.2;0.3],1,0.3,1), ...
+                "rrm:trajectory:InvalidCartesianPath");
+            testCase.verifyError(@() rrm.trajectory.cartesianQuintic( ...
+                [0;0],[0.2;0.3],0.95,0.1,1), ...
+                "rrm:trajectory:InvalidCartesianPath");
+        end
+    end
+end
