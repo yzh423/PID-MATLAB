@@ -24,7 +24,7 @@ EVIDENCE = ROOT / "results/report/report_evidence.json"
 def stage_phase7a_fixture(root: Path) -> None:
     """Create a valid, independently mutable Phase 7A package fixture."""
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    for record in manifest["sources"]:
+    for record in [*manifest["sources"], *manifest.get("outputs", [])]:
         source = ROOT / record["path"]
         destination = root / record["path"]
         destination.parent.mkdir(parents=True, exist_ok=True)
@@ -55,6 +55,28 @@ class Phase7BEvidenceTests(unittest.TestCase):
         self.assertEqual(template["deck"]["slides"][0]["id"], "opening")
         self.assertEqual(template["deck"]["slides"][-1]["id"], "next-steps")
         self.assertIn("summary", template)
+
+    def test_template_makes_claim_boundaries_explicit(self) -> None:
+        template = load_phase7b_template(TEMPLATE)
+        deterministic = template["deck"]["slides"][4]
+        self.assertIn(
+            "nominal, payload, configuration, uncertainty, disturbance, actuator, and combined",
+            deterministic["body"][0],
+        )
+        summary = template["summary"]
+        self.assertEqual(
+            summary["sources"],
+            [
+                "docs/report/technical_report.md",
+                "results/report/report_evidence.json",
+                "docs/report/build_manifest.json",
+            ],
+        )
+        self.assertEqual(summary["results"][1]["label"], "optimized PID deterministic scenarios passed")
+        self.assertEqual(
+            summary["results"][2]["label"],
+            "per controller-scenario cell: isolated-noise cell vs full-combined-stress cell",
+        )
 
     def test_package_has_exact_schema_resolved_tokens_and_source_hashes(self) -> None:
         package = build_phase7b_package(ROOT)
@@ -98,6 +120,10 @@ class Phase7BEvidenceTests(unittest.TestCase):
         self.assertEqual(len(source_hashes["sources"]), 9)
         self.assertEqual(len(package["selectedFigures"]), 6)
         self.assertEqual(package["summary"]["figure"], "results/figures/deterministic_robustness_summary.png")
+        self.assertEqual(
+            package["summary"]["sources"][-1],
+            source_hashes["manifest"]["path"],
+        )
 
     def test_changed_evidence_hash_is_rejected_before_claim_resolution(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -161,6 +187,17 @@ class Phase7BEvidenceTests(unittest.TestCase):
             template["summary"]["results"] = "not a result list"
             template_path.write_text(json.dumps(template), encoding="utf-8")
             with self.assertRaisesRegex(Phase7BEvidenceError, "summary"):
+                build_phase7b_package(fake_root)
+
+    def test_summary_source_must_be_phase7a_admitted(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            fake_root = Path(directory)
+            stage_phase7a_fixture(fake_root)
+            template_path = fake_root / "docs/presentation/phase7b_template.json"
+            template = json.loads(template_path.read_text(encoding="utf-8"))
+            template["summary"]["sources"][-1] = "docs/report/PAPER_CLAIM_AUDIT.md"
+            template_path.write_text(json.dumps(template), encoding="utf-8")
+            with self.assertRaisesRegex(Phase7BEvidenceError, "summary source is not admitted"):
                 build_phase7b_package(fake_root)
 
     def test_write_is_deterministic_and_atomically_replaces_output(self) -> None:

@@ -4,7 +4,7 @@
     "sources":  [
                     {
                         "path":  "docs/presentation/phase7b_template.json",
-                        "sha256":  "18f357c1da9349e3a07690959eb8794f556df8485fb35e1c39b0d1ada5146fe8"
+                        "sha256":  "4abb2223a077808defad85d5935ff39346261bc40836a2ef5d56859de35d7fa7"
                     },
                     {
                         "path":  "docs/report/build_manifest.json",
@@ -36,7 +36,7 @@
                     },
                     {
                         "path":  "results/presentation/phase7b_package.json",
-                        "sha256":  "10d663a1c0a849e2956c7838617e51c8b696ea5944061f04b3509042d8f49146"
+                        "sha256":  "828678eb1d267120860ccaf772ebe90c50d1fd3a20d915ff9468610e3cba4f42"
                     },
                     {
                         "path":  "results/report/report_evidence.json",
@@ -68,7 +68,7 @@
                     },
                     {
                         "path":  "scripts/phase7b/evidence.py",
-                        "sha256":  "a9428a373f99e6a7714347331dcbfa0f8bc30bee9cf9466a829b0ee839124dd1"
+                        "sha256":  "443ddfe0ce5bdd6d32e0aec00bac91333fbc33189aa0015fba21bb97cd4fd1af"
                     },
                     {
                         "path":  "scripts/phase7b/office.py",
@@ -82,15 +82,15 @@
     "outputs":  [
                     {
                         "path":  "docs/summary/research_summary.docx",
-                        "sha256":  "90b5030c39ac41564e1bfac79c1f1b744b7d77b3d5d44241b47736c5f256265c"
+                        "sha256":  "520ce606a10e2e3dbdb2463bd00bd3782fec52c37646491c222ceeff0bb2f3a4"
                     },
                     {
                         "path":  "docs/summary/research_summary.pdf",
-                        "sha256":  "8ff175dcbdf71e66ed036bd64116be27a18261814f7a4254611d563fb156652d"
+                        "sha256":  "d7f614fb20edaff37a7fa12c2d44619aadf6b673cfac06728b527a8cbe0672db"
                     },
                     {
                         "path":  "presentation/final_presentation.pptx",
-                        "sha256":  "2a70ecc754c1b19318d15e2d11406624e27088eaa6d03868902213723ee4cf22"
+                        "sha256":  "7034741f2f5c6588176e792dd6d7e80dfa0daa9e23b01ab6c040fc50b7022bb3"
                     }
                 ],
     "document":  {

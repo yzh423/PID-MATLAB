@@ -280,6 +280,39 @@ def _admit_selected_figures(
     return selected
 
 
+def _validate_summary_sources(
+    root: Path,
+    summary: Mapping[str, object],
+    manifest: Mapping[str, object],
+    admitted_sources: Sequence[Mapping[str, str]],
+) -> None:
+    """Require visible summary sources to be hash-traceable Phase 7A records."""
+    output_records = manifest.get("outputs")
+    if not isinstance(output_records, Sequence):
+        raise Phase7BEvidenceError("Phase 7A build manifest requires an outputs list")
+    admitted = {record["path"]: record["sha256"] for record in admitted_sources}
+    for record in output_records:
+        if not isinstance(record, Mapping):
+            raise Phase7BEvidenceError("Phase 7A output record must be an object")
+        path = record.get("path")
+        digest = record.get("sha256")
+        if not isinstance(path, str) or not isinstance(digest, str):
+            raise Phase7BEvidenceError("Phase 7A output record requires path and sha256 strings")
+        admitted[path] = digest
+    manifest_path = "docs/report/build_manifest.json"
+    admitted[manifest_path] = sha256_file(root / manifest_path)
+    sources = summary["sources"]
+    assert isinstance(sources, list)
+    for source in sources:
+        assert isinstance(source, str)
+        expected_digest = admitted.get(source)
+        if expected_digest is None:
+            raise Phase7BEvidenceError(f"summary source is not admitted by Phase 7A: {source}")
+        source_path = _safe_source_path(root, source)
+        if not source_path.is_file() or sha256_file(source_path) != expected_digest:
+            raise Phase7BEvidenceError(f"Phase 7A summary source hash mismatch: {source}")
+
+
 def build_phase7b_package(root: Path) -> dict[str, object]:
     """Resolve the frozen template and admit all Phase 7A source boundaries."""
     root = root.resolve(strict=True)
@@ -308,6 +341,7 @@ def build_phase7b_package(root: Path) -> dict[str, object]:
     if not isinstance(resolved, dict):
         raise Phase7BEvidenceError("Phase 7B template root must resolve to an object")
     deck, slides, summary = _validate_template_shape(resolved)
+    _validate_summary_sources(root, summary, manifest, admitted_sources)
     selected = _admit_selected_figures(root, slides, summary, admitted_sources)
     return {
         "schemaVersion": 1,

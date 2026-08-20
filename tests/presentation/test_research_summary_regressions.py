@@ -80,8 +80,19 @@ class ResearchSummaryPDFLayoutTests(unittest.TestCase):
             "fallback must embed an Arial-compatible font rather than rely on base-14 Helvetica",
         )
         text = page.extract_text() or ""
-        for claim in ("7.283%", "10/13", "30/30", "0/30", "Simulation scope", "Limitations and next steps"):
-            self.assertIn(claim, text)
+        normalized_text = re.sub(r"\s+", " ", text)
+        for claim in (
+            "7.283%",
+            "10/13",
+            "30/30",
+            "0/30",
+            "optimized PID deterministic scenarios passed",
+            "per controller-scenario cell: isolated-noise cell vs full-combined-stress cell",
+            "docs/report/build_manifest.json",
+            "Simulation scope",
+            "Limitations and next steps",
+        ):
+            self.assertIn(claim, normalized_text)
         with pdfplumber.open(PDF) as document:
             source_words = [word for word in document.pages[0].extract_words() if word["text"].startswith("Sources:")]
         self.assertEqual(len(source_words), 1)

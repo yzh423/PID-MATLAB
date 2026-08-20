@@ -23,6 +23,13 @@ class ResearchSummaryTests(unittest.TestCase):
         text = "\n".join(paragraph.text for paragraph in document.paragraphs)
         for value in ("7.283%", "10/13", "30/30", "0/30"):
             self.assertIn(value, text)
+        self.assertIn("optimized PID deterministic scenarios passed", text)
+        self.assertIn(
+            "per controller-scenario cell: isolated-noise cell vs full-combined-stress cell",
+            text,
+        )
+        self.assertIn("docs/report/build_manifest.json", text)
+        self.assertNotIn("docs/report/PAPER_CLAIM_AUDIT.md", text)
         self.assertIn("Simulation scope", text)
         self.assertNotIn("{{", text)
 

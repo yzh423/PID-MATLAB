@@ -60,6 +60,13 @@ class PresentationStructureTests(unittest.TestCase):
         for forbidden in ("{{", "}}", "Lorem ipsum", "Title here", "placeholder"):
             self.assertNotIn(forbidden, text)
 
+    def test_deck_names_every_deterministic_stress_category(self) -> None:
+        text = pptx_text(PPTX)
+        self.assertIn(
+            "39 controller-scenario runs across nominal, payload, configuration, uncertainty, disturbance, actuator, and combined conditions.",
+            text,
+        )
+
     def test_resolved_title_and_claims_meet_layout_thresholds(self) -> None:
         title = layout_element(9, "slide-9-title")
         self.assertGreaterEqual(title["resolvedFontSize"], 35)
