@@ -103,7 +103,7 @@ results/report/report_evidence.json
 
 ### Evidence Export Boundary
 
-`experiments/export_report_evidence.m` reads the existing formal artifacts under `results/data` and writes `results/report/report_evidence.json`. It does not rerun or mutate any controller experiment.
+`rrm.report.exportEvidence(projectRoot, outputPath)` reads the existing formal artifacts under `results/data`, validates their schemas, writes `results/report/report_evidence.json`, and returns the same scalar evidence struct for tests. `experiments/export_report_evidence.m` is the thin reproducible entry point. Neither layer reruns or mutates a controller experiment.
 
 The manifest contains:
 
@@ -218,6 +218,8 @@ Run existing project verification:
 ## Project Structure
 
 ```text
++rrm/+report/
+  exportEvidence.m              Validated MAT/CSV to report evidence boundary
 docs/report/
   technical_report_template.md   Canonical narrative template with named evidence tokens
   technical_report.md            Resolved canonical report
@@ -234,6 +236,7 @@ scripts/
   export_report_pdf.ps1          Hidden Word PDF export with guaranteed cleanup
   verify_report.ps1              Evidence, tests, build, PDF, and content gate
 tests/report/
+  TestExportReportEvidence.m    MATLAB source-artifact and schema tests
   test_report_evidence.py        Manifest schema and frozen-count tests
   test_report_build.py           Token, citation, DOCX, PDF, and claim tests
 docs/skills/specs/
