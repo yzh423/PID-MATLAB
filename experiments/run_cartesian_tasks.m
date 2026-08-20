@@ -255,9 +255,9 @@ figureHandle = figure("Visible","off","Color","white", ...
     "Position",[100 100 1200 480]);
 layout = tiledlayout(figureHandle,1,3, ...
     "TileSpacing","compact","Padding","compact");
-variables = ["CartesianRms","CartesianMax","TotalSaturationTime"];
+variables = ["CartesianRms","CartesianMax","Success"];
 yLabels = ["Cartesian RMS (m)","Cartesian max (m)", ...
-    "Joint-summed saturation (s)"];
+    "Task success"];
 tasks = unique(runTable.Task,"stable");
 controllers = unique(runTable.Controller,"stable");
 for variableIndex = 1:numel(variables)
@@ -277,7 +277,11 @@ for variableIndex = 1:numel(variables)
     xtickangle(axisHandle,20);
     ylabel(axisHandle,yLabels(variableIndex));
     grid(axisHandle,"on");
-    legend(axisHandle,controllers,"Location","best");
+    if variables(variableIndex) == "Success"
+        ylim(axisHandle,[0 1.1]);
+        legend(axisHandle,controllers,"Location","northoutside", ...
+            "Orientation","horizontal");
+    end
 end
 title(layout,"Cartesian Task Summary");
 end
