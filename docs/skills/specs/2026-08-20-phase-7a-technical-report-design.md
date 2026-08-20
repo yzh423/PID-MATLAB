@@ -232,9 +232,13 @@ experiments/
 results/report/
   report_evidence.json           Generated structured evidence source
 scripts/
-  build_report.py                Token validation, Markdown resolution, and DOCX build
+  build_report.py                Thin report-build command-line entry point
   export_report_pdf.ps1          Hidden Word PDF export with guaranteed cleanup
   verify_report.ps1              Evidence, tests, build, PDF, and content gate
+  reporting/
+    evidence.py                  Manifest schema, value formatting, and token resolution
+    content.py                   Template, citation, caption, and claim validation
+    document.py                  Deterministic python-docx styles and assembly
 tests/report/
   TestExportReportEvidence.m    MATLAB source-artifact and schema tests
   test_report_evidence.py        Manifest schema and frozen-count tests
