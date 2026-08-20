@@ -70,6 +70,14 @@ MALFORMED_CORE_PROPERTIES = """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
   <dcterms:modified>{timestamp}</dcterms:modified>
 """
 
+SEMANTIC_CORE_PROPERTIES = """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<cp:coreProperties xmlns:cp=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\" xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">
+  <cp:lastPrinted>{last_printed}</cp:lastPrinted>
+  <dcterms:created xsi:type=\"{created_type}\">{created}</dcterms:created>
+  <dcterms:modified xsi:type=\"{modified_type}\">{modified}</dcterms:modified>
+</cp:coreProperties>
+"""
+
 
 def create_fixture_package(
     path: Path,
@@ -79,11 +87,12 @@ def create_fixture_package(
     last_printed: str | None = None,
     compression_by_name: dict[str, int] | None = None,
     core_properties_template: str = CORE_PROPERTIES,
+    core_properties: bytes | None = None,
 ) -> None:
     """Create a valid minimal Open XML-like package with volatile ZIP metadata."""
     entries = {
         "[Content_Types].xml": b"<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"/>",
-        "docProps/core.xml": core_properties_template.format(
+        "docProps/core.xml": core_properties or core_properties_template.format(
             timestamp=timestamp,
             last_printed=last_printed or timestamp,
         ).encode("utf-8"),
@@ -110,7 +119,86 @@ def _core_date_values(payload: bytes) -> list[str]:
     return ["".join(element.itertext()) for element in root if element.tag in date_tags]
 
 
+def semantic_core_properties(
+    *, last_printed: str = "2025-01-01T00:00:00Z",
+    created: str = "2024-02-29T23:59:59+14:00",
+    modified: str = "2024-02-29T23:59:59-14:00",
+    created_type: str = "dcterms:W3CDTF",
+    modified_type: str = "dcterms:W3CDTF",
+) -> bytes:
+    return SEMANTIC_CORE_PROPERTIES.format(
+        last_printed=last_printed,
+        created=created,
+        modified=modified,
+        created_type=created_type,
+        modified_type=modified_type,
+    ).encode("utf-8")
+
+
 class Phase7BOfficeTests(unittest.TestCase):
+    def test_semantically_invalid_dates_fail_before_replacing_target(self) -> None:
+        invalid_values = (
+            "2024-02-30T00:00:00Z",
+            "2025-13-01T29:00:00Z",
+            "2025-01-01T00:00:00+99:99",
+            "2025-01-01T00:00:00+14:01",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            for index, invalid in enumerate(invalid_values):
+                package = Path(directory) / f"invalid-semantic-{index}.pptx"
+                create_fixture_package(
+                    package,
+                    "2025-01-01T00:00:00Z",
+                    (2026, 8, 21, 1, 2, 4),
+                    core_properties=semantic_core_properties(created=invalid),
+                )
+                original_digest = sha256_file(package)
+
+                with self.assertRaisesRegex(ValueError, "unsupported core property date representation"):
+                    normalize_openxml_package(package, ".pptx")
+
+                self.assertEqual(sha256_file(package), original_digest)
+
+    def test_semantic_date_contract_accepts_leap_day_and_timezone_less_last_printed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            package = Path(directory) / "semantic-valid.pptx"
+            create_fixture_package(
+                package,
+                "2025-01-01T00:00:00Z",
+                (2026, 8, 21, 1, 2, 4),
+                core_properties=semantic_core_properties(
+                    last_printed="2025-01-01T00:00:00",
+                    created="2024-02-29T23:59:59+14:00",
+                    modified="2024-02-29T23:59:59-14:00",
+                ),
+            )
+
+            normalize_openxml_package(package, ".pptx")
+
+            with ZipFile(package) as archive:
+                self.assertEqual(_core_date_values(archive.read("docProps/core.xml")), [
+                    FIXED_OFFICE_TIMESTAMP,
+                    FIXED_OFFICE_TIMESTAMP,
+                    FIXED_OFFICE_TIMESTAMP,
+                ])
+
+    def test_created_and_modified_require_the_declared_w3cdtf_type(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            for field in ("created_type", "modified_type"):
+                package = Path(directory) / f"invalid-{field}.pptx"
+                create_fixture_package(
+                    package,
+                    "2025-01-01T00:00:00Z",
+                    (2026, 8, 21, 1, 2, 4),
+                    core_properties=semantic_core_properties(**{field: "xsd:dateTime"}),
+                )
+                original_digest = sha256_file(package)
+
+                with self.assertRaisesRegex(ValueError, "unsupported core property date representation"):
+                    normalize_openxml_package(package, ".pptx")
+
+                self.assertEqual(sha256_file(package), original_digest)
+
     def test_date_text_with_embedded_pi_and_comment_is_normalized_without_removal(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             package = Path(directory) / "pi-comment.pptx"

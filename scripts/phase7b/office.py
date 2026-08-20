@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from datetime import date
 import hashlib
 import lzma
 import os
@@ -32,8 +33,16 @@ _XML_ENCODING = re.compile(
     re.IGNORECASE,
 )
 _W3CDTF = re.compile(
-    r"\d{4}(?:-\d{2}(?:-\d{2}(?:T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2}))?)?)?\Z"
+    r"(?P<year>\d{4})(?:-(?P<month>\d{2})(?:-(?P<day>\d{2})(?:T"
+    r"(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})"
+    r"(?P<fraction>\.\d+)?(?P<timezone>Z|[+-]\d{2}:\d{2}))?)?)?\Z"
 )
+_XML_SCHEMA_DATETIME = re.compile(
+    r"(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})T"
+    r"(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})"
+    r"(?P<fraction>\.\d+)?(?P<timezone>Z|[+-]\d{2}:\d{2})?\Z"
+)
+_XSI_TYPE = "{http://www.w3.org/2001/XMLSchema-instance}type"
 
 
 class Phase7BOfficeError(ValueError):
@@ -68,16 +77,22 @@ def normalize_core_properties(payload: bytes) -> bytes:
     if not volatile_count:
         return payload
     ranges = _volatile_date_text_ranges(payload)
-    values = ["".join(element.itertext()) for element in root.iter()
-              if element.tag in _VOLATILE_CORE_DATE_TAGS]
-    if len(ranges) != volatile_count or len(values) != volatile_count:
+    fields = [
+        (element.tag, "".join(element.itertext()), element.attrib.get(_XSI_TYPE))
+        for element in root.iter()
+        if element.tag in _VOLATILE_CORE_DATE_TAGS
+    ]
+    if len(ranges) != volatile_count or len(fields) != volatile_count:
         raise Phase7BOfficeError("unsupported core property date representation")
 
     fixed = FIXED_OFFICE_TIMESTAMP.encode("ascii")
     replacements: list[tuple[int, int, bytes]] = []
-    for text_ranges, value in zip(ranges, values, strict=True):
-        if not text_ranges or not _W3CDTF.fullmatch(value):
+    for (expanded_name, scope, text_ranges), (tag, value, declared_type) in zip(
+        ranges, fields, strict=True
+    ):
+        if _expanded_tag(expanded_name) != tag or not text_ranges:
             raise Phase7BOfficeError("unsupported core property date representation")
+        _validate_field_date(tag, value, declared_type, scope)
         raw_value = b"".join(payload[start:end] for start, end in text_ranges)
         if raw_value != value.encode("utf-8"):
             raise Phase7BOfficeError("unsupported core property date representation")
@@ -118,7 +133,81 @@ def _expanded_name(name: bytes, scope: Mapping[bytes, bytes]) -> tuple[bytes | N
     return scope.get(b""), prefix
 
 
-def _volatile_date_text_ranges(payload: bytes) -> list[list[tuple[int, int]]]:
+def _expanded_tag(name: tuple[bytes | None, bytes]) -> str:
+    """Convert one lexical-scope expansion into ElementTree's tag representation."""
+    namespace, local = name
+    if namespace is None:
+        return local.decode("utf-8")
+    return f"{{{namespace.decode('utf-8')}}}{local.decode('utf-8')}"
+
+
+def _validate_field_date(
+    tag: str,
+    value: str,
+    declared_type: str | None,
+    scope: Mapping[bytes, bytes],
+) -> None:
+    """Validate the Open XML field-specific semantic date contract."""
+    if tag == f"{{{_CORE_PROPERTIES_NAMESPACE}}}lastPrinted":
+        match = _XML_SCHEMA_DATETIME.fullmatch(value)
+        if match is None:
+            raise Phase7BOfficeError("unsupported core property date representation")
+        _validate_date_components(match)
+        return
+
+    if declared_type is not None:
+        try:
+            declared = _expanded_name(declared_type.encode("ascii"), scope)
+        except UnicodeEncodeError as exception:
+            raise Phase7BOfficeError(
+                "unsupported core property date representation"
+            ) from exception
+        if declared != (_DCTERMS_NAMESPACE.encode("ascii"), b"W3CDTF"):
+            raise Phase7BOfficeError("unsupported core property date representation")
+    match = _W3CDTF.fullmatch(value)
+    if match is None:
+        raise Phase7BOfficeError("unsupported core property date representation")
+    _validate_date_components(match)
+
+
+def _validate_date_components(match: re.Match[str]) -> None:
+    """Validate calendar, clock, and XML timezone bounds for one lexical match."""
+    year = int(match["year"])
+    month = match["month"]
+    day = match["day"]
+    if year == 0:
+        raise Phase7BOfficeError("unsupported core property date representation")
+    if month is not None:
+        if day is None:
+            if not 1 <= int(month) <= 12:
+                raise Phase7BOfficeError("unsupported core property date representation")
+        else:
+            try:
+                date(year, int(month), int(day))
+            except ValueError as exception:
+                raise Phase7BOfficeError(
+                    "unsupported core property date representation"
+                ) from exception
+    hour = match["hour"]
+    if hour is not None and (
+        int(hour) > 23 or int(match["minute"]) > 59 or int(match["second"]) > 59
+    ):
+        raise Phase7BOfficeError("unsupported core property date representation")
+    timezone = match["timezone"]
+    if timezone is not None and timezone != "Z":
+        offset_hour = int(timezone[1:3])
+        offset_minute = int(timezone[4:6])
+        if (
+            offset_hour > 14
+            or offset_minute > 59
+            or (offset_hour == 14 and offset_minute != 0)
+        ):
+            raise Phase7BOfficeError("unsupported core property date representation")
+
+
+def _volatile_date_text_ranges(
+    payload: bytes,
+) -> list[tuple[tuple[bytes | None, bytes], dict[bytes, bytes], list[tuple[int, int]]]]:
     """Locate volatile date text nodes with lexical namespace-scope tracking."""
     volatile_names = {
         (_DCTERMS_NAMESPACE.encode("ascii"), b"created"),
@@ -126,7 +215,7 @@ def _volatile_date_text_ranges(payload: bytes) -> list[list[tuple[int, int]]]:
         (_CORE_PROPERTIES_NAMESPACE.encode("ascii"), b"lastPrinted"),
     }
     frames: list[dict[str, object]] = []
-    ranges: list[list[tuple[int, int]]] = []
+    ranges: list[tuple[tuple[bytes | None, bytes], dict[bytes, bytes], list[tuple[int, int]]]] = []
     cursor = 0
 
     def record_plain_text(end: int) -> None:
@@ -178,7 +267,9 @@ def _volatile_date_text_ranges(payload: bytes) -> list[list[tuple[int, int]]]:
                     raise Phase7BOfficeError("unsupported core property date representation")
                 text_ranges = frame["text_ranges"]
                 assert isinstance(text_ranges, list)
-                ranges.append(text_ranges)
+                scope = frame["scope"]
+                assert isinstance(scope, dict)
+                ranges.append((_expanded_name(name, scope), scope, text_ranges))
             continue
 
         self_closing = content.endswith(b"/")
