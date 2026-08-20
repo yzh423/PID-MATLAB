@@ -31,6 +31,9 @@ _XML_ENCODING = re.compile(
     br"\A\s*<\?xml\b[^>]*\bencoding\s*=\s*['\"]([^'\"]+)['\"]",
     re.IGNORECASE,
 )
+_W3CDTF = re.compile(
+    r"\d{4}(?:-\d{2}(?:-\d{2}(?:T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2}))?)?)?\Z"
+)
 
 
 class Phase7BOfficeError(ValueError):
@@ -64,15 +67,29 @@ def normalize_core_properties(payload: bytes) -> bytes:
     )
     if not volatile_count:
         return payload
-    ranges = _volatile_date_ranges(payload)
-    if len(ranges) != volatile_count:
+    ranges = _volatile_date_text_ranges(payload)
+    values = ["".join(element.itertext()) for element in root.iter()
+              if element.tag in _VOLATILE_CORE_DATE_TAGS]
+    if len(ranges) != volatile_count or len(values) != volatile_count:
         raise Phase7BOfficeError("unsupported core property date representation")
+
     fixed = FIXED_OFFICE_TIMESTAMP.encode("ascii")
+    replacements: list[tuple[int, int, bytes]] = []
+    for text_ranges, value in zip(ranges, values, strict=True):
+        if not text_ranges or not _W3CDTF.fullmatch(value):
+            raise Phase7BOfficeError("unsupported core property date representation")
+        raw_value = b"".join(payload[start:end] for start, end in text_ranges)
+        if raw_value != value.encode("utf-8"):
+            raise Phase7BOfficeError("unsupported core property date representation")
+        first_start, first_end = text_ranges[0]
+        replacements.append((first_start, first_end, fixed))
+        replacements.extend((start, end, b"") for start, end in text_ranges[1:])
+
     normalized = bytearray()
     previous = 0
-    for start, end in ranges:
+    for start, end, replacement in sorted(replacements):
         normalized.extend(payload[previous:start])
-        normalized.extend(fixed)
+        normalized.extend(replacement)
         previous = end
     normalized.extend(payload[previous:])
     return bytes(normalized)
@@ -101,20 +118,28 @@ def _expanded_name(name: bytes, scope: Mapping[bytes, bytes]) -> tuple[bytes | N
     return scope.get(b""), prefix
 
 
-def _volatile_date_ranges(payload: bytes) -> list[tuple[int, int]]:
-    """Locate leaf date text with lexical namespace-scope tracking, without serialization."""
+def _volatile_date_text_ranges(payload: bytes) -> list[list[tuple[int, int]]]:
+    """Locate volatile date text nodes with lexical namespace-scope tracking."""
     volatile_names = {
         (_DCTERMS_NAMESPACE.encode("ascii"), b"created"),
         (_DCTERMS_NAMESPACE.encode("ascii"), b"modified"),
         (_CORE_PROPERTIES_NAMESPACE.encode("ascii"), b"lastPrinted"),
     }
-    frames: list[tuple[bytes, dict[bytes, bytes], int, bool]] = []
-    ranges: list[tuple[int, int]] = []
+    frames: list[dict[str, object]] = []
+    ranges: list[list[tuple[int, int]]] = []
     cursor = 0
+
+    def record_plain_text(end: int) -> None:
+        if frames and frames[-1]["volatile"] and cursor < end:
+            text_ranges = frames[-1]["text_ranges"]
+            assert isinstance(text_ranges, list)
+            text_ranges.append((cursor, end))
+
     while True:
         start = payload.find(b"<", cursor)
         if start < 0:
             break
+        record_plain_text(start)
         if payload.startswith(b"<!--", start):
             end = payload.find(b"-->", start + 4)
             if end < 0:
@@ -131,6 +156,10 @@ def _volatile_date_ranges(payload: bytes) -> list[tuple[int, int]]:
             end = payload.find(b"]]>", start + 9)
             if end < 0:
                 raise Phase7BOfficeError("unterminated XML CDATA section")
+            if frames and frames[-1]["volatile"]:
+                text_ranges = frames[-1]["text_ranges"]
+                assert isinstance(text_ranges, list)
+                text_ranges.append((start + 9, end))
             cursor = end + 3
             continue
 
@@ -141,20 +170,25 @@ def _volatile_date_ranges(payload: bytes) -> list[tuple[int, int]]:
             continue
         if content.startswith(b"/"):
             name = content[1:].strip()
-            if not frames or frames[-1][0] != name:
+            if not frames or frames[-1]["name"] != name:
                 raise Phase7BOfficeError("unsupported core property date representation")
-            _, _, text_start, is_volatile = frames.pop()
-            if is_volatile:
-                text = payload[text_start:start]
-                if b"<" in text:
+            frame = frames.pop()
+            if frame["volatile"]:
+                if frame["has_element_child"]:
                     raise Phase7BOfficeError("unsupported core property date representation")
-                ranges.append((text_start, start))
+                text_ranges = frame["text_ranges"]
+                assert isinstance(text_ranges, list)
+                ranges.append(text_ranges)
             continue
 
         self_closing = content.endswith(b"/")
         body = content[:-1].rstrip() if self_closing else content
         name = body.split(None, 1)[0]
-        scope = frames[-1][1].copy() if frames else {}
+        if frames and frames[-1]["volatile"]:
+            frames[-1]["has_element_child"] = True
+        parent_scope = frames[-1]["scope"] if frames else {}
+        assert isinstance(parent_scope, dict)
+        scope = parent_scope.copy()
         for prefix, _, uri in _NAMESPACE_DECLARATION.findall(body):
             scope[prefix] = uri
         is_volatile = _expanded_name(name, scope) in volatile_names
@@ -162,7 +196,13 @@ def _volatile_date_ranges(payload: bytes) -> list[tuple[int, int]]:
             if is_volatile:
                 raise Phase7BOfficeError("unsupported core property date representation")
             continue
-        frames.append((name, scope, end + 1, is_volatile))
+        frames.append({
+            "name": name,
+            "scope": scope,
+            "volatile": is_volatile,
+            "text_ranges": [],
+            "has_element_child": False,
+        })
 
     if frames:
         raise Phase7BOfficeError("unterminated XML element in core properties")

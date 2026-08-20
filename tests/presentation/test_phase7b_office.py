@@ -47,6 +47,29 @@ DEFAULT_NAMESPACE_CORE_PROPERTIES = """<?xml version=\"1.0\" encoding=\"UTF-8\" 
 <!-- Post-root default-core namespace comment retained byte-for-byte. -->
 """
 
+TOKEN_AWARE_CORE_PROPERTIES = """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<cp:coreProperties xmlns:cp=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\" xmlns:dcterms=\"http://purl.org/dc/terms/\">
+  <cp:lastPrinted><![CDATA[{last_printed}]]></cp:lastPrinted>
+  <dcterms:created><?keep date-pi?>{timestamp}<!-- keep date-comment --></dcterms:created>
+  <dcterms:modified>2025-01-<![CDATA[01T00:]]>00:00Z</dcterms:modified>
+</cp:coreProperties>
+"""
+
+INVALID_TOKEN_AWARE_CORE_PROPERTIES = """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<cp:coreProperties xmlns:cp=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\" xmlns:dcterms=\"http://purl.org/dc/terms/\">
+  <cp:lastPrinted>{last_printed}</cp:lastPrinted>
+  <dcterms:created><?keep date-pi?>not-a-date<!-- keep date-comment --></dcterms:created>
+  <dcterms:modified>{timestamp}</dcterms:modified>
+</cp:coreProperties>
+"""
+
+MALFORMED_CORE_PROPERTIES = """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<cp:coreProperties xmlns:cp=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\" xmlns:dcterms=\"http://purl.org/dc/terms/\">
+  <cp:lastPrinted>{last_printed}</cp:lastPrinted>
+  <dcterms:created>{timestamp}</dcterms:created>
+  <dcterms:modified>{timestamp}</dcterms:modified>
+"""
+
 
 def create_fixture_package(
     path: Path,
@@ -77,7 +100,110 @@ def create_fixture_package(
             archive.writestr(info, entries[name])
 
 
+def _core_date_values(payload: bytes) -> list[str]:
+    root = ElementTree.fromstring(payload)
+    date_tags = {
+        "{http://schemas.openxmlformats.org/package/2006/metadata/core-properties}lastPrinted",
+        "{http://purl.org/dc/terms/}created",
+        "{http://purl.org/dc/terms/}modified",
+    }
+    return ["".join(element.itertext()) for element in root if element.tag in date_tags]
+
+
 class Phase7BOfficeTests(unittest.TestCase):
+    def test_date_text_with_embedded_pi_and_comment_is_normalized_without_removal(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            package = Path(directory) / "pi-comment.pptx"
+            create_fixture_package(
+                package,
+                "2025-01-01T00:00:00Z",
+                (2026, 8, 21, 1, 2, 4),
+                last_printed="2025-01-01T00:00:00Z",
+                core_properties_template=TOKEN_AWARE_CORE_PROPERTIES,
+            )
+
+            normalize_openxml_package(package, ".pptx")
+
+            with ZipFile(package) as archive:
+                core = archive.read("docProps/core.xml")
+            self.assertIn(b"<?keep date-pi?>", core)
+            self.assertIn(b"<!-- keep date-comment -->", core)
+            self.assertEqual(_core_date_values(core), [
+                FIXED_OFFICE_TIMESTAMP,
+                FIXED_OFFICE_TIMESTAMP,
+                FIXED_OFFICE_TIMESTAMP,
+            ])
+
+    def test_cdata_date_text_is_normalized_without_removing_cdata_markup(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            package = Path(directory) / "cdata.pptx"
+            create_fixture_package(
+                package,
+                "2025-01-01T00:00:00Z",
+                (2026, 8, 21, 1, 2, 4),
+                last_printed="2025-01-01T00:00:00Z",
+                core_properties_template=TOKEN_AWARE_CORE_PROPERTIES,
+            )
+
+            normalize_openxml_package(package, ".pptx")
+
+            with ZipFile(package) as archive:
+                core = archive.read("docProps/core.xml")
+            self.assertIn(b"<![CDATA[2026-08-21T00:00:00Z]]>", core)
+            self.assertEqual(_core_date_values(core)[0], FIXED_OFFICE_TIMESTAMP)
+
+    def test_split_plain_and_cdata_date_text_normalizes_schema_visible_value(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            package = Path(directory) / "split-text.pptx"
+            create_fixture_package(
+                package,
+                "2025-01-01T00:00:00Z",
+                (2026, 8, 21, 1, 2, 4),
+                last_printed="2025-01-01T00:00:00Z",
+                core_properties_template=TOKEN_AWARE_CORE_PROPERTIES,
+            )
+
+            normalize_openxml_package(package, ".pptx")
+
+            with ZipFile(package) as archive:
+                core = archive.read("docProps/core.xml")
+            self.assertIn(b"<![CDATA[]]>", core)
+            self.assertEqual(_core_date_values(core)[2], FIXED_OFFICE_TIMESTAMP)
+
+    def test_ambiguous_date_content_fails_without_replacing_target(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            package = Path(directory) / "invalid-date.pptx"
+            create_fixture_package(
+                package,
+                "2025-01-01T00:00:00Z",
+                (2026, 8, 21, 1, 2, 4),
+                last_printed="2025-01-01T00:00:00Z",
+                core_properties_template=INVALID_TOKEN_AWARE_CORE_PROPERTIES,
+            )
+            original_digest = sha256_file(package)
+
+            with self.assertRaisesRegex(ValueError, "unsupported core property date representation"):
+                normalize_openxml_package(package, ".pptx")
+
+            self.assertEqual(sha256_file(package), original_digest)
+
+    def test_malformed_core_properties_fail_without_replacing_target(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            package = Path(directory) / "malformed-date.pptx"
+            create_fixture_package(
+                package,
+                "2025-01-01T00:00:00Z",
+                (2026, 8, 21, 1, 2, 4),
+                last_printed="2025-01-01T00:00:00Z",
+                core_properties_template=MALFORMED_CORE_PROPERTIES,
+            )
+            original_digest = sha256_file(package)
+
+            with self.assertRaises(ElementTree.ParseError):
+                normalize_openxml_package(package, ".pptx")
+
+            self.assertEqual(sha256_file(package), original_digest)
+
     def test_default_core_namespace_dates_are_normalized_byte_preservingly(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             first = Path(directory) / "default-first.pptx"
