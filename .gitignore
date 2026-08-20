@@ -6,6 +6,8 @@ results/data/*.csv
 results/figures/*.png
 results/videos/*.avi
 results/videos/*.mp4
+results/report/report_evidence.json
+results/report/rendered-pages/
 
 # MATLAB temporary and autosave files
 *.asv
