@@ -54,5 +54,27 @@ classdef TestSimulinkCrossValidation < matlab.unittest.TestCase
                     saved.runs(index).simulinkResult.dqReference);
             end
         end
+
+        function ignoresStaleCallerControllerDefinitions(testCase)
+            projectRoot = fileparts(fileparts(fileparts(mfilename("fullpath"))));
+            outputRoot = tempname;
+            mkdir(outputRoot);
+            testCase.addTeardown(@() rmdir(outputRoot,"s"));
+            simulinkValidationMode = "smoke";
+            staleController = struct( ...
+                "name","stale-controller", ...
+                "controller",rrm.config.makePidController( ...
+                    rrm.config.makeRobot("baseline")));
+            controllerDefinitions = repmat(staleController,3,1); %#ok<NASGU>
+
+            run(fullfile(projectRoot,"experiments", ...
+                "run_simulink_cross_validation.m"));
+
+            saved = load(fullfile(outputRoot,"data", ...
+                "simulink_cross_validation.mat"));
+            testCase.verifyEqual(height(saved.runTable),2);
+            testCase.verifyEqual(saved.runTable.Controller, ...
+                ["manual-pid";"optimization-pid"]);
+        end
     end
 end
