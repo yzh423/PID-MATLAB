@@ -4,7 +4,7 @@
   "sources": [
     {
       "path": "docs/presentation/phase7b_template.json",
-      "sha256": "d3a6b89d1becfb05dec9a2bf54caae24b8286dedd83eac299a22392aceb0b8fa"
+      "sha256": "2b375e2fa8a3c50322dcd69234a9fb2e39065c1e9a64e48c90c4e99e7ade942d"
     },
     {
       "path": "docs/report/build_manifest.json",
@@ -90,7 +90,7 @@
     },
     {
       "path": "presentation/final_presentation.pptx",
-      "sha256": "d4e68f69b4ad7686d6a29606e42bcbc4ad4d987be3e37ff85091acad1be62cc7"
+      "sha256": "0fd8abda808d3c258a3d1900e701e362a3943343e0b1c977c6666c3d7ea737af"
     }
   ],
   "document": {

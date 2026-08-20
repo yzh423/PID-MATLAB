@@ -120,7 +120,7 @@
           {"value": "{{deterministic.successCount.fuzzyPid}}/{{deterministic.scenarioCount}}", "label": "Fuzzy-PID deterministic success"},
           {"value": "{{deterministic.successCount.optimizedPid}}/{{deterministic.scenarioCount}}", "label": "optimized PID deterministic success"}
         ],
-        "interpretation": "Fuzzy-PID's nominal advantage is limited to joint-2 steady-state RMS; optimized PID provides the best aggregate deterministic and Cartesian reliability, with a torque-slew trade-off under noise.",
+        "interpretation": "Nominal metrics are mixed across manual PID and Fuzzy-PID; optimized PID provides the best aggregate deterministic and Cartesian reliability, with a torque-slew trade-off under noise.",
         "presenterNote": "Deliver a conditional conclusion, not a universal-controller claim.",
         "sources": ["docs/report/technical_report.md", "results/report/report_evidence.json"]
       },

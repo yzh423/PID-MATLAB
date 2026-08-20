@@ -75,7 +75,7 @@ class Phase7BEvidenceTests(unittest.TestCase):
         conclusion = template["deck"]["slides"][8]
         self.assertEqual(
             conclusion["interpretation"],
-            "Fuzzy-PID's nominal advantage is limited to joint-2 steady-state RMS; "
+            "Nominal metrics are mixed across manual PID and Fuzzy-PID; "
             "optimized PID provides the best aggregate deterministic and Cartesian reliability, "
             "with a torque-slew trade-off under noise.",
         )

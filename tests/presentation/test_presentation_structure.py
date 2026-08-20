@@ -74,10 +74,10 @@ class PresentationStructureTests(unittest.TestCase):
             text,
         )
 
-    def test_deck_limits_the_fuzzy_nominal_advantage_to_steady_state_rms(self) -> None:
+    def test_deck_describes_nominal_metrics_as_mixed(self) -> None:
         text = pptx_text(PPTX)
         self.assertIn(
-            "Fuzzy-PID's nominal advantage is limited to joint-2 steady-state RMS; "
+            "Nominal metrics are mixed across manual PID and Fuzzy-PID; "
             "optimized PID provides the best aggregate deterministic and Cartesian reliability, "
             "with a torque-slew trade-off under noise.",
             text,
