@@ -47,6 +47,19 @@ classdef TestRunPidCrossValidation < matlab.unittest.TestCase
                 @() rrm.simulink.runPidCrossValidation( ...
                 robot,controller,reference,options,modelPath));
         end
+
+        function shortRunMatchesMatlabExecution(testCase)
+            [robot,controller,reference,options,modelPath] = inputs();
+            matlabRun = rrm.simulation.runController( ...
+                robot,controller,reference,options);
+            simulinkRun = rrm.simulink.runPidCrossValidation( ...
+                robot,controller,reference,options,modelPath);
+
+            comparison = rrm.simulink.comparePidRuns( ...
+                matlabRun,simulinkRun);
+
+            testCase.verifyTrue(comparison.pass,comparison.failureSummary);
+        end
     end
 end
 
