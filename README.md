@@ -1,12 +1,12 @@
 # Reliable Robotic Manipulation: PID vs Fuzzy-PID
 
-This repository implements the revised MATLAB robotics research plan in verified stages. Phases 1–5 provide a payload-aware planar two-link manipulator, analytical and differential kinematics, nonlinear rigid-body dynamics, torque-limited PID and Mamdani Fuzzy-PID controllers, one shared simulator, optimization-assisted PID tuning, deterministic and stochastic robustness studies, and Cartesian task execution.
+This repository implements the revised MATLAB robotics research plan in verified stages. Phases 1–6A provide a payload-aware planar two-link manipulator, analytical and differential kinematics, nonlinear rigid-body dynamics, torque-limited PID and Mamdani Fuzzy-PID controllers, one shared simulator, optimization-assisted PID tuning, deterministic and stochastic robustness studies, Cartesian task execution, and independent Robotics System Toolbox and Simulink cross-validation.
 
 The project studies reliable low-level execution for a **given** robot and trajectory. Robot morphology is a controlled robustness variable in later phases; it is not an optimization target.
 
 ## Current Status
 
-Implemented through Phase 5:
+Implemented through Phase 6A:
 
 - baseline 2-DOF planar robot configuration;
 - analytical forward and two-branch inverse kinematics;
@@ -32,11 +32,15 @@ Implemented through Phase 5:
 - continuous analytical IK branch selection with Jacobian-based velocity and acceleration mapping;
 - straight-line and simplified pick-transfer-place execution with three frozen controllers;
 - Cartesian, waypoint, joint, effort, saturation, and task-success evidence;
+- grid-wide rigid-body dynamics agreement against an independently assembled `rigidBodyTree`;
+- a committed native-block Simulink model for manual and optimization-tuned PID;
+- MATLAB–Simulink state, velocity, torque, saturation, and tracking cross-validation;
 - MATLAB Unit Tests and reproducible controller and optimization experiments.
 
 Deferred to later verified phases:
 
-- Simulink and Simscape Multibody cross-validation.
+- a full Simscape Multibody three-dimensional physical assembly and animation;
+- a separate Simulink implementation of the Mamdani Fuzzy-PID rule engine.
 
 ## Requirements
 
@@ -96,6 +100,12 @@ Run the Cartesian task study:
 & 'E:\MATLAB2026\bin\matlab.exe' -batch "cd('E:/YZH123123/PID vs Fuzzy PID'); addpath(pwd); run('experiments/run_cartesian_tasks.m');"
 ```
 
+Run the Robotics System Toolbox and Simulink cross-validation:
+
+```powershell
+& 'E:\MATLAB2026\bin\matlab.exe' -batch "cd('E:/YZH123123/PID vs Fuzzy PID'); addpath(pwd); run('experiments/run_simulink_cross_validation.m');"
+```
+
 The experiment writes:
 
 ```text
@@ -138,6 +148,12 @@ results/figures/cartesian_tasks_errors.png
 results/figures/cartesian_tasks_joint_references.png
 results/figures/cartesian_tasks_torque.png
 results/figures/cartesian_tasks_summary.png
+results/data/simulink_cross_validation.mat
+results/data/simulink_cross_validation_runs.csv
+results/figures/simulink_cross_validation_tracking.png
+results/figures/simulink_cross_validation_differences.png
+results/figures/simulink_cross_validation_torque.png
+results/figures/simulink_cross_validation_summary.png
 ```
 
 Generated MAT, CSV, and PNG outputs are excluded from Git.
@@ -155,12 +171,15 @@ Generated MAT, CSV, and PNG outputs are excluded from Git.
   +optimization/ PID multiplier mapping, objective scoring, and fmincon tuning
   +robustness/   Deterministic and stochastic scenarios, metrics, execution, and summaries
   +simulation/   Shared closed-loop simulation and seeded measurement-noise generation
+  +simulink/     Native model builder, runner, and numerical comparison
   +trajectory/   Joint and Cartesian path/reference generation
+  +validation/   Independent Robotics System Toolbox dynamics validation
 docs/
   requirements/  Revised source plan in DOCX and Markdown
   skills/specs/  Approved engineering design
   skills/plans/  Executable implementation plan
 experiments/     Reproducible experiment entry points
+models/          Committed generated Simulink model
 results/         Generated data and figures
 scripts/         Verification commands
 tests/           MATLAB Unit Tests grouped by subsystem
@@ -303,6 +322,29 @@ Task success requires completion, the existing joint steady-state criteria, Cart
 
 All six simulations completed without saturation, and every controller stayed inside the Cartesian and waypoint thresholds. The manual and Fuzzy-PID pick-transfer-place runs are nevertheless unsuccessful because joint 2 final-window RMS errors were `0.02378 rad` and `0.02410 rad`, above the existing `0.02 rad` joint threshold. The optimized PID passed both tasks and roughly halved Cartesian RMS relative to manual PID. Fuzzy-PID slightly improved path-level accuracy over manual PID but had a larger placement error; the six nominal runs do not establish universal superiority.
 
+## Simulink and Rigid-Body Cross-Validation
+
+Phase 6A provides two independent validation surfaces. First, a Robotics System Toolbox `rigidBodyTree` is assembled from the baseline dimensions, masses, centres of mass, inertias, endpoint payload, and gravity direction. Its mass matrix, velocity product, and gravity torque are compared with the project equations over 225 deterministic state points. Viscous friction is excluded from both sides of this rigid-body-only comparison.
+
+Second, `models/rrm_pid_cross_validation.slx` implements the reference, fixed-gain PID controller, actuator saturation and anti-windup, nonlinear two-link plant, and logging as a native Simulink block diagram. The plant equations are local to the model and do not call the project dynamics or MATLAB closed-loop runner. Both implementations use the baseline robot, the `[0;0]` to `[45;60] deg` reference, a 3 s quintic move plus 2 s hold, 1 ms fixed-step RK4, zero disturbance, and zero measurement noise. Gains remain frozen.
+
+The independent rigid-body comparison produced:
+
+| Quantity | Maximum absolute difference | Acceptance limit |
+|---|---:|---:|
+| Inertia matrix | `2.2204e-16 kg m^2` | `1e-10 kg m^2` |
+| Velocity product | `4.3021e-15 N m` | `1e-10 N m` |
+| Gravity torque | `3.5527e-15 N m` | `1e-10 N m` |
+
+The formal MATLAB–Simulink comparison produced the following worst-joint values:
+
+| Frozen controller | q RMS (rad) | q max (rad) | dq RMS (rad/s) | tau RMS (N m) | Saturation difference (s) | Pass |
+|---|---:|---:|---:|---:|---:|---:|
+| Manual PID | `5.3425e-17` | `2.2204e-16` | `2.2568e-16` | `3.9128e-15` | `0` | yes |
+| Optimized PID | `1.4438e-17` | `5.5511e-17` | `1.2625e-16` | `3.6824e-15` | `0` | yes |
+
+Both Simulink runs completed without saturation and retained the unchanged Phase 1 steady-state success criteria. The observed differences are at floating-point roundoff scale and far below the frozen acceptance limits; this validates numerical consistency under the one fixed nominal protocol, not real-time execution, hardware safety, every stress scenario, or the Fuzzy-PID rule engine.
+
 ## Design Rules
 
 - Package functions do not read base-workspace variables or perform file I/O.
@@ -313,7 +355,7 @@ All six simulations completed without saturation, and every controller stayed in
 
 ## Limitations
 
-These remain simulation results, not evidence of real-robot performance or hardware safety. Optimization used one initial point and one training trajectory. Phase 4B models independent white Gaussian measurement noise only; it does not represent quantization, bias, drift, coloured noise, sensor filtering, sample-rate mismatch, or delay. Phase 5 assumes perfectly known reachable waypoints and omits perception, collision avoidance, gripper forces, object dynamics, and path replanning. The plant still omits actuator dynamics, dry friction, backlash, flexible links, and communication effects. Thirty noise seeds and two nominal Cartesian tasks support reproducible within-study comparisons, not universal probability claims.
+These remain simulation results, not evidence of real-robot performance or hardware safety. Optimization used one initial point and one training trajectory. Phase 4B models independent white Gaussian measurement noise only; it does not represent quantization, bias, drift, coloured noise, sensor filtering, sample-rate mismatch, or delay. Phase 5 assumes perfectly known reachable waypoints and omits perception, collision avoidance, gripper forces, object dynamics, and path replanning. Phase 6A covers one nominal fixed-gain PID protocol and an equation-level two-dimensional plant; it does not yet provide a Simscape Multibody assembly, three-dimensional animation, contact mechanics, or a second Fuzzy-PID implementation. The plant still omits actuator dynamics, dry friction, backlash, flexible links, and communication effects. Thirty noise seeds, two nominal Cartesian tasks, and one cross-validation protocol support reproducible within-study comparisons, not universal probability claims.
 
 ## Research Baseline
 
@@ -323,4 +365,4 @@ The authoritative revised plan is stored at:
 docs/requirements/Daniel_MATLAB_Robotics_Project_Implementation_Guide_Revised.md
 ```
 
-The Phase 1–5 design and implementation plans are stored under `docs/skills/`.
+The Phase 1–6A design and implementation plans are stored under `docs/skills/`.

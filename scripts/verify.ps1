@@ -23,6 +23,8 @@ clear outputRoot stochasticMode stochasticReference;
 run('experiments/run_stochastic_robustness.m');
 clear outputRoot cartesianMode;
 run('experiments/run_cartesian_tasks.m');
+clear outputRoot simulinkValidationMode;
+run('experiments/run_simulink_cross_validation.m');
 "@ -replace "`r?`n", ' '
 
 & $matlabExecutable -batch $matlabCommand

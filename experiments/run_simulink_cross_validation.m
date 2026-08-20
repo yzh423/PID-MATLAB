@@ -192,24 +192,24 @@ for runIndex = 1:numel(runs)
     semilogy(axisHandle,run.matlabResult.time, ...
         max(abs(run.comparison.qDifference),eps),"LineWidth",1.1);
     hold(axisHandle,"on");
-    yline(axisHandle,run.comparison.thresholds.qMax,"--k", ...
-        "q max threshold","LabelHorizontalAlignment","left");
+    yline(axisHandle,run.comparison.thresholds.qMax,"--k");
     grid(axisHandle,"on");
     xlabel(axisHandle,"Time (s)");
     ylabel(axisHandle,"|Delta q| (rad)");
-    title(axisHandle,run.controllerName+" position");
+    title(axisHandle,run.controllerName+ ...
+        " position (dashed: q max limit)");
     legend(axisHandle,["joint 1","joint 2"],"Location","best");
 
     axisHandle = nexttile(layout);
     semilogy(axisHandle,run.matlabResult.time, ...
         max(abs(run.comparison.dqDifference),eps),"LineWidth",1.1);
     hold(axisHandle,"on");
-    yline(axisHandle,run.comparison.thresholds.dqRms,"--k", ...
-        "dq RMS threshold","LabelHorizontalAlignment","left");
+    yline(axisHandle,run.comparison.thresholds.dqRms,"--k");
     grid(axisHandle,"on");
     xlabel(axisHandle,"Time (s)");
     ylabel(axisHandle,"|Delta dq| (rad/s)");
-    title(axisHandle,run.controllerName+" velocity");
+    title(axisHandle,run.controllerName+ ...
+        " velocity (dashed: dq RMS limit)");
     legend(axisHandle,["joint 1","joint 2"],"Location","best");
 end
 title(layout,"Absolute MATLAB-Simulink Differences");
@@ -263,12 +263,19 @@ for runIndex = 1:numel(runs)
     hold(axisHandle,"on");
     yline(axisHandle,1,"--r","acceptance boundary");
     set(axisHandle,"YScale","log");
+    ylim(axisHandle,[1e-14 2]);
     xticks(axisHandle,1:numel(labels));
     xticklabels(axisHandle,labels);
     xtickangle(axisHandle,20);
     ylabel(axisHandle,"Measured difference / threshold");
     title(axisHandle,runs(runIndex).controllerName);
     grid(axisHandle,"on");
+    for metric = 1:numel(normalized)
+        text(axisHandle,metric,normalized(metric)*2, ...
+            sprintf("%.1e",normalized(metric)), ...
+            "HorizontalAlignment","center", ...
+            "VerticalAlignment","bottom");
+    end
 end
 title(layout,"Normalized Cross-Validation Margin (< 1 passes)");
 end

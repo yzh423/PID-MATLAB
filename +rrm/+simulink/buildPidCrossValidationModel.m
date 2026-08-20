@@ -50,10 +50,10 @@ set_param(modelName, ...
     "SignalLogging","on", ...
     "ReturnWorkspaceOutputs","on");
 
-addTopLevelSubsystem(modelName,"Reference",[40 100 210 250]);
-addTopLevelSubsystem(modelName,"PID Controller",[280 80 470 270]);
-addTopLevelSubsystem(modelName,"Two-Link Plant",[560 80 750 270]);
-addTopLevelSubsystem(modelName,"Logging",[830 100 980 250]);
+addTopLevelSubsystem(modelName,"Reference",[30 80 230 280]);
+addTopLevelSubsystem(modelName,"PID Controller",[360 40 660 320]);
+addTopLevelSubsystem(modelName,"Two-Link Plant",[800 40 1060 320]);
+addTopLevelSubsystem(modelName,"Logging",[1200 70 1420 290]);
 buildReference(modelName + "/Reference");
 buildController(modelName + "/PID Controller");
 buildPlant(modelName + "/Two-Link Plant");
@@ -195,10 +195,11 @@ add_line(path,"Integral Derivative/1","Integral State/1", ...
 add_block("simulink/Ports & Subsystems/Out1",path + "/tau", ...
     "Port","1","Position",[665 90 695 110]);
 add_line(path,"Torque Limit/1","tau/1");
-add_block("simulink/Ports & Subsystems/Out1",path + "/tauUnsaturated", ...
+add_block("simulink/Ports & Subsystems/Out1",path + "/tau_u", ...
     "Port","2","Position",[665 135 695 155]);
-add_line(path,"Unsaturated Torque/1","tauUnsaturated/1", ...
+add_line(path,"Unsaturated Torque/1","tau_u/1", ...
     "autorouting","on");
+Simulink.BlockDiagram.arrangeSystem(path);
 end
 
 function buildPlant(path)
@@ -231,6 +232,7 @@ add_line(path,"Joint Position/1","Dynamics/1","autorouting","on");
 add_line(path,"Joint Velocity/1","Dynamics/2","autorouting","on");
 add_line(path,"Joint Position/1","q/1");
 add_line(path,"Joint Velocity/1","dq/1","autorouting","on");
+Simulink.BlockDiagram.arrangeSystem(path);
 end
 
 function script = plantScript()
@@ -253,7 +255,7 @@ end
 
 function buildLogging(path)
 Simulink.SubSystem.deleteContents(path);
-names = ["q","dq","tau","tauUnsaturated"];
+names = ["q","dq","tau","tau_u"];
 for index = 1:numel(names)
     y = 40 + (index-1)*65;
     add_block("simulink/Ports & Subsystems/In1",path + "/" + names(index), ...
@@ -285,7 +287,11 @@ configureLoggedSignal(tauUnsaturatedLine,"tauUnsaturated");
 end
 
 function configureLoggedSignal(lineHandle, name)
-set_param(lineHandle,"Name",name);
+displayName = name;
+if name == "tauUnsaturated"
+    displayName = "tau_u";
+end
+set_param(lineHandle,"Name",displayName);
 sourcePort = get_param(lineHandle,"SrcPortHandle");
 set_param(sourcePort, ...
     "DataLogging","on", ...
@@ -325,7 +331,7 @@ function addModelAnnotation(modelName)
 annotation = Simulink.Annotation(modelName, ...
     "Phase 6A numerical cross-validation | q [rad], dq [rad/s], tau [N m]" + ...
     newline + "Plant equations are local to this model and execute with fixed-step ode4.");
-annotation.Position = [300 315 760 355];
+annotation.Position = [410 370 1010 420];
 end
 
 function closeIfLoaded(modelName)
