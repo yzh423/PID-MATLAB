@@ -1,43 +1,253 @@
 {
   "schemaVersion": 1,
   "audit_skill": "paper-claim-audit",
-  "audit_run": 11,
-  "verdict": "BLOCKED",
-  "completion_status": "STALE",
-  "reason_code": "fresh_audit_required_after_final_review_fixes",
-  "summary": "The prior PASS predates the final-review fix wave. A fresh zero-context audit must bind the current commit, template, package, manifest, layout report, and final outputs before delivery.",
-  "audited_commit": "034e288f65b2b953f631946f195fb4f2c9c7f413",
-  "audited_input_hashes": {},
+  "verdict": "PASS",
+  "reason_code": "all_numbers_match",
+  "summary": "All 11 claim groups reconcile to the admitted raw evidence; no unsupported, ambiguous, warning, or failing claim was found.",
+  "audited_commit": "64dfdc297ab45539a5a4194b68aca8eced584c20",
+  "audited_input_hashes": {
+    "docs/presentation/phase7b_template.json": "sha256:fceec272a5775e21446a6a3c1ad2e515a232cc8a3d7679c96b6aabaca8467e7c",
+    "results/presentation/phase7b_package.json": "sha256:8e85522427fcbbe16ac8262f14fa76280b3d24535eb8d5755643ed77c3eecc79",
+    "docs/presentation/phase7b_build_manifest.json": "sha256:c8054335e795379410f82f1cf4a02ba478bcf8b452345fe5ae97aa1b08567fe6",
+    "docs/presentation/phase7b_layout_report.json": "sha256:7b99e01ddf7066019f90a125c8cff2c1dc0fb76a1d5ec1936aa9cd862e8df894",
+    "presentation/final_presentation.pptx": "sha256:0fd8abda808d3c258a3d1900e701e362a3943343e0b1c977c6666c3d7ea737af",
+    "docs/summary/research_summary.docx": "sha256:520ce606a10e2e3dbdb2463bd00bd3782fec52c37646491c222ceeff0bb2f3a4",
+    "docs/summary/research_summary.pdf": "sha256:d7f614fb20edaff37a7fa12c2d44619aadf6b673cfac06728b527a8cbe0672db"
+  },
   "trace": {
     "retention": "ephemeral",
-    "path": ".aris/traces/paper-claim-audit/fresh-phase7b-final-review/"
+    "path": ".git/sdd/run11-audit-report.md",
+    "required_for_verification": false
   },
-  "generated_at": "2026-08-21T00:00:00Z",
+  "reviewer_model": "gpt-5",
+  "reviewer_reasoning": "fresh zero-context run11 audit under an explicit no-subagent constraint",
+  "generated_at": "2026-08-21T02:25:20Z",
   "details": {
     "total_claims": 11,
-    "exact_match": 0,
-    "rounding_ok": 0,
+    "exact_match": 7,
+    "rounding_ok": 4,
     "ambiguous_mapping": 0,
     "missing_evidence": 0,
     "unsupported_claims": 0,
     "warn_count": 0,
     "fail_count": 0,
     "mismatches": [],
-    "claim_groups": [],
+    "claim_groups": [
+      {
+        "claim_id": 1,
+        "location": "PPTX slide 1",
+        "category": "system_scope",
+        "paper_text": "Evidence-grounded PID and Fuzzy-PID evaluation for a 2-link manipulator.",
+        "evidence_value": "The raw robot model has two link inertias/lengths; the deck figure is the admitted Multibody tracking artifact.",
+        "sources": [
+          "results/data/nominal_pid_vs_fuzzy.mat",
+          "results/data/multibody_cross_validation.mat",
+          "results/figures/multibody_cross_validation_tracking.png"
+        ],
+        "status": "exact_match"
+      },
+      {
+        "claim_id": 2,
+        "location": "PPTX slide 2",
+        "category": "problem_and_scope",
+        "paper_text": "Controlled payload, configuration, noise, disturbance, and actuator changes are evaluated; failed completed runs are retained; conclusions are simulation-only.",
+        "evidence_value": "Deterministic rows cover payload/configuration/disturbance/actuator categories, stochastic rows cover noise, and all 39 deterministic, 360 stochastic, and 6 Cartesian rows are completed, including 12, 90, and 2 failures respectively; recomputed summaries include those rows.",
+        "sources": [
+          "results/data/deterministic_robustness_runs.csv",
+          "results/data/deterministic_robustness_summary.csv",
+          "results/data/stochastic_robustness_trials.csv",
+          "results/data/stochastic_robustness_summary.csv",
+          "results/data/cartesian_tasks_runs.csv"
+        ],
+        "status": "exact_match"
+      },
+      {
+        "claim_id": 3,
+        "location": "PPTX slide 3",
+        "category": "protocol_fairness",
+        "paper_text": "0.001 s fixed sample time, 5.0 s nominal duration, 5001 samples, with identical plant, trajectory, limits, thresholds, and paired seeds across controllers.",
+        "evidence_value": "Raw reference time spans 0 to 5 s in 0.001 s increments with 5001 samples; compared controllers share references, robot/scenario parameters, torque limits and success criteria; each stochastic scenario uses the same 30 seeds for all three controllers.",
+        "sources": [
+          "results/data/nominal_pid_vs_fuzzy.mat",
+          "results/data/pid_optimization.mat",
+          "results/data/deterministic_robustness.mat",
+          "results/data/stochastic_robustness.mat",
+          "results/data/stochastic_robustness_trials.csv",
+          "results/data/cartesian_tasks.mat"
+        ],
+        "status": "exact_match"
+      },
+      {
+        "claim_id": 4,
+        "location": "PPTX slide 4",
+        "category": "optimization",
+        "paper_text": "The bounded search reduces the nominal objective by 7.283%, changes only PID gains, improves held-out objective from 0.214504 to 0.197284, and exits with flag 1 after 12 iterations and 96 evaluations.",
+        "evidence_value": "Raw objectives are 0.202426799460455 and 0.18768375634655526, giving 7.283147860458988%; held-out values are 0.21450363216387297 and 0.19728400491642561; solver output is 12 iterations/96 evaluations with exit flag 1. Kp/Ki/Kd are the only changed controller parameters; torque limits, filter and anti-windup settings remain fixed.",
+        "sources": [
+          "results/data/pid_optimization.mat",
+          "results/figures/pid_optimization_objective.png"
+        ],
+        "status": "rounding_ok"
+      },
+      {
+        "claim_id": 5,
+        "location": "PPTX slide 5",
+        "category": "deterministic_robustness",
+        "paper_text": "Manual PID, Fuzzy-PID, and optimized PID pass 8/13, 9/13, and 10/13 deterministic scenarios; the matrix has 39 runs and all three fail the combined case.",
+        "evidence_value": "Direct grouping of 39 raw rows yields manual-pid 8/13, mamdani-fuzzy-pid 9/13, optimization-pid 10/13; the three combined-deterministic rows are completed failures. Categories map to nominal(1), payload(3), configuration(2), uncertainty(4), disturbance(1), actuator(1), combined(1).",
+        "sources": [
+          "results/data/deterministic_robustness.mat",
+          "results/data/deterministic_robustness_runs.csv",
+          "results/data/deterministic_robustness_summary.csv",
+          "results/figures/deterministic_robustness_summary.png"
+        ],
+        "status": "exact_match"
+      },
+      {
+        "claim_id": 6,
+        "location": "PPTX slide 6",
+        "category": "stochastic_robustness",
+        "paper_text": "Every isolated-noise controller-scenario cell passes 30/30 paired trials, every combined-stress cell passes 0/30, and 360 trials equal 4 scenarios x 3 controllers x 30 seeds; optimized PID has the lowest high-noise error and highest mean torque slew at 2888.34 N m/s.",
+        "evidence_value": "All nine noise-only cells are 30/30 and all three combined-stochastic cells are 0/30; the CSV has 360 rows and identical seed sets 42001-42030 per controller/scenario. At noise-high, optimized PID mean joint RMS is 0.02280767391075337 and mean torque slew is 2888.3444144176433 N m/s, respectively the lowest and highest of the controllers.",
+        "sources": [
+          "results/data/stochastic_robustness.mat",
+          "results/data/stochastic_robustness_trials.csv",
+          "results/data/stochastic_robustness_summary.csv",
+          "results/figures/stochastic_robustness_chattering.png"
+        ],
+        "status": "rounding_ok"
+      },
+      {
+        "claim_id": 7,
+        "location": "PPTX slide 7",
+        "category": "cartesian_tasks",
+        "paper_text": "All three controllers pass straight-line; only optimized PID passes pick-transfer-place; 4/6 completed runs pass and two failed completed runs remain; optimized pick-transfer-place error is 0.01422 m RMS and 0.02970 m maximum.",
+        "evidence_value": "Raw keyed rows give three straight-line passes, one optimized pick-transfer-place pass, six completed runs, four successes and two failures. Optimized pick-transfer-place Cartesian RMS is 0.0142210111046117 m and maximum is 0.029698222399069 m.",
+        "sources": [
+          "results/data/cartesian_tasks.mat",
+          "results/data/cartesian_tasks_runs.csv",
+          "results/figures/cartesian_tasks_paths.png"
+        ],
+        "status": "rounding_ok"
+      },
+      {
+        "claim_id": 8,
+        "location": "PPTX slide 8",
+        "category": "cross_validation",
+        "paper_text": "Simulink and Multibody each pass agreement and tracking for 2/2 runs, with a worst end-effector difference of 3.34e-16 m; this is model consistency, not hardware fidelity.",
+        "evidence_value": "The two Simulink rows and two Multibody rows all have agreement/tracking pass=true. Multibody EndEffectorMax recomputes to 3.34221388864417e-16 m and MaximumOutOfPlane is 0; all evidence is simulation/model output.",
+        "sources": [
+          "results/data/simulink_cross_validation.mat",
+          "results/data/simulink_cross_validation_runs.csv",
+          "results/data/multibody_cross_validation.mat",
+          "results/data/multibody_cross_validation_runs.csv",
+          "results/figures/multibody_cross_validation_tracking.png"
+        ],
+        "status": "rounding_ok"
+      },
+      {
+        "claim_id": 9,
+        "location": "PPTX slide 9",
+        "category": "conclusion",
+        "paper_text": "There is no universal winner; optimized PID is the strongest aggregate reliability baseline, with mixed nominal manual/Fuzzy-PID metrics and a torque-slew trade-off under noise.",
+        "evidence_value": "Optimized PID leads deterministic success (10/13) and Cartesian success (2/2 versus 1/2 each), while nominal manual/Fuzzy-PID metrics split by joint/metric and optimized PID has the highest high-noise mean torque slew. The conclusion is comparative and bounded.",
+        "sources": [
+          "results/data/nominal_pid_vs_fuzzy.mat",
+          "results/data/deterministic_robustness_runs.csv",
+          "results/data/stochastic_robustness_trials.csv",
+          "results/data/cartesian_tasks_runs.csv"
+        ],
+        "status": "exact_match"
+      },
+      {
+        "claim_id": 10,
+        "location": "PPTX slide 10",
+        "category": "future_scope",
+        "paper_text": "Hardware validation, perception/task planning, collision avoidance, monitoring, and safety supervision are explicitly future work rather than completed capabilities.",
+        "evidence_value": "The admitted evidence set contains simulation/model experiments only, and the slide frames every listed capability as a next milestone before deployment claims.",
+        "sources": [
+          "docs/presentation/phase7b_raw_evidence.json",
+          "docs/report/build_manifest.json",
+          "results/report/report_evidence.json"
+        ],
+        "status": "exact_match"
+      },
+      {
+        "claim_id": 11,
+        "location": "DOCX/PDF one-page research summary",
+        "category": "summary_consistency",
+        "paper_text": "The summary repeats the 2-link/0.001 s protocol, 7.283% objective reduction, optimized PID 10/13 deterministic result, 30/30 versus 0/30 stochastic contrast, strongest aggregate reliability conclusion, and simulation-only limitations.",
+        "evidence_value": "DOCX structure and current one-page PDF text match the resolved package. Recomputed raw values are two links, 0.001 s, 7.283147860458988%, 10/13, and per-cell 30/30 versus 0/30; the aggregate conclusion and limitations match groups 2, 3, 4, 5, 6, and 9.",
+        "sources": [
+          "results/data/nominal_pid_vs_fuzzy.mat",
+          "results/data/pid_optimization.mat",
+          "results/data/deterministic_robustness_runs.csv",
+          "results/data/stochastic_robustness_trials.csv",
+          "results/data/cartesian_tasks_runs.csv",
+          "docs/summary/research_summary.docx",
+          "docs/summary/research_summary.pdf"
+        ],
+        "status": "rounding_ok"
+      }
+    ],
+    "source_completeness": {
+      "admitted_raw_files": 14,
+      "admitted_raw_files_verified": 14,
+      "admitted_figures": 6,
+      "admitted_figures_verified": 6,
+      "phase7a_manifest_hash_current": true,
+      "phase7a_report_evidence_hash_current": true,
+      "phase7b_manifest_covers_all_admitted_sources": true,
+      "package_raw_evidence_set_matches_ledger": true
+    },
+    "category_mapping": {
+      "deterministic": {
+        "nominal": ["nominal"],
+        "payload": ["payload-0.0kg", "payload-1.0kg", "payload-1.5kg"],
+        "configuration": ["configuration-compact", "configuration-extended"],
+        "uncertainty": ["mass-inertia-minus-10pct", "mass-inertia-minus-20pct", "mass-inertia-plus-10pct", "mass-inertia-plus-20pct"],
+        "disturbance": ["disturbance-pulse"],
+        "actuator": ["actuator-derated"],
+        "combined": ["combined-deterministic"]
+      },
+      "stochastic": {
+        "isolated_noise": ["noise-low", "noise-medium", "noise-high"],
+        "combined_stress": ["combined-stochastic"]
+      },
+      "cartesian": {
+        "straight_line": ["straight-line"],
+        "pick_transfer_place": ["pick-transfer-place"]
+      }
+    },
+    "visual_review": {
+      "pptx_renderer": "Microsoft PowerPoint COM",
+      "slides_rendered": 10,
+      "slides_passed": 10,
+      "summary_pdf_renderer": "PDFium",
+      "summary_pdf_pages_rendered": 1,
+      "summary_pdf_pages_passed": 1,
+      "notes_present": 10,
+      "notes_with_sources": 10,
+      "visual_findings": 0
+    },
+    "test_gate": {
+      "suite": "python -m unittest discover -s tests/presentation",
+      "tests_run": 66,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "skip_reason": "official Artifact Tool runtime is unavailable"
+    },
     "reproducibility_ledger": {
       "manifest_path": "docs/presentation/phase7b_build_manifest.json",
-      "template_path": "docs/presentation/phase7b_template.json",
       "package_path": "results/presentation/phase7b_package.json",
-      "layout_report_path": "docs/presentation/phase7b_layout_report.json",
       "raw_evidence_ledger_path": "docs/presentation/phase7b_raw_evidence.json",
-      "presentation_path": "presentation/final_presentation.pptx",
-      "docx_path": "docs/summary/research_summary.docx",
-      "pdf_path": "docs/summary/research_summary.pdf",
-      "claim_group_count": 11
+      "phase7a_manifest_path": "docs/report/build_manifest.json",
+      "phase7a_evidence_path": "results/report/report_evidence.json",
+      "claim_group_count": 11,
+      "audited_hash_count": 7,
+      "source_paths_are_repository_relative": true,
+      "trace_required_for_verification": false
     }
-  },
-  "blockers": [
-    "Fresh zero-context paper-claim-audit has not yet been run against the final-review fix commit.",
-    "The official bundled Artifact Tool runtime is currently empty, so the runtime-backed full rebuild gate remains external."
-  ]
+  }
 }
