@@ -1,0 +1,301 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-21T00:00:00Z",
+  "method": "tracked minimal layout ledger; COM-free; derived from the reviewed builder contract and structurally checked PPTX",
+  "sources": {
+    "package": {
+      "path": "results/presentation/phase7b_package.json",
+      "sha256": "8e85522427fcbbe16ac8262f14fa76280b3d24535eb8d5755643ed77c3eecc79"
+    },
+    "pptx": {
+      "path": "presentation/final_presentation.pptx",
+      "sha256": "0fd8abda808d3c258a3d1900e701e362a3943343e0b1c977c6666c3d7ea737af"
+    }
+  },
+  "slides": [
+    {
+      "number": 1,
+      "id": "opening",
+      "title": "Reliable execution connects plans to physical action",
+      "elements": [
+        {
+          "name": "cover-title",
+          "bbox": [
+            52,
+            170,
+            560,
+            210
+          ],
+          "resolvedFontSize": 51,
+          "textLayout": {
+            "lineCount": 2
+          }
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "id": "problem",
+      "title": "Nominal success is not enough to claim reliable manipulation",
+      "elements": [
+        {
+          "name": "slide-2-title",
+          "bbox": [
+            52,
+            34,
+            1168,
+            72
+          ],
+          "resolvedFontSize": 48,
+          "textLayout": {
+            "lineCount": 1
+          }
+        },
+        {
+          "name": "problem-claim",
+          "bbox": [
+            52,
+            180,
+            540,
+            160
+          ],
+          "resolvedFontSize": 32,
+          "textLayout": {
+            "lineCount": 3
+          }
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "id": "protocol",
+      "title": "Every controller faces the same plant, trajectory, limits, and metrics",
+      "elements": [
+        {
+          "name": "slide-3-title",
+          "bbox": [
+            52,
+            34,
+            1168,
+            72
+          ],
+          "resolvedFontSize": 48,
+          "textLayout": {
+            "lineCount": 1
+          }
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "id": "optimization",
+      "title": "Optimization improves the baseline without changing the protocol",
+      "elements": [
+        {
+          "name": "slide-4-title",
+          "bbox": [
+            52,
+            34,
+            1168,
+            72
+          ],
+          "resolvedFontSize": 48,
+          "textLayout": {
+            "lineCount": 1
+          }
+        },
+        {
+          "name": "optimization-claim",
+          "bbox": [
+            52,
+            180,
+            540,
+            160
+          ],
+          "resolvedFontSize": 32,
+          "textLayout": {
+            "lineCount": 3
+          }
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "id": "deterministic",
+      "title": "Reliability separates the controllers under deterministic stress",
+      "elements": [
+        {
+          "name": "slide-5-title",
+          "bbox": [
+            52,
+            34,
+            1168,
+            72
+          ],
+          "resolvedFontSize": 48,
+          "textLayout": {
+            "lineCount": 1
+          }
+        },
+        {
+          "name": "deterministic-claim",
+          "bbox": [
+            52,
+            180,
+            540,
+            160
+          ],
+          "resolvedFontSize": 32,
+          "textLayout": {
+            "lineCount": 3
+          }
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "id": "stochastic",
+      "title": "Noise alone is manageable; combined stress is not",
+      "elements": [
+        {
+          "name": "slide-6-title",
+          "bbox": [
+            52,
+            34,
+            1168,
+            72
+          ],
+          "resolvedFontSize": 48,
+          "textLayout": {
+            "lineCount": 1
+          }
+        },
+        {
+          "name": "stochastic-claim",
+          "bbox": [
+            52,
+            180,
+            540,
+            160
+          ],
+          "resolvedFontSize": 32,
+          "textLayout": {
+            "lineCount": 3
+          }
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "id": "cartesian",
+      "title": "Task-space evaluation exposes failures hidden by joint metrics",
+      "elements": [
+        {
+          "name": "slide-7-title",
+          "bbox": [
+            52,
+            34,
+            1168,
+            72
+          ],
+          "resolvedFontSize": 48,
+          "textLayout": {
+            "lineCount": 1
+          }
+        },
+        {
+          "name": "cartesian-claim",
+          "bbox": [
+            52,
+            180,
+            540,
+            160
+          ],
+          "resolvedFontSize": 32,
+          "textLayout": {
+            "lineCount": 3
+          }
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "id": "cross-validation",
+      "title": "Independent formulations agree at numerical precision",
+      "elements": [
+        {
+          "name": "slide-8-title",
+          "bbox": [
+            52,
+            34,
+            1168,
+            72
+          ],
+          "resolvedFontSize": 48,
+          "textLayout": {
+            "lineCount": 1
+          }
+        },
+        {
+          "name": "cross-validation-claim",
+          "bbox": [
+            52,
+            180,
+            540,
+            160
+          ],
+          "resolvedFontSize": 32,
+          "textLayout": {
+            "lineCount": 3
+          }
+        }
+      ]
+    },
+    {
+      "number": 9,
+      "id": "conclusion",
+      "title": "There is no universal winner, but optimized PID is the strongest reliability baseline",
+      "elements": [
+        {
+          "name": "slide-9-title",
+          "bbox": [
+            52,
+            24,
+            1168,
+            112
+          ],
+          "resolvedFontSize": 36,
+          "textLayout": {
+            "lineCount": 2
+          }
+        }
+      ]
+    },
+    {
+      "number": 10,
+      "id": "next-steps",
+      "title": "The validated layer is ready to support the next research step",
+      "elements": [
+        {
+          "name": "slide-10-title",
+          "bbox": [
+            52,
+            34,
+            1168,
+            72
+          ],
+          "resolvedFontSize": 48,
+          "textLayout": {
+            "lineCount": 1
+          }
+        }
+      ]
+    }
+  ],
+  "checks": {
+    "allWithinSlide": true,
+    "minimumFontSizesPass": true,
+    "notesCount": 10,
+    "slideCount": 10
+  }
+}

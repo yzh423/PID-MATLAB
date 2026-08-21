@@ -10,13 +10,13 @@ $ErrorActionPreference = 'Stop'
 function Close-WordDocument {
     param($Document)
     if ($null -eq $Document) { return }
-    try { $Document.Close(0) } catch { Write-Verbose "Owned Word document close failed: $($_.Exception.Message)" }
+    $Document.Close(0)
 }
 
 function Quit-WordApplication {
     param($Word)
     if ($null -eq $Word) { return }
-    try { $Word.Quit() } catch { Write-Verbose "Owned Word application quit failed: $($_.Exception.Message)" }
+    $Word.Quit()
 }
 
 function Release-ComReference {
@@ -35,6 +35,19 @@ function Remove-TaskOwnedTemporaryPdf {
     }
     if (Test-Path -LiteralPath $resolvedPath) {
         [IO.File]::Delete($resolvedPath)
+    }
+}
+
+function Assert-OwnedWordProcessesExited {
+    param([int[]]$ownedProcessIds)
+    foreach ($processId in $ownedProcessIds) {
+        for ($attempt = 0; $attempt -lt 100; $attempt++) {
+            if (-not (Get-Process -Id $processId -ErrorAction SilentlyContinue)) { break }
+            Start-Sleep -Milliseconds 100
+        }
+        if (Get-Process -Id $processId -ErrorAction SilentlyContinue) {
+            throw "Owned WINWORD process remains after non-canonical diagnostic export: $processId"
+        }
     }
 }
 
@@ -60,24 +73,40 @@ foreach ($path in @($resolvedDocx, $resolvedPdf)) {
 $temporaryPdf = Join-Path $summaryRoot ('.research_summary.' + [Guid]::NewGuid().ToString('N') + '.tmp.pdf')
 try {
     if ($UseWordCom) {
+        Write-Warning 'Using non-canonical diagnostic Word export; the canonical PDF is the independent ReportLab rendering.'
         $word = $null
         $document = $null
+        $ownedProcessIds = @()
+        $preexistingProcessIds = @(
+            Get-Process -Name WINWORD -ErrorAction SilentlyContinue |
+                Select-Object -ExpandProperty Id
+        )
         try {
             $word = New-Object -ComObject Word.Application
             $word.Visible = $false
             $word.DisplayAlerts = 0
+            $ownedProcessIds = @(
+                Get-Process -Name WINWORD -ErrorAction SilentlyContinue |
+                    Select-Object -ExpandProperty Id |
+                    Where-Object { $_ -notin $preexistingProcessIds }
+            )
+            if ($ownedProcessIds.Count -ne 1) {
+                throw "Expected exactly one owned WINWORD process, found $($ownedProcessIds.Count)."
+            }
             $document = $word.Documents.OpenNoRepairDialog($resolvedDocx, $false, $true, $false)
             $document.ExportAsFixedFormat($temporaryPdf, 17)
         }
         finally {
-            try { Close-WordDocument -Document $document } finally {
-                try { Quit-WordApplication -Word $word } finally {
-                    try { Release-ComReference -Reference $document } finally {
-                        Release-ComReference -Reference $word
-                        [GC]::Collect()
-                        [GC]::WaitForPendingFinalizers()
-                    }
-                }
+            $cleanupErrors = [System.Collections.Generic.List[string]]::new()
+            try { Close-WordDocument -Document $document } catch { [void]$cleanupErrors.Add($_.Exception.Message) }
+            try { Quit-WordApplication -Word $word } catch { [void]$cleanupErrors.Add($_.Exception.Message) }
+            try { Release-ComReference -Reference $document } catch { [void]$cleanupErrors.Add($_.Exception.Message) }
+            try { Release-ComReference -Reference $word } catch { [void]$cleanupErrors.Add($_.Exception.Message) }
+            [GC]::Collect()
+            [GC]::WaitForPendingFinalizers()
+            try { Assert-OwnedWordProcessesExited -ownedProcessIds $ownedProcessIds } catch { [void]$cleanupErrors.Add($_.Exception.Message) }
+            if ($cleanupErrors.Count -gt 0) {
+                throw "Word diagnostic cleanup failed closed: $($cleanupErrors -join '; ')"
             }
         }
     }

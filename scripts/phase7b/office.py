@@ -42,20 +42,14 @@ _XML_SCHEMA_DATETIME = re.compile(
     r"(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})"
     r"(?P<fraction>\.\d+)?(?P<timezone>Z|[+-]\d{2}:\d{2})?\Z"
 )
-_RELATIONSHIP_ID = re.compile(
-    rb"<Relationship\b[^>]*\bId\s*=\s*(['\"])([^'\"]+)\1[^>]*>"
-)
-_CREATION_ID_ATTRIBUTE = re.compile(
-    rb"(<(?:[A-Za-z_][A-Za-z0-9_.-]*:)?creationId\b[^>]*\bid\s*=\s*)(['\"])[^'\"]*\2"
-)
-_CREATION_VALUE_ATTRIBUTE = re.compile(
-    rb"(<(?:[A-Za-z_][A-Za-z0-9_.-]*:)?creationId\b[^>]*\bval\s*=\s*)(['\"])[^'\"]*\2"
-)
 _XML_ATTRIBUTE = re.compile(
     rb"(?P<name>[A-Za-z_][A-Za-z0-9_.-]*(?::[A-Za-z_][A-Za-z0-9_.-]*)?)\s*=\s*"
     rb"(?P<quote>['\"])(?P<value>.*?)(?P=quote)"
 )
 _RELATIONSHIP_NAMESPACE = b"http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+_PACKAGE_RELATIONSHIPS_NAMESPACE = b"http://schemas.openxmlformats.org/package/2006/relationships"
+_A16_NAMESPACE = b"http://schemas.microsoft.com/office/drawing/2014/main"
+_P14_NAMESPACE = b"http://schemas.microsoft.com/office/powerpoint/2010/main"
 _XSI_TYPE = "{http://www.w3.org/2001/XMLSchema-instance}type"
 
 
@@ -145,6 +139,16 @@ def _expanded_name(name: bytes, scope: Mapping[bytes, bytes]) -> tuple[bytes | N
     if separator:
         return scope.get(prefix), local
     return scope.get(b""), prefix
+
+
+def _expanded_attribute_name(
+    name: bytes, scope: Mapping[bytes, bytes]
+) -> tuple[bytes | None, bytes]:
+    """Expand an attribute name; XML default namespaces never apply to attributes."""
+    prefix, separator, local = name.partition(b":")
+    if separator:
+        return scope.get(prefix), local
+    return None, prefix
 
 
 def _expanded_tag(name: tuple[bytes | None, bytes]) -> str:
@@ -363,17 +367,111 @@ def _replace_byte_ranges(
     return bytes(rewritten)
 
 
+def _xml_start_tags(
+    payload: bytes, label: str
+) -> list[
+    tuple[
+        tuple[bytes | None, bytes],
+        list[tuple[tuple[bytes | None, bytes], bytes, int, int]],
+    ]
+]:
+    """Tokenize start tags with lexical namespace scope and byte offsets."""
+    frames: list[tuple[bytes, dict[bytes, bytes]]] = []
+    tags: list[
+        tuple[
+            tuple[bytes | None, bytes],
+            list[tuple[tuple[bytes | None, bytes], bytes, int, int]],
+        ]
+    ] = []
+    cursor = 0
+    while True:
+        start = payload.find(b"<", cursor)
+        if start < 0:
+            break
+        if payload.startswith(b"<!--", start):
+            end = payload.find(b"-->", start + 4)
+            if end < 0:
+                raise Phase7BOfficeError(f"unterminated XML comment in {label}")
+            cursor = end + 3
+            continue
+        if payload.startswith(b"<?", start):
+            end = payload.find(b"?>", start + 2)
+            if end < 0:
+                raise Phase7BOfficeError(f"unterminated XML processing instruction in {label}")
+            cursor = end + 2
+            continue
+        if payload.startswith(b"<![CDATA[", start):
+            end = payload.find(b"]]>", start + 9)
+            if end < 0:
+                raise Phase7BOfficeError(f"unterminated XML CDATA section in {label}")
+            cursor = end + 3
+            continue
+        end = _tag_end(payload, start)
+        raw = payload[start + 1:end]
+        content = raw.strip()
+        cursor = end + 1
+        if not content or content.startswith(b"!"):
+            continue
+        if content.startswith(b"/"):
+            lexical_name = content[1:].strip()
+            if not frames or frames[-1][0] != lexical_name:
+                raise Phase7BOfficeError(f"unbalanced XML element in {label}")
+            frames.pop()
+            continue
+        self_closing = content.endswith(b"/")
+        body = content[:-1].rstrip() if self_closing else content
+        lexical_name = body.split(None, 1)[0]
+        parent_scope = frames[-1][1] if frames else {}
+        scope = parent_scope.copy()
+        for prefix, _, uri in _NAMESPACE_DECLARATION.findall(body):
+            scope[prefix] = uri
+        body_start = start + 1 + len(raw) - len(raw.lstrip())
+        attributes = []
+        for attribute in _XML_ATTRIBUTE.finditer(body):
+            attribute_name = attribute.group("name")
+            if attribute_name == b"xmlns" or attribute_name.startswith(b"xmlns:"):
+                continue
+            attributes.append((
+                _expanded_attribute_name(attribute_name, scope),
+                attribute.group("value"),
+                body_start + attribute.start("value"),
+                body_start + attribute.end("value"),
+            ))
+        tags.append((_expanded_name(lexical_name, scope), attributes))
+        if not self_closing:
+            frames.append((lexical_name, scope))
+    if frames:
+        raise Phase7BOfficeError(f"unterminated XML element in {label}")
+    return tags
+
+
 def _canonicalize_relationship_part_ids(
     payload: bytes,
 ) -> tuple[bytes, dict[bytes, bytes]]:
     """Canonicalize only `Relationship/@Id` fields in a relationship part."""
+    try:
+        root = ElementTree.fromstring(payload)
+    except ElementTree.ParseError as exception:
+        raise Phase7BOfficeError("invalid package relationship XML") from exception
+    if root.tag != f"{{{_PACKAGE_RELATIONSHIPS_NAMESPACE.decode('ascii')}}}Relationships":
+        raise Phase7BOfficeError("relationship part root is not package Relationships")
     replacements: dict[bytes, bytes] = {}
     ranges: list[tuple[int, int, bytes]] = []
-    for index, match in enumerate(_RELATIONSHIP_ID.finditer(payload), start=1):
-        old = match.group(2)
+    relationship_name = (_PACKAGE_RELATIONSHIPS_NAMESPACE, b"Relationship")
+    index = 0
+    for expanded_name, attributes in _xml_start_tags(payload, "relationship part"):
+        if expanded_name != relationship_name:
+            continue
+        ids = [attribute for attribute in attributes if attribute[0] == (None, b"Id")]
+        if len(ids) != 1:
+            raise Phase7BOfficeError("package Relationship requires exactly one Id")
+        _, old, start, end = ids[0]
+        if old in replacements:
+            raise Phase7BOfficeError(f"duplicate relationship Id: {old.decode('utf-8', 'replace')}")
+        index += 1
         new = f"rId{index}".encode("ascii")
         replacements[old] = new
-        ranges.append((match.start(2), match.end(2), new))
+        ranges.append((start, end, new))
     return _replace_byte_ranges(payload, ranges), replacements
 
 
@@ -387,69 +485,37 @@ def _canonicalize_relationship_reference_attributes(
     so unrelated attributes and text with coincidentally equal values are left
     byte-for-byte intact.
     """
-    frames: list[dict[bytes, bytes]] = []
     ranges: list[tuple[int, int, bytes]] = []
-    cursor = 0
-    while True:
-        start = payload.find(b"<", cursor)
-        if start < 0:
-            break
-        if payload.startswith(b"<!--", start):
-            end = payload.find(b"-->", start + 4)
-            if end < 0:
-                raise Phase7BOfficeError("unterminated XML comment in relationship source")
-            cursor = end + 3
-            continue
-        if payload.startswith(b"<?", start):
-            end = payload.find(b"?>", start + 2)
-            if end < 0:
-                raise Phase7BOfficeError("unterminated XML processing instruction")
-            cursor = end + 2
-            continue
-        if payload.startswith(b"<![CDATA[", start):
-            end = payload.find(b"]]>", start + 9)
-            if end < 0:
-                raise Phase7BOfficeError("unterminated XML CDATA section")
-            cursor = end + 3
-            continue
-
-        end = _tag_end(payload, start)
-        raw = payload[start + 1:end]
-        content = raw.strip()
-        cursor = end + 1
-        if not content or content.startswith(b"!"):
-            continue
-        if content.startswith(b"/"):
-            if not frames:
-                raise Phase7BOfficeError("unbalanced XML element in relationship source")
-            frames.pop()
-            continue
-
-        self_closing = content.endswith(b"/")
-        body = content[:-1].rstrip() if self_closing else content
-        name = body.split(None, 1)[0]
-        parent_scope = frames[-1] if frames else {}
-        scope = parent_scope.copy()
-        for prefix, _, uri in _NAMESPACE_DECLARATION.findall(body):
-            scope[prefix] = uri
-        body_start = start + 1 + len(raw) - len(raw.lstrip())
-        for attribute in _XML_ATTRIBUTE.finditer(body):
-            lexical_name = attribute.group("name")
-            if lexical_name == b"xmlns" or lexical_name.startswith(b"xmlns:"):
-                continue
-            namespace, _ = _expanded_name(lexical_name, scope)
-            old = attribute.group("value")
+    for _, attributes in _xml_start_tags(payload, "relationship source"):
+        for expanded_name, old, start, end in attributes:
+            namespace, _ = expanded_name
             if namespace == _RELATIONSHIP_NAMESPACE and old in replacements:
-                ranges.append((
-                    body_start + attribute.start("value"),
-                    body_start + attribute.end("value"),
-                    replacements[old],
-                ))
-        if not self_closing:
-            frames.append(scope)
-    if frames:
-        raise Phase7BOfficeError("unterminated XML element in relationship source")
+                ranges.append((start, end, replacements[old]))
     return _replace_byte_ranges(payload, ranges)
+
+
+def _canonicalize_creation_ids(payload: bytes, creation_index: int) -> tuple[bytes, int]:
+    allowlist = {
+        (_A16_NAMESPACE, b"creationId"): ((None, b"id"), "guid"),
+        (_P14_NAMESPACE, b"creationId"): ((None, b"val"), "integer"),
+    }
+    ranges: list[tuple[int, int, bytes]] = []
+    for expanded_name, attributes in _xml_start_tags(payload, "presentation XML"):
+        contract = allowlist.get(expanded_name)
+        if contract is None:
+            continue
+        attribute_name, value_kind = contract
+        matches = [attribute for attribute in attributes if attribute[0] == attribute_name]
+        if len(matches) != 1:
+            raise Phase7BOfficeError("Office creationId requires its allowlisted identifier attribute")
+        _, _, start, end = matches[0]
+        if value_kind == "guid":
+            value = f"{{00000000-0000-0000-0000-{creation_index:012d}}}".encode("ascii")
+        else:
+            value = str(creation_index).encode("ascii")
+        ranges.append((start, end, value))
+        creation_index += 1
+    return _replace_byte_ranges(payload, ranges), creation_index
 
 
 def _canonicalize_pptx_generated_ids(
@@ -474,23 +540,12 @@ def _canonicalize_pptx_generated_ids(
 
     creation_index = 1
 
-    def replace_creation_id(match: re.Match[bytes]) -> bytes:
-        nonlocal creation_index
-        value = f"{{00000000-0000-0000-0000-{creation_index:012d}}}".encode("ascii")
-        creation_index += 1
-        return match.group(1) + match.group(2) + value + match.group(2)
-
-    def replace_creation_value(match: re.Match[bytes]) -> bytes:
-        nonlocal creation_index
-        value = str(creation_index).encode("ascii")
-        creation_index += 1
-        return match.group(1) + match.group(2) + value + match.group(2)
-
     for name in sorted(rewritten):
         if not name.endswith(".xml"):
             continue
-        payload = _CREATION_ID_ATTRIBUTE.sub(replace_creation_id, rewritten[name])
-        rewritten[name] = _CREATION_VALUE_ATTRIBUTE.sub(replace_creation_value, payload)
+        rewritten[name], creation_index = _canonicalize_creation_ids(
+            rewritten[name], creation_index
+        )
     return [(name, compression, rewritten[name]) for name, compression, _ in entries]
 
 

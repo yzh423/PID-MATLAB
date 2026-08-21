@@ -1,5 +1,6 @@
 param(
-    [switch]$SkipTests
+    [switch]$SkipTests,
+    [switch]$ManifestOnly
 )
 
 $ErrorActionPreference = 'Stop'
@@ -25,58 +26,21 @@ function Get-Sha256 {
     }
 }
 
-function Get-DocxPageCount {
+function Get-DocxDeclaredPageCount {
     param([string]$DocxPath)
-    $word = $null
-    $document = $null
-    $ownedProcessIds = @()
-    $preexistingProcessIds = @(
-        Get-Process -Name WINWORD -ErrorAction SilentlyContinue |
-            Select-Object -ExpandProperty Id
-    )
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $archive = [IO.Compression.ZipFile]::OpenRead($DocxPath)
     try {
-        $word = New-Object -ComObject Word.Application
-        $word.Visible = $false
-        $word.DisplayAlerts = 0
-        $ownedProcessIds = @(
-            Get-Process -Name WINWORD -ErrorAction SilentlyContinue |
-                Select-Object -ExpandProperty Id |
-                Where-Object { $_ -notin $preexistingProcessIds }
-        )
-        $document = $word.Documents.OpenNoRepairDialog($DocxPath, $false, $true, $false)
-        $document.Repaginate()
-        $pageCount = [int]$document.ComputeStatistics(2)
-        if ($pageCount -lt 1) { throw "Word returned an invalid DOCX page count: $pageCount" }
-        return $pageCount
+        $entry = $archive.GetEntry('docProps/app.xml')
+        if ($null -eq $entry) { throw 'DOCX is missing docProps/app.xml.' }
+        $reader = [IO.StreamReader]::new($entry.Open(), [Text.Encoding]::UTF8, $true)
+        try { [xml]$properties = $reader.ReadToEnd() } finally { $reader.Dispose() }
+        $pages = $properties.SelectSingleNode("/*[local-name()='Properties']/*[local-name()='Pages']")
+        if ($null -eq $pages -or [int]$pages.InnerText -lt 1) { throw 'DOCX has an invalid declared page count.' }
+        return [int]$pages.InnerText
     }
     finally {
-        try {
-            if ($null -ne $document) { try { $document.Close(0) } catch { Write-Verbose "Owned Word document close failed: $($_.Exception.Message)" } }
-        }
-        finally {
-            try {
-                if ($null -ne $word) { try { $word.Quit() } catch { Write-Verbose "Owned Word quit failed: $($_.Exception.Message)" } }
-            }
-            finally {
-                try {
-                    if ($null -ne $document) { try { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($document) } catch { Write-Verbose "Owned Word document release failed: $($_.Exception.Message)" } }
-                }
-                finally {
-                    if ($null -ne $word) { try { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($word) } catch { Write-Verbose "Owned Word release failed: $($_.Exception.Message)" } }
-                    [GC]::Collect()
-                    [GC]::WaitForPendingFinalizers()
-                }
-            }
-        }
-        foreach ($processId in $ownedProcessIds) {
-            for ($attempt = 0; $attempt -lt 100; $attempt++) {
-                if (-not (Get-Process -Id $processId -ErrorAction SilentlyContinue)) { break }
-                Start-Sleep -Milliseconds 100
-            }
-            if (Get-Process -Id $processId -ErrorAction SilentlyContinue) {
-                throw "Owned WINWORD process remains after DOCX page counting: $processId"
-            }
-        }
+        $archive.Dispose()
     }
 }
 
@@ -112,6 +76,8 @@ function Write-Phase7BManifest {
     param([string]$ProjectRoot, [int]$DocxPageCount)
     $sourcePaths = @(
         'docs/presentation/phase7b_template.json',
+        'docs/presentation/phase7b_raw_evidence.json',
+        'docs/presentation/phase7b_layout_report.json',
         'docs/report/build_manifest.json',
         'results/report/report_evidence.json',
         'results/presentation/phase7b_package.json',
@@ -121,13 +87,34 @@ function Write-Phase7BManifest {
         'results/figures/deterministic_robustness_summary.png',
         'results/figures/stochastic_robustness_chattering.png',
         'results/figures/cartesian_tasks_paths.png',
+        'results/data/nominal_pid_vs_fuzzy.mat',
+        'results/data/pid_optimization.mat',
+        'results/data/deterministic_robustness.mat',
+        'results/data/stochastic_robustness.mat',
+        'results/data/cartesian_tasks.mat',
+        'results/data/simulink_cross_validation.mat',
+        'results/data/multibody_cross_validation.mat',
+        'results/data/deterministic_robustness_runs.csv',
+        'results/data/deterministic_robustness_summary.csv',
+        'results/data/stochastic_robustness_trials.csv',
+        'results/data/stochastic_robustness_summary.csv',
+        'results/data/cartesian_tasks_runs.csv',
+        'results/data/simulink_cross_validation_runs.csv',
+        'results/data/multibody_cross_validation_runs.csv',
         'scripts/build_presentation.mjs',
         'scripts/build_research_summary.py',
         'scripts/build_research_summary_pdf.py',
+        'scripts/export_phase7b_package.py',
         'scripts/export_research_summary_pdf.ps1',
+        'scripts/generate_phase7b_layout_report.py',
         'scripts/normalize_phase7b_office.py',
         'scripts/normalize_research_summary_pdf.py',
+        'scripts/verify_phase7b.ps1',
+        'scripts/verify_phase7b_audit.py',
+        'scripts/phase7b/atomic_publish.mjs',
+        'scripts/phase7b/audit.py',
         'scripts/phase7b/evidence.py',
+        'scripts/phase7b/layout.py',
         'scripts/phase7b/office.py',
         'scripts/phase7b/summary.py'
     )
@@ -176,6 +163,13 @@ foreach ($requiredPath in @($bundledPython, $bundledNode, $runtimeNodeModules, $
     if (-not (Test-Path -LiteralPath $requiredPath)) { throw "Required bundled dependency not found: $requiredPath" }
 }
 
+if ($ManifestOnly) {
+    $manifestDocx = Join-Path $projectRoot 'docs\summary\research_summary.docx'
+    Write-Phase7BManifest -ProjectRoot $projectRoot -DocxPageCount (Get-DocxDeclaredPageCount -DocxPath $manifestDocx)
+    Write-Output 'PHASE7B_MANIFEST_REFRESHED'
+    return
+}
+
 $originalNodePath = $env:NODE_PATH
 $originalPath = $env:PATH
 $originalRuntimeNode = $env:RUNTIME_NODE
@@ -193,8 +187,7 @@ try {
         Invoke-Checked { & $bundledPython -m unittest '.\tests\presentation\test_phase7b_evidence.py' '.\tests\presentation\test_phase7b_office.py' -v } 'Pre-build Phase 7B Python tests failed'
     }
 
-    Invoke-Checked { & $bundledNode '.\scripts\build_presentation.mjs' --project-root '.' } 'Phase 7B PPTX build failed'
-    Invoke-Checked { & $bundledPython '.\scripts\normalize_phase7b_office.py' --path '.\presentation\final_presentation.pptx' --suffix '.pptx' } 'Phase 7B PPTX normalization failed'
+    Invoke-Checked { & $bundledNode '.\scripts\build_presentation.mjs' --project-root '.' --python $bundledPython } 'Phase 7B PPTX build failed'
 
     $rebuildRoot = Join-Path $projectRoot 'tmp\phase7b\rebuild'
     if (Test-Path -LiteralPath $rebuildRoot) { Remove-Item -LiteralPath $rebuildRoot -Force -Recurse }
@@ -206,7 +199,7 @@ try {
         if ((Get-Sha256 -Path $rebuiltDocx) -ne (Get-Sha256 -Path $finalDocx)) {
             throw 'Rebuilt Phase 7B DOCX does not match the reviewed final DOCX.'
         }
-        $docxPageCount = Get-DocxPageCount -DocxPath $rebuiltDocx
+        $docxPageCount = Get-DocxDeclaredPageCount -DocxPath $rebuiltDocx
     }
     finally {
         if (Test-Path -LiteralPath $rebuildRoot) { Remove-Item -LiteralPath $rebuildRoot -Force -Recurse }
@@ -230,6 +223,7 @@ try {
     }
 
     Write-Phase7BManifest -ProjectRoot $projectRoot -DocxPageCount $docxPageCount
+    Invoke-Checked { & $bundledPython '.\scripts\verify_phase7b_audit.py' --project-root '.' --audit '.\docs\presentation\PHASE7B_CLAIM_AUDIT.json' } 'Canonical Phase 7B claim audit gate failed'
 
     if (-not $SkipTests) {
         Invoke-Checked { & $bundledPython -m unittest discover -s '.\tests\presentation' -p 'test_*.py' -v } 'Full Phase 7B presentation tests failed'

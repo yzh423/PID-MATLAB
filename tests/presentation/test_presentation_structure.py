@@ -10,7 +10,8 @@ from zipfile import ZipFile
 
 ROOT = Path(__file__).resolve().parents[2]
 PPTX = ROOT / "presentation" / "final_presentation.pptx"
-LAYOUT_DIR = ROOT / "tmp" / "phase7b" / "slides"
+PACKAGE = ROOT / "results" / "presentation" / "phase7b_package.json"
+LAYOUT_REPORT = ROOT / "docs" / "presentation" / "phase7b_layout_report.json"
 
 
 def xml_text(payload: bytes) -> str:
@@ -27,10 +28,10 @@ def pptx_text(pptx: Path) -> str:
 
 
 def layout_element(slide_number: int, name: str) -> dict[str, object]:
-    layout_path = LAYOUT_DIR / f"slide-{slide_number:02d}.layout.json"
-    with layout_path.open(encoding="utf-8") as layout_file:
+    with LAYOUT_REPORT.open(encoding="utf-8") as layout_file:
         layout = json.load(layout_file)
-    return next(element for element in layout["elements"] if element.get("name") == name)
+    slide = next(slide for slide in layout["slides"] if slide["number"] == slide_number)
+    return next(element for element in slide["elements"] if element.get("name") == name)
 
 
 class PresentationStructureTests(unittest.TestCase):
@@ -99,6 +100,26 @@ class PresentationStructureTests(unittest.TestCase):
             title = layout_element(slide_number, f"slide-{slide_number}-title")
             title_bottom = title["bbox"][1] + title["bbox"][3]
             self.assertGreaterEqual(claim["bbox"][1] - title_bottom, 72, name)
+
+    def test_canonical_layout_report_is_bound_to_current_pptx_and_package(self) -> None:
+        from scripts.phase7b.evidence import sha256_file
+
+        report = json.loads(LAYOUT_REPORT.read_text(encoding="utf-8"))
+        self.assertEqual(report["schemaVersion"], 1)
+        self.assertEqual(report["generatedAt"], "2026-08-21T00:00:00Z")
+        self.assertEqual(report["sources"], {
+            "package": {
+                "path": "results/presentation/phase7b_package.json",
+                "sha256": sha256_file(PACKAGE),
+            },
+            "pptx": {
+                "path": "presentation/final_presentation.pptx",
+                "sha256": sha256_file(PPTX),
+            },
+        })
+        self.assertEqual(len(report["slides"]), 10)
+        self.assertTrue(report["checks"]["allWithinSlide"])
+        self.assertTrue(report["checks"]["minimumFontSizesPass"])
 
 
 if __name__ == "__main__":

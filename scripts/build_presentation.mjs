@@ -1,6 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { spawn } from "node:child_process";
 import { Presentation, PresentationFile } from "@oai/artifact-tool";
+import { publishAtomically, validatePptxStructure } from "./phase7b/atomic_publish.mjs";
 
 const SIZE = { width: 1280, height: 720 };
 const COLORS = {
@@ -190,12 +192,36 @@ async function writeSourceNotes(root, slides) {
   await fs.writeFile(path.join(root, "tmp/phase7b/source-notes.txt"), lines.join("\n"), "utf8");
 }
 
+async function runChecked(executable, args, label) {
+  await new Promise((resolve, reject) => {
+    const child = spawn(executable, args, { stdio: "inherit", windowsHide: true });
+    child.once("error", reject);
+    child.once("exit", (code, signal) => {
+      if (code === 0 && signal === null) resolve();
+      else reject(new Error(`${label} failed with exit=${code} signal=${signal}`));
+    });
+  });
+}
+
+async function normalizePptx(root, python, temporary) {
+  await runChecked(
+    python,
+    [path.join(root, "scripts/normalize_phase7b_office.py"), "--path", temporary, "--suffix", ".pptx"],
+    "Phase 7B PPTX normalization",
+  );
+}
+
 async function main() {
   const rootIndex = process.argv.indexOf("--project-root");
   if (rootIndex === -1 || !process.argv[rootIndex + 1]) {
     throw new Error("Usage: build_presentation.mjs --project-root <path>");
   }
   const root = path.resolve(process.argv[rootIndex + 1]);
+  const pythonIndex = process.argv.indexOf("--python");
+  if (pythonIndex === -1 || !process.argv[pythonIndex + 1]) {
+    throw new Error("Usage: build_presentation.mjs --project-root <path> --python <bundled-python>");
+  }
+  const python = path.resolve(process.argv[pythonIndex + 1]);
   const packageData = JSON.parse(
     await fs.readFile(path.join(root, "results/presentation/phase7b_package.json"), "utf8"),
   );
@@ -220,8 +246,17 @@ async function main() {
   await writePreviews(presentation, outputDirectory);
   await writeSourceNotes(root, packageData.deck.slides);
   const output = path.join(root, "presentation/final_presentation.pptx");
-  await fs.mkdir(path.dirname(output), { recursive: true });
-  await (await PresentationFile.exportPptx(presentation)).save(output);
+  const exported = await PresentationFile.exportPptx(presentation);
+  await publishAtomically(output, {
+    save: async (temporary) => exported.save(temporary),
+    validate: validatePptxStructure,
+    normalize: async (temporary) => normalizePptx(root, python, temporary),
+  });
+  await runChecked(
+    python,
+    [path.join(root, "scripts/generate_phase7b_layout_report.py"), "--project-root", root],
+    "Phase 7B layout report generation",
+  );
 }
 
 main().catch((error) => {

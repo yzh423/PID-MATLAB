@@ -90,7 +90,7 @@
         "claim": "All {{phase7b.controllerCount}} controllers pass the straight-line task; only optimized PID passes pick-transfer-place, so {{phase7b.cartesian.successCount}} of {{phase7b.cartesian.completedRunCount}} completed task runs meet every gate.",
         "body": [
           "Manual and Fuzzy-PID complete the pick-transfer-place simulation but fail its quantitative pickup/place criteria.",
-          "Optimized PID records {{cartesian.runRows.5.CartesianRms|.5f}} m RMS and {{cartesian.runRows.5.CartesianMax|.5f}} m maximum Cartesian error."
+          "Optimized PID records {{phase7b.cartesian.optimizedPickTransferPlace.CartesianRms|.5f}} m RMS and {{phase7b.cartesian.optimizedPickTransferPlace.CartesianMax|.5f}} m maximum Cartesian error."
         ],
         "figure": "results/figures/cartesian_tasks_paths.png",
         "figureAlt": "Straight-line and pick-transfer-place Cartesian paths",

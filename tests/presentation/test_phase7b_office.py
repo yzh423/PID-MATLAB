@@ -136,6 +136,23 @@ def semantic_core_properties(
 
 
 class Phase7BOfficeTests(unittest.TestCase):
+    @staticmethod
+    def _write_adversarial_pptx(
+        path: Path,
+        *,
+        relationship_xml: bytes,
+        slide_xml: bytes,
+    ) -> None:
+        entries = {
+            "[Content_Types].xml": b"<Types/>",
+            "ppt/slides/slide1.xml": slide_xml,
+            "ppt/slides/_rels/slide1.xml.rels": relationship_xml,
+            "ppt/media/image1.png": b"image",
+        }
+        with ZipFile(path, "w", compression=ZIP_DEFLATED) as archive:
+            for name, payload in entries.items():
+                archive.writestr(name, payload)
+
     def test_pptx_normalization_canonicalizes_generated_relationship_and_creation_ids(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             first = Path(directory) / "first.pptx"
@@ -617,6 +634,112 @@ class Phase7BOfficeTests(unittest.TestCase):
                 manifest["document"],
                 {"notesCount": 10, "slideCount": 10, "summaryPageCount": 1},
             )
+
+    def test_creation_ids_are_namespace_allowlisted_and_markup_is_preserved(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            first = Path(directory) / "first.pptx"
+            second = Path(directory) / "second.pptx"
+
+            def payload(a16_id: str, p14_id: str, rel_id: str) -> bytes:
+                return (
+                    '<?xml version="1.0" encoding="UTF-8"?>'
+                    '<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" '
+                    'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" '
+                    'xmlns:a16="http://schemas.microsoft.com/office/drawing/2014/main" '
+                    'xmlns:p14="http://schemas.microsoft.com/office/powerpoint/2010/main" '
+                    'xmlns:x="urn:custom">'
+                    f'<p:pic r:embed="{rel_id}"/>'
+                    f'<a16:creationId id="{{{a16_id}}}"/>'
+                    f'<p14:creationId val="{p14_id}"/>'
+                    '<x:creationId id="business-id" val="business-value"/>'
+                    '<!-- <a16:creationId id="comment-id"/> -->'
+                    '<![CDATA[<p14:creationId val="cdata-value"/>]]>'
+                    '</p:sld>'
+                ).encode("utf-8")
+
+            relationship = (
+                b'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+                b'<Relationship Id="R-one" Type="image" Target="../media/image1.png"/>'
+                b'</Relationships>'
+            )
+            self._write_adversarial_pptx(
+                first, relationship_xml=relationship, slide_xml=payload("A", "17", "R-one")
+            )
+            self._write_adversarial_pptx(
+                second, relationship_xml=relationship, slide_xml=payload("B", "99", "R-one")
+            )
+            normalize_openxml_package(first, ".pptx")
+            normalize_openxml_package(second, ".pptx")
+            self.assertEqual(sha256_file(first), sha256_file(second))
+            with ZipFile(first) as archive:
+                normalized = archive.read("ppt/slides/slide1.xml")
+            self.assertIn(b'<x:creationId id="business-id" val="business-value"/>', normalized)
+            self.assertIn(b'<!-- <a16:creationId id="comment-id"/> -->', normalized)
+            self.assertIn(b'<![CDATA[<p14:creationId val="cdata-value"/>]]>', normalized)
+
+    def test_relationship_ids_canonicalize_for_default_and_prefixed_namespaces(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            default = Path(directory) / "default.pptx"
+            prefixed = Path(directory) / "prefixed.pptx"
+            default_rels = (
+                b'<!--keep--><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+                b'<Relationship Id="R-one" Type="image" Target="../media/image1.png"/>'
+                b'</Relationships>'
+            )
+            prefixed_rels = (
+                b'<!--keep--><r:Relationships xmlns:r="http://schemas.openxmlformats.org/package/2006/relationships">'
+                b'<r:Relationship Id="R-two" Type="image" Target="../media/image1.png"/>'
+                b'</r:Relationships>'
+            )
+            default_slide = (
+                b'<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" '
+                b'xmlns:o="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+                b'<p:pic o:embed="R-one"/><p:ext id="business">business</p:ext></p:sld>'
+            )
+            prefixed_slide = default_slide.replace(b'o:embed="R-one"', b'o:embed="R-two"')
+            self._write_adversarial_pptx(default, relationship_xml=default_rels, slide_xml=default_slide)
+            self._write_adversarial_pptx(prefixed, relationship_xml=prefixed_rels, slide_xml=prefixed_slide)
+            normalize_openxml_package(default, ".pptx")
+            normalize_openxml_package(prefixed, ".pptx")
+            with ZipFile(default) as archive:
+                default_rel = archive.read("ppt/slides/_rels/slide1.xml.rels")
+                default_source = archive.read("ppt/slides/slide1.xml")
+            with ZipFile(prefixed) as archive:
+                prefixed_rel = archive.read("ppt/slides/_rels/slide1.xml.rels")
+                prefixed_source = archive.read("ppt/slides/slide1.xml")
+            self.assertIn(b'Id="rId1"', default_rel)
+            self.assertIn(b'Id="rId1"', prefixed_rel)
+            self.assertIn(b'o:embed="rId1"', default_source)
+            self.assertIn(b'o:embed="rId1"', prefixed_source)
+            self.assertIn(b'<p:ext id="business">business</p:ext>', default_source)
+            self.assertIn(b'<p:ext id="business">business</p:ext>', prefixed_source)
+            self.assertIn(b"<!--keep-->", default_rel)
+            self.assertIn(b"<!--keep-->", prefixed_rel)
+
+            prefixed_second = Path(directory) / "prefixed-second.pptx"
+            self._write_adversarial_pptx(
+                prefixed_second,
+                relationship_xml=prefixed_rels.replace(b"R-two", b"R-three"),
+                slide_xml=prefixed_slide.replace(b'o:embed="R-two"', b'o:embed="R-three"'),
+            )
+            normalize_openxml_package(prefixed_second, ".pptx")
+            self.assertEqual(sha256_file(prefixed), sha256_file(prefixed_second))
+
+    def test_duplicate_relationship_ids_are_rejected_without_replacement(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            package = Path(directory) / "duplicate-rels.pptx"
+            relationships = (
+                b'<r:Relationships xmlns:r="http://schemas.openxmlformats.org/package/2006/relationships">'
+                b'<r:Relationship Id="dup" Type="image" Target="../media/image1.png"/>'
+                b'<r:Relationship Id="dup" Type="image" Target="../media/image2.png"/>'
+                b'</r:Relationships>'
+            )
+            slide = b'<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"/>'
+            self._write_adversarial_pptx(package, relationship_xml=relationships, slide_xml=slide)
+            original = sha256_file(package)
+            with self.assertRaisesRegex(ValueError, "duplicate relationship Id"):
+                normalize_openxml_package(package, ".pptx")
+            self.assertEqual(sha256_file(package), original)
 
 
 if __name__ == "__main__":

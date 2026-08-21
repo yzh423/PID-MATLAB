@@ -6,6 +6,7 @@ from collections.abc import Mapping, Sequence
 import hashlib
 import json
 from pathlib import Path
+from pathlib import PurePosixPath
 import tempfile
 
 from scripts.reporting.evidence import EvidenceError, load_evidence, resolve_tokens
@@ -16,6 +17,18 @@ SUMMARY_FIELDS = (
     "title", "takeaway", "problem", "method", "results", "figure",
     "figureCaption", "significance", "limitations", "nextSteps", "sources",
 )
+CONTROLLERS = ("manual-pid", "mamdani-fuzzy-pid", "optimization-pid")
+DETERMINISTIC_SCENARIOS = (
+    "nominal", "payload-0.0kg", "payload-1.0kg", "payload-1.5kg",
+    "configuration-compact", "configuration-extended",
+    "mass-inertia-minus-20pct", "mass-inertia-minus-10pct",
+    "mass-inertia-plus-10pct", "mass-inertia-plus-20pct",
+    "disturbance-pulse", "actuator-derated", "combined-deterministic",
+)
+STOCHASTIC_SCENARIOS = (
+    "noise-low", "noise-medium", "noise-high", "combined-stochastic",
+)
+CARTESIAN_TASKS = ("straight-line", "pick-transfer-place")
 
 
 class Phase7BEvidenceError(ValueError):
@@ -73,10 +86,24 @@ def _load_phase7a_manifest(path: Path) -> dict[str, object]:
 
 
 def _safe_source_path(root: Path, relative_path: str) -> Path:
-    candidate = root / relative_path
+    if (
+        not relative_path
+        or "\\" in relative_path
+        or PurePosixPath(relative_path).is_absolute()
+        or Path(relative_path).is_absolute()
+        or ":" in PurePosixPath(relative_path).parts[0]
+        or any(part in {"", ".", ".."} for part in PurePosixPath(relative_path).parts)
+    ):
+        raise Phase7BEvidenceError(
+            f"Phase 7A source path is outside the project root: {relative_path}"
+        )
+    candidate = root / Path(*PurePosixPath(relative_path).parts)
     try:
-        candidate.resolve().relative_to(root)
-    except ValueError as exception:
+        resolved = candidate.resolve(strict=True)
+        resolved.relative_to(root)
+    except FileNotFoundError:
+        return candidate
+    except (OSError, ValueError) as exception:
         raise Phase7BEvidenceError(
             f"Phase 7A source path is outside the project root: {relative_path}"
         ) from exception
@@ -137,6 +164,68 @@ def _require_nonnegative_int(value: object, label: str) -> int:
     return value
 
 
+def _require_exact_keys(
+    rows: Sequence[Mapping[str, object]],
+    fields: tuple[str, ...],
+    expected: set[tuple[object, ...]],
+    label: str,
+) -> dict[tuple[object, ...], Mapping[str, object]]:
+    keyed: dict[tuple[object, ...], Mapping[str, object]] = {}
+    for row in rows:
+        key = tuple(row.get(field) for field in fields)
+        if key in keyed:
+            raise Phase7BEvidenceError(f"Phase 7A evidence has duplicate {label} identity: {key}")
+        keyed[key] = row
+    if set(keyed) != expected:
+        raise Phase7BEvidenceError(
+            f"Phase 7A evidence {label} identity set/cardinality mismatch"
+        )
+    return keyed
+
+
+def _require_completed(rows: Sequence[Mapping[str, object]], label: str) -> None:
+    if any(row.get("Status") != "completed" for row in rows):
+        raise Phase7BEvidenceError(f"Phase 7A evidence {label} status must be completed")
+
+
+def _load_raw_evidence_admission(root: Path, evidence: Mapping[str, object]) -> list[dict[str, str]]:
+    ledger_path = root / "docs/presentation/phase7b_raw_evidence.json"
+    try:
+        ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exception:
+        raise Phase7BEvidenceError("Phase 7B raw evidence ledger is invalid") from exception
+    records = ledger.get("sources") if isinstance(ledger, Mapping) else None
+    if ledger.get("schemaVersion") != 1 or not isinstance(records, list):
+        raise Phase7BEvidenceError("Phase 7B raw evidence ledger has an unsupported schema")
+    declared = evidence.get("sources")
+    if not isinstance(declared, list) or not all(isinstance(item, Mapping) for item in declared):
+        raise Phase7BEvidenceError("Phase 7A evidence requires a raw sources list")
+    evidence_paths = {
+        str(item.get("relativePath", "")).replace("\\", "/") for item in declared
+    }
+    admitted: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for record in records:
+        if not isinstance(record, Mapping):
+            raise Phase7BEvidenceError("Phase 7B raw evidence record must be an object")
+        relative_path = record.get("path")
+        expected_digest = record.get("sha256")
+        if not isinstance(relative_path, str) or not isinstance(expected_digest, str):
+            raise Phase7BEvidenceError("Phase 7B raw evidence record requires path and sha256")
+        if relative_path in seen:
+            raise Phase7BEvidenceError(f"duplicate raw evidence identity: {relative_path}")
+        seen.add(relative_path)
+        source_path = _safe_source_path(root, relative_path)
+        if not source_path.is_file():
+            raise Phase7BEvidenceError(f"raw evidence does not exist: {relative_path}")
+        if sha256_file(source_path) != expected_digest:
+            raise Phase7BEvidenceError(f"raw evidence hash mismatch: {relative_path}")
+        admitted.append({"path": relative_path, "sha256": expected_digest})
+    if seen != evidence_paths:
+        raise Phase7BEvidenceError("raw evidence identity set/cardinality mismatch")
+    return admitted
+
+
 def _derive_phase7b_values(evidence: Mapping[str, object]) -> dict[str, object]:
     """Derive presentation counts only after validating their Phase 7A rows."""
     system = _require_mapping(evidence.get("system"), "system")
@@ -146,23 +235,75 @@ def _derive_phase7b_values(evidence: Mapping[str, object]) -> dict[str, object]:
 
     deterministic = _require_mapping(evidence.get("deterministic"), "deterministic")
     controller_rows = _require_rows(deterministic.get("summaryRows"), "deterministic summary")
-    controllers = {
-        row.get("Controller") for row in controller_rows if isinstance(row.get("Controller"), str)
-    }
-    if len(controllers) != len(controller_rows) or not controllers:
-        raise Phase7BEvidenceError("Phase 7A evidence requires unique controller summary rows")
+    controller_summary = _require_exact_keys(
+        controller_rows,
+        ("Controller",),
+        {(controller,) for controller in CONTROLLERS},
+        "deterministic controller summary",
+    )
+    deterministic_rows = _require_rows(deterministic.get("runRows"), "deterministic run")
+    _require_completed(deterministic_rows, "deterministic run")
+    deterministic_keys = _require_exact_keys(
+        deterministic_rows,
+        ("Controller", "Scenario"),
+        {(controller, scenario) for controller in CONTROLLERS for scenario in DETERMINISTIC_SCENARIOS},
+        "deterministic controller/scenario",
+    )
+    for controller in CONTROLLERS:
+        summary = controller_summary[(controller,)]
+        success_count = sum(
+            row.get("Success") is True
+            for (row_controller, _), row in deterministic_keys.items()
+            if row_controller == controller
+        )
+        if (
+            summary.get("RunCount") != len(DETERMINISTIC_SCENARIOS)
+            or summary.get("SuccessCount") != success_count
+            or summary.get("FailedRunCount") != len(DETERMINISTIC_SCENARIOS) - success_count
+        ):
+            raise Phase7BEvidenceError("Phase 7A evidence deterministic summary cardinality mismatch")
 
     stochastic = _require_mapping(evidence.get("stochastic"), "stochastic")
     stochastic_rows = _require_rows(stochastic.get("summaryRows"), "stochastic summary")
+    stochastic_summary = _require_exact_keys(
+        stochastic_rows,
+        ("Controller", "Scenario"),
+        {(controller, scenario) for controller in CONTROLLERS for scenario in STOCHASTIC_SCENARIOS},
+        "stochastic controller/scenario",
+    )
     isolated_rows = [
-        row for row in stochastic_rows
-        if isinstance(row.get("Scenario"), str) and row["Scenario"].startswith("noise-")
+        stochastic_summary[(controller, scenario)]
+        for controller in CONTROLLERS for scenario in STOCHASTIC_SCENARIOS[:3]
     ]
     combined_rows = [
-        row for row in stochastic_rows if row.get("Scenario") == "combined-stochastic"
+        stochastic_summary[(controller, "combined-stochastic")]
+        for controller in CONTROLLERS
     ]
-    if not isolated_rows or len(combined_rows) != len(controllers):
-        raise Phase7BEvidenceError("Phase 7A evidence cannot derive stochastic presentation counts")
+    stochastic_trials = _require_rows(stochastic.get("trialRows"), "stochastic trial")
+    _require_completed(stochastic_trials, "stochastic trial")
+    trial_count = _require_nonnegative_int(
+        _require_mapping(evidence.get("protocol"), "protocol").get("stochasticTrialsPerScenario"),
+        "stochastic trials per scenario",
+    )
+    trial_keys = _require_exact_keys(
+        stochastic_trials,
+        ("Controller", "Scenario", "Trial"),
+        {
+            (controller, scenario, trial)
+            for controller in CONTROLLERS
+            for scenario in STOCHASTIC_SCENARIOS
+            for trial in range(1, trial_count + 1)
+        },
+        "stochastic controller/scenario/trial",
+    )
+    for (controller, scenario), summary in stochastic_summary.items():
+        trials = [
+            row for (row_controller, row_scenario, _), row in trial_keys.items()
+            if row_controller == controller and row_scenario == scenario
+        ]
+        successes = sum(row.get("Success") is True for row in trials)
+        if summary.get("TrialCount") != trial_count or summary.get("SuccessCount") != successes:
+            raise Phase7BEvidenceError("Phase 7A evidence stochastic summary cardinality mismatch")
 
     def derive_cell(rows: list[Mapping[str, object]], name: str, expected_success: str) -> dict[str, int]:
         trial_counts = {
@@ -191,7 +332,14 @@ def _derive_phase7b_values(evidence: Mapping[str, object]) -> dict[str, object]:
 
     cartesian = _require_mapping(evidence.get("cartesian"), "cartesian")
     cartesian_rows = _require_rows(cartesian.get("runRows"), "cartesian run")
-    completed_rows = [row for row in cartesian_rows if row.get("Status") == "completed"]
+    _require_completed(cartesian_rows, "cartesian run")
+    cartesian_keys = _require_exact_keys(
+        cartesian_rows,
+        ("Controller", "Task"),
+        {(controller, task) for controller in CONTROLLERS for task in CARTESIAN_TASKS},
+        "cartesian controller/task",
+    )
+    completed_rows = list(cartesian_keys.values())
     successful_rows = [row for row in completed_rows if row.get("Success") is True]
     run_count = _require_nonnegative_int(cartesian.get("runCount"), "cartesian run count")
     if len(cartesian_rows) != run_count:
@@ -199,7 +347,7 @@ def _derive_phase7b_values(evidence: Mapping[str, object]) -> dict[str, object]:
 
     return {
         "linkCount": len(link_lengths),
-        "controllerCount": len(controllers),
+        "controllerCount": len(CONTROLLERS),
         "stochastic": {
             "isolatedNoise": derive_cell(isolated_rows, "isolated-noise", "all"),
             "combinedStress": derive_cell(combined_rows, "combined-stress", "none"),
@@ -208,6 +356,9 @@ def _derive_phase7b_values(evidence: Mapping[str, object]) -> dict[str, object]:
             "successCount": len(successful_rows),
             "completedRunCount": len(completed_rows),
             "failureCount": len(completed_rows) - len(successful_rows),
+            "optimizedPickTransferPlace": dict(
+                cartesian_keys[("optimization-pid", "pick-transfer-place")]
+            ),
         },
     }
 
@@ -280,17 +431,22 @@ def _admit_selected_figures(
     return selected
 
 
-def _validate_summary_sources(
+def _validate_declared_sources(
     root: Path,
+    slides: Sequence[Mapping[str, object]],
     summary: Mapping[str, object],
     manifest: Mapping[str, object],
     admitted_sources: Sequence[Mapping[str, str]],
+    raw_evidence: Sequence[Mapping[str, str]],
 ) -> None:
-    """Require visible summary sources to be hash-traceable Phase 7A records."""
+    """Require every audience-facing citation to be repo-bound and hash-admitted."""
     output_records = manifest.get("outputs")
     if not isinstance(output_records, Sequence):
         raise Phase7BEvidenceError("Phase 7A build manifest requires an outputs list")
-    admitted = {record["path"]: record["sha256"] for record in admitted_sources}
+    admitted = {
+        record["path"]: record["sha256"]
+        for record in [*admitted_sources, *raw_evidence]
+    }
     for record in output_records:
         if not isinstance(record, Mapping):
             raise Phase7BEvidenceError("Phase 7A output record must be an object")
@@ -298,19 +454,36 @@ def _validate_summary_sources(
         digest = record.get("sha256")
         if not isinstance(path, str) or not isinstance(digest, str):
             raise Phase7BEvidenceError("Phase 7A output record requires path and sha256 strings")
+        source_path = _safe_source_path(root, path)
+        if not source_path.is_file() or sha256_file(source_path) != digest:
+            raise Phase7BEvidenceError(f"Phase 7A output hash mismatch: {path}")
         admitted[path] = digest
     manifest_path = "docs/report/build_manifest.json"
     admitted[manifest_path] = sha256_file(root / manifest_path)
-    sources = summary["sources"]
-    assert isinstance(sources, list)
-    for source in sources:
+    raw_ledger_path = "docs/presentation/phase7b_raw_evidence.json"
+    admitted[raw_ledger_path] = sha256_file(root / raw_ledger_path)
+
+    declared: list[tuple[str, str]] = []
+    for slide in slides:
+        sources = slide["sources"]
+        assert isinstance(sources, list)
+        declared.extend((f"slide source ({slide['id']})", source) for source in sources)
+    summary_sources = summary["sources"]
+    assert isinstance(summary_sources, list)
+    declared.extend(("summary source", source) for source in summary_sources)
+    for label, source in declared:
         assert isinstance(source, str)
+        try:
+            source_path = _safe_source_path(root, source)
+        except Phase7BEvidenceError as exception:
+            raise Phase7BEvidenceError(f"{label} is outside the project root: {source}") from exception
         expected_digest = admitted.get(source)
         if expected_digest is None:
-            raise Phase7BEvidenceError(f"summary source is not admitted by Phase 7A: {source}")
-        source_path = _safe_source_path(root, source)
-        if not source_path.is_file() or sha256_file(source_path) != expected_digest:
-            raise Phase7BEvidenceError(f"Phase 7A summary source hash mismatch: {source}")
+            raise Phase7BEvidenceError(f"{label} is not admitted by Phase 7A: {source}")
+        if not source_path.is_file():
+            raise Phase7BEvidenceError(f"{label} does not exist: {source}")
+        if sha256_file(source_path) != expected_digest:
+            raise Phase7BEvidenceError(f"{label} hash mismatch: {source}")
 
 
 def build_phase7b_package(root: Path) -> dict[str, object]:
@@ -330,6 +503,7 @@ def build_phase7b_package(root: Path) -> dict[str, object]:
         evidence = load_evidence(evidence_path)
     except EvidenceError as exception:
         raise Phase7BEvidenceError(f"Phase 7A evidence is invalid: {exception}") from exception
+    raw_evidence = _load_raw_evidence_admission(root, evidence)
     resolved_evidence = dict(evidence)
     resolved_evidence["phase7b"] = _derive_phase7b_values(evidence)
     template = load_phase7b_template(root / "docs/presentation/phase7b_template.json")
@@ -341,7 +515,9 @@ def build_phase7b_package(root: Path) -> dict[str, object]:
     if not isinstance(resolved, dict):
         raise Phase7BEvidenceError("Phase 7B template root must resolve to an object")
     deck, slides, summary = _validate_template_shape(resolved)
-    _validate_summary_sources(root, summary, manifest, admitted_sources)
+    _validate_declared_sources(
+        root, slides, summary, manifest, admitted_sources, raw_evidence
+    )
     selected = _admit_selected_figures(root, slides, summary, admitted_sources)
     return {
         "schemaVersion": 1,
@@ -357,6 +533,13 @@ def build_phase7b_package(root: Path) -> dict[str, object]:
             },
             "evidence": evidence_record,
             "sources": admitted_sources,
+            "rawEvidence": raw_evidence,
+            "rawEvidenceLedger": {
+                "path": "docs/presentation/phase7b_raw_evidence.json",
+                "sha256": sha256_file(
+                    root / "docs/presentation/phase7b_raw_evidence.json"
+                ),
+            },
         },
     }
 

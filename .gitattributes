@@ -1,3 +1,4 @@
+/.gitattributes text eol=lf
 /README.md text eol=lf
 /+rrm/+report/** text eol=lf
 /.aris/traces/paper-claim-audit/** text eol=lf
@@ -7,6 +8,8 @@
 /docs/report/*.pdf binary
 /docs/skills/plans/2026-08-20-phase-7a-technical-report.md text eol=lf
 /docs/skills/specs/2026-08-20-phase-7a-technical-report-design.md text eol=lf
+/docs/skills/plans/2026-08-21-phase-7b-presentation-summary.md text eol=lf
+/docs/skills/specs/2026-08-21-phase-7b-presentation-summary-design.md text eol=lf
 /experiments/export_report_evidence.m text eol=lf
 /scripts/build_report.py text eol=lf
 /scripts/export_report_pdf.ps1 text eol=lf
@@ -16,8 +19,19 @@
 /scripts/verify_report.ps1 text eol=lf
 /tests/report/** text eol=lf
 /docs/presentation/** text eol=lf
+/results/presentation/*.json text eol=lf
+/results/report/*.json text eol=lf
 /scripts/phase7b/** text eol=lf
 /scripts/export_phase7b_package.py text eol=lf
+/scripts/build_presentation.mjs text eol=lf
+/scripts/build_research_summary.py text eol=lf
+/scripts/build_research_summary_pdf.py text eol=lf
+/scripts/export_research_summary_pdf.ps1 text eol=lf
+/scripts/generate_phase7b_layout_report.py text eol=lf
+/scripts/normalize_phase7b_office.py text eol=lf
+/scripts/normalize_research_summary_pdf.py text eol=lf
+/scripts/verify_phase7b.ps1 text eol=lf
+/scripts/verify_phase7b_audit.py text eol=lf
 /tests/presentation/** text eol=lf
 /presentation/*.pptx binary
 /docs/summary/*.docx binary

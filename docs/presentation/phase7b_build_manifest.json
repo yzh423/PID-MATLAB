@@ -1,101 +1,193 @@
 {
-  "schemaVersion": 1,
-  "generatedAt": "2026-08-21T00:00:00Z",
-  "sources": [
-    {
-      "path": "docs/presentation/phase7b_template.json",
-      "sha256": "2b375e2fa8a3c50322dcd69234a9fb2e39065c1e9a64e48c90c4e99e7ade942d"
-    },
-    {
-      "path": "docs/report/build_manifest.json",
-      "sha256": "1c9d3be2ee11027d1e068cdf59c27d96e42987dce1b2526a48c342dce8f13417"
-    },
-    {
-      "path": "results/figures/cartesian_tasks_paths.png",
-      "sha256": "7765ca66a9dde0f9cdb20bee13bd89182d1f3a4767c2a9e6d4d66c1160487d13"
-    },
-    {
-      "path": "results/figures/deterministic_robustness_summary.png",
-      "sha256": "92a0c6889e6171d1b4f5811d20cc28a272aca7990a45a6483fa6bf74718d2759"
-    },
-    {
-      "path": "results/figures/multibody_cross_validation_tracking.png",
-      "sha256": "3bd780e3dfddb099659271c277ec1c133040178d54b69d1c9a43a48cb50da4f9"
-    },
-    {
-      "path": "results/figures/nominal_pid_vs_fuzzy_tracking.png",
-      "sha256": "af83a683500dc25559464801dae66fde87eeaa1b03dbd918180bfb4e3c55d84a"
-    },
-    {
-      "path": "results/figures/pid_optimization_objective.png",
-      "sha256": "95215e3025e328f6ce4d36e5ba39c57d00da99b6feeb9a233fbb1e9533d05058"
-    },
-    {
-      "path": "results/figures/stochastic_robustness_chattering.png",
-      "sha256": "ac368ef40a76090faec46a7b79ab0ea8df5490ac1c7d24d0f7929d7239930303"
-    },
-    {
-      "path": "results/presentation/phase7b_package.json",
-      "sha256": "80da3fc21739acd46d6951936772c4d481371e76bb8721608cc2bdc80eb5e12f"
-    },
-    {
-      "path": "results/report/report_evidence.json",
-      "sha256": "9495b9193b484f0622a3513779bcd2ed4b75d24e9710f4412b89a68da8237678"
-    },
-    {
-      "path": "scripts/build_presentation.mjs",
-      "sha256": "ab1d27f9633d6d8f32c7a731000f6c41e70ef702dd30b96200baec3c8c7e26ff"
-    },
-    {
-      "path": "scripts/build_research_summary.py",
-      "sha256": "fb8e77bc9eac29c87171dbf6c17b204bd07680e75396eea4615012a24dd74d05"
-    },
-    {
-      "path": "scripts/build_research_summary_pdf.py",
-      "sha256": "0ba374c133d2ec179cd4f2c6e69300e0a42bacf6680112a964569696767ae6a0"
-    },
-    {
-      "path": "scripts/export_research_summary_pdf.ps1",
-      "sha256": "63ccd12f13b2d2cf3d691a2ef5c9b5ec64af940720493b6f6bcedb660ba35a12"
-    },
-    {
-      "path": "scripts/normalize_phase7b_office.py",
-      "sha256": "d0f80ea7ec2c93b7b6c9e9911539bd03ef1aced620758c950f44a9285ab56710"
-    },
-    {
-      "path": "scripts/normalize_research_summary_pdf.py",
-      "sha256": "1d0f14c1d2935eb5a49732cbf29139f20f88a42bc275c2feafc256b7409bbc0d"
-    },
-    {
-      "path": "scripts/phase7b/evidence.py",
-      "sha256": "443ddfe0ce5bdd6d32e0aec00bac91333fbc33189aa0015fba21bb97cd4fd1af"
-    },
-    {
-      "path": "scripts/phase7b/office.py",
-      "sha256": "1b75551f923172172324f6a6436fb631a4fbb0d354c05970bfd72f1cfd748a4f"
-    },
-    {
-      "path": "scripts/phase7b/summary.py",
-      "sha256": "2c005d9833a0bac9dc1902bac6759f717ea2aea415df303065e294fba73728fe"
-    }
-  ],
-  "outputs": [
-    {
-      "path": "docs/summary/research_summary.docx",
-      "sha256": "520ce606a10e2e3dbdb2463bd00bd3782fec52c37646491c222ceeff0bb2f3a4"
-    },
-    {
-      "path": "docs/summary/research_summary.pdf",
-      "sha256": "d7f614fb20edaff37a7fa12c2d44619aadf6b673cfac06728b527a8cbe0672db"
-    },
-    {
-      "path": "presentation/final_presentation.pptx",
-      "sha256": "0fd8abda808d3c258a3d1900e701e362a3943343e0b1c977c6666c3d7ea737af"
-    }
-  ],
-  "document": {
-    "notesCount": 10,
-    "slideCount": 10,
-    "summaryPageCount": 1
-  }
+    "schemaVersion":  1,
+    "generatedAt":  "2026-08-21T00:00:00Z",
+    "sources":  [
+                    {
+                        "path":  "docs/presentation/phase7b_layout_report.json",
+                        "sha256":  "7b99e01ddf7066019f90a125c8cff2c1dc0fb76a1d5ec1936aa9cd862e8df894"
+                    },
+                    {
+                        "path":  "docs/presentation/phase7b_raw_evidence.json",
+                        "sha256":  "293d17c4538544d19d904ed4d92df31271fadde9f66fedddcd9c2207dec3fe5b"
+                    },
+                    {
+                        "path":  "docs/presentation/phase7b_template.json",
+                        "sha256":  "fceec272a5775e21446a6a3c1ad2e515a232cc8a3d7679c96b6aabaca8467e7c"
+                    },
+                    {
+                        "path":  "docs/report/build_manifest.json",
+                        "sha256":  "e91e88998090384f22bc76620d900cd65df08f940d4aa06885cc29d35b0a5bdb"
+                    },
+                    {
+                        "path":  "results/data/cartesian_tasks.mat",
+                        "sha256":  "83d6d75cbff62d3a57ece2be3c32971a531c7444732381b7d2e61e299435ef27"
+                    },
+                    {
+                        "path":  "results/data/cartesian_tasks_runs.csv",
+                        "sha256":  "51d038f74682f3f371d13a95f883cff731517389b29425aae14255ba1535faa9"
+                    },
+                    {
+                        "path":  "results/data/deterministic_robustness.mat",
+                        "sha256":  "ccd563826228f878bc0dd712e6448c359335c0a630b1b2e1f9c4588739ef10d1"
+                    },
+                    {
+                        "path":  "results/data/deterministic_robustness_runs.csv",
+                        "sha256":  "9d0ddfd0c297fa43df351695d54c8a3ad427845ece588eaee79f4635c99dc8e0"
+                    },
+                    {
+                        "path":  "results/data/deterministic_robustness_summary.csv",
+                        "sha256":  "1041f7b8a57b382bdd4ce7dc152f029cebac40b428f05f03b1de7085dd8c702c"
+                    },
+                    {
+                        "path":  "results/data/multibody_cross_validation.mat",
+                        "sha256":  "d76b02921100511ecbaa462ebd5c44fc7621ad29a2def18d16c2df1e2ba81029"
+                    },
+                    {
+                        "path":  "results/data/multibody_cross_validation_runs.csv",
+                        "sha256":  "c69a5daa5552f2ed79ba176c3935b3dfe3157e3e9334e4dcee21f8b3fda112d0"
+                    },
+                    {
+                        "path":  "results/data/nominal_pid_vs_fuzzy.mat",
+                        "sha256":  "759072fe594e5df4fc8e465e6807899ae8d983e91e06239f2d7e92bb8bdf1ab4"
+                    },
+                    {
+                        "path":  "results/data/pid_optimization.mat",
+                        "sha256":  "02c37925822b51ff44217162e11ed69aeabb0f65d84a68e9da215e3f06f78437"
+                    },
+                    {
+                        "path":  "results/data/simulink_cross_validation.mat",
+                        "sha256":  "2e33db6a5901645c8d575817a0384ae686b9c9b0caff9b42ebe16c47c51ccde9"
+                    },
+                    {
+                        "path":  "results/data/simulink_cross_validation_runs.csv",
+                        "sha256":  "6427d4d6f85c75dc0b7f4cc836a3360b0ba963d1eea513f9289a179d1ded2e43"
+                    },
+                    {
+                        "path":  "results/data/stochastic_robustness.mat",
+                        "sha256":  "5ee2a8a1f797a99a1c0ff511b6ae5984d4fd57a13fcad4b0f10e76c3d1b8404d"
+                    },
+                    {
+                        "path":  "results/data/stochastic_robustness_summary.csv",
+                        "sha256":  "083188735f2e5636f3f7272825188f6f02a45185a19936e4e603021663c257cd"
+                    },
+                    {
+                        "path":  "results/data/stochastic_robustness_trials.csv",
+                        "sha256":  "5beaa1a23eb26b83f810ecae9f1937c8c1926870627d00bd590edf1ffde8b3e6"
+                    },
+                    {
+                        "path":  "results/figures/cartesian_tasks_paths.png",
+                        "sha256":  "7765ca66a9dde0f9cdb20bee13bd89182d1f3a4767c2a9e6d4d66c1160487d13"
+                    },
+                    {
+                        "path":  "results/figures/deterministic_robustness_summary.png",
+                        "sha256":  "92a0c6889e6171d1b4f5811d20cc28a272aca7990a45a6483fa6bf74718d2759"
+                    },
+                    {
+                        "path":  "results/figures/multibody_cross_validation_tracking.png",
+                        "sha256":  "3bd780e3dfddb099659271c277ec1c133040178d54b69d1c9a43a48cb50da4f9"
+                    },
+                    {
+                        "path":  "results/figures/nominal_pid_vs_fuzzy_tracking.png",
+                        "sha256":  "af83a683500dc25559464801dae66fde87eeaa1b03dbd918180bfb4e3c55d84a"
+                    },
+                    {
+                        "path":  "results/figures/pid_optimization_objective.png",
+                        "sha256":  "95215e3025e328f6ce4d36e5ba39c57d00da99b6feeb9a233fbb1e9533d05058"
+                    },
+                    {
+                        "path":  "results/figures/stochastic_robustness_chattering.png",
+                        "sha256":  "ac368ef40a76090faec46a7b79ab0ea8df5490ac1c7d24d0f7929d7239930303"
+                    },
+                    {
+                        "path":  "results/presentation/phase7b_package.json",
+                        "sha256":  "8e85522427fcbbe16ac8262f14fa76280b3d24535eb8d5755643ed77c3eecc79"
+                    },
+                    {
+                        "path":  "results/report/report_evidence.json",
+                        "sha256":  "9495b9193b484f0622a3513779bcd2ed4b75d24e9710f4412b89a68da8237678"
+                    },
+                    {
+                        "path":  "scripts/build_presentation.mjs",
+                        "sha256":  "2de71840055db8e60e4fb16ea0cb5bd7f214d74c68a856ec31c6a7a948a72f3c"
+                    },
+                    {
+                        "path":  "scripts/build_research_summary.py",
+                        "sha256":  "fb8e77bc9eac29c87171dbf6c17b204bd07680e75396eea4615012a24dd74d05"
+                    },
+                    {
+                        "path":  "scripts/build_research_summary_pdf.py",
+                        "sha256":  "0ba374c133d2ec179cd4f2c6e69300e0a42bacf6680112a964569696767ae6a0"
+                    },
+                    {
+                        "path":  "scripts/export_phase7b_package.py",
+                        "sha256":  "d7ffc5ec58de187ecbcc88d0cfdb7142d5b6a63a40dfd248cb09c7f55b2608e1"
+                    },
+                    {
+                        "path":  "scripts/export_research_summary_pdf.ps1",
+                        "sha256":  "b024f20cc2d2f70da35f073e46be3a28f77130f3a3166e5af86433df9969bf2a"
+                    },
+                    {
+                        "path":  "scripts/generate_phase7b_layout_report.py",
+                        "sha256":  "80889b6ec3adbef24c5fad1f051d0f5f0622a3535252463c013aa74db12b8842"
+                    },
+                    {
+                        "path":  "scripts/normalize_phase7b_office.py",
+                        "sha256":  "d0f80ea7ec2c93b7b6c9e9911539bd03ef1aced620758c950f44a9285ab56710"
+                    },
+                    {
+                        "path":  "scripts/normalize_research_summary_pdf.py",
+                        "sha256":  "1d0f14c1d2935eb5a49732cbf29139f20f88a42bc275c2feafc256b7409bbc0d"
+                    },
+                    {
+                        "path":  "scripts/phase7b/atomic_publish.mjs",
+                        "sha256":  "cfda68d4051e19a1f2923360244e70987eca8001cc675e5169b48d17e3f01c43"
+                    },
+                    {
+                        "path":  "scripts/phase7b/audit.py",
+                        "sha256":  "808ec2858523f83520ac11d94335cf62ccbb8ca900093d1aa3d821d133c99243"
+                    },
+                    {
+                        "path":  "scripts/phase7b/evidence.py",
+                        "sha256":  "e532af605f52877926b0857307dafcc9607582850d9736794d6e6bc630a74658"
+                    },
+                    {
+                        "path":  "scripts/phase7b/layout.py",
+                        "sha256":  "6f987a2f2f11775cd49ff343191d36c3a5ea5c90cf4444d1c764896e2d96098e"
+                    },
+                    {
+                        "path":  "scripts/phase7b/office.py",
+                        "sha256":  "ecabeb4888e19ffd9251bae218755190c25d112b69d233d244fac64fc4e914fc"
+                    },
+                    {
+                        "path":  "scripts/phase7b/summary.py",
+                        "sha256":  "2c005d9833a0bac9dc1902bac6759f717ea2aea415df303065e294fba73728fe"
+                    },
+                    {
+                        "path":  "scripts/verify_phase7b.ps1",
+                        "sha256":  "9f23302a497703661b4eb1a7c5fc71c537ee1fd0b0c168b3621605eeef2e2c8c"
+                    },
+                    {
+                        "path":  "scripts/verify_phase7b_audit.py",
+                        "sha256":  "7e3db8351d79343c0c80d6e2f1fdd45f3337e3038bb668f065e4e300449a5916"
+                    }
+                ],
+    "outputs":  [
+                    {
+                        "path":  "docs/summary/research_summary.docx",
+                        "sha256":  "520ce606a10e2e3dbdb2463bd00bd3782fec52c37646491c222ceeff0bb2f3a4"
+                    },
+                    {
+                        "path":  "docs/summary/research_summary.pdf",
+                        "sha256":  "d7f614fb20edaff37a7fa12c2d44619aadf6b673cfac06728b527a8cbe0672db"
+                    },
+                    {
+                        "path":  "presentation/final_presentation.pptx",
+                        "sha256":  "0fd8abda808d3c258a3d1900e701e362a3943343e0b1c977c6666c3d7ea737af"
+                    }
+                ],
+    "document":  {
+                     "notesCount":  10,
+                     "slideCount":  10,
+                     "summaryPageCount":  1
+                 }
 }

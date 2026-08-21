@@ -4,9 +4,9 @@
 
 **Goal:** Build a reproducible, evidence-grounded 10-slide PowerPoint deck plus a one-page DOCX/PDF research summary from the verified Phase 7A evidence.
 
-**Architecture:** A Python exporter validates the Phase 7A report evidence and resolves a controlled Phase 7B JSON template into one deterministic package. A JavaScript ES-module builder using `@oai/artifact-tool` creates the PPTX, while a `python-docx` builder creates the one-page summary; shared Office/PDF normalization and a PowerShell verifier enforce structure, visual QA inputs, and stable hashes.
+**Architecture:** A Python exporter validates the Phase 7A report evidence and resolves a controlled Phase 7B JSON template into one deterministic package. A JavaScript ES-module builder using `@oai/artifact-tool` creates the PPTX. The DOCX and PDF are two independent canonical renderers of the same deterministic Phase 7B package: `python-docx` builds DOCX and ReportLab builds PDF. Shared Office/PDF normalization and a PowerShell verifier enforce structure, semantic/layout equivalence, visual QA inputs, and stable hashes.
 
-**Tech Stack:** MATLAB R2026 verification, bundled Python 3 with `python-docx`, Pillow and `pypdf`, bundled Node.js with `@oai/artifact-tool`, Microsoft Word COM for PDF export, PowerShell, `unittest`, OOXML/ZIP inspection.
+**Tech Stack:** MATLAB R2026 verification, bundled Python 3 with `python-docx`, ReportLab, Pillow and `pypdf`, bundled Node.js with `@oai/artifact-tool`, optional non-canonical PID-scoped Microsoft Word diagnostic, PowerShell, `unittest`, OOXML/ZIP inspection.
 
 ## Global Constraints
 
@@ -36,7 +36,7 @@
 | `scripts/build_presentation.mjs` | Artifact-tool PPTX builder, image embedding, notes, preview/layout exports |
 | `scripts/phase7b/summary.py` | Exact one-page Word style and layout helpers |
 | `scripts/build_research_summary.py` | DOCX/Markdown/manifest builder from the resolved package |
-| `scripts/export_research_summary_pdf.ps1` | Owned hidden Word export plus deterministic PDF normalization |
+| `scripts/export_research_summary_pdf.ps1` | Canonical ReportLab export plus optional PID-scoped Word diagnostic |
 | `scripts/verify_phase7b.ps1` | End-to-end package build, tests, hashes, render structure, page/slide gates |
 | `tests/presentation/test_phase7b_evidence.py` | Evidence/token/admission tests |
 | `tests/presentation/test_phase7b_outputs.py` | PPTX/DOCX/PDF/manifest structure and reproducibility tests |
@@ -766,7 +766,7 @@ git commit -m "feat: build evidence-grounded Phase 7B deck"
 
 **Interfaces:**
 - Consumes: resolved `package["summary"]`, one deterministic reliability PNG, and `normalize_openxml_package`.
-- Produces: a one-page Letter DOCX and one-page normalized PDF with a fixed Phase 7B document ID.
+- Produces: a one-page Letter DOCX and one-page normalized PDF as two independent canonical renderers of the same deterministic Phase 7B package, with a fixed Phase 7B document ID.
 
 - [ ] **Step 1: Write failing summary tests**
 
@@ -850,7 +850,7 @@ The result strip must use real table geometry with column widths summing to the 
 
 - [ ] **Step 5: Export and normalize PDF**
 
-Adapt the owned Word COM pattern from `scripts/export_report_pdf.ps1`. Restrict the DOCX and PDF paths to `docs/summary`, use hidden Word, close only the owned document/process in `finally`, and invoke a generalized PDF normalizer with:
+Use `scripts/build_research_summary_pdf.py` as the canonical ReportLab renderer, independently consuming `results/presentation/phase7b_package.json`; normalize that output with the generalized PDF normalizer below. Retain `-UseWordCom` only as a non-canonical diagnostic: restrict paths to `docs/summary`, record the newly owned WINWORD PID, close only that document/process in `finally`, and fail closed if its PID survives. The verifier never substitutes Word output for the canonical PDF.
 
 ```python
 FIXED_PDF_DATE = "D:20260821000000+08'00'"

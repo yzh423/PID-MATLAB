@@ -70,6 +70,8 @@ The summary is a one-page US Letter portrait document using the `standard_busine
 
 The page must not use tables as prose containers. A three-result strip is allowed as a named visual override, while the remaining content uses headings, short paragraphs, and one figure. The final DOCX and PDF must both render as exactly one page.
 
+The DOCX and PDF are **two independent canonical renderers** of the same deterministic Phase 7B package. The DOCX renderer uses `python-docx`; the PDF renderer uses ReportLab directly. Semantic equality, source coverage, figure aspect/layout equivalence, and the one-page contract are verified across both outputs. Word export is an optional, non-canonical diagnostic only and is never the canonical PDF gate.
+
 ## Evidence and Data Flow
 
 ```text
@@ -110,7 +112,7 @@ scripts/
   export_phase7b_package.py      # Evidence admission and token resolution
   build_presentation.mjs         # Artifact-tool presentation builder
   build_research_summary.py      # python-docx summary builder
-  export_research_summary_pdf.ps1 # Owned Word COM PDF export
+  export_research_summary_pdf.ps1 # Canonical ReportLab PDF; optional PID-scoped Word diagnostic
   verify_phase7b.ps1             # End-to-end Phase 7B gate
 scripts/phase7b/
   evidence.py                    # Package schema and deterministic hashing
@@ -130,7 +132,8 @@ Intermediate renders, layouts, source notes, package JSON, and Office automation
 - Presentation authoring: bundled Node.js and `@oai/artifact-tool` from a JavaScript ES module.
 - Presentation composition: Codex Grid principles, adapted rather than copied mechanically; selected reference families are cover-image, two-column, metric-led, and chart/evidence.
 - Summary authoring: bundled Python with `python-docx` and deterministic OOXML helpers.
-- PDF export: owned hidden Microsoft Word COM process followed by existing deterministic PDF normalization.
+- PDF rendering: ReportLab independently renders the same deterministic Phase 7B package used by the DOCX renderer, followed by deterministic PDF normalization.
+- Optional Word export: non-canonical diagnostic only; it is PID-scoped, fail-closed, and excluded from the canonical gate.
 - Visual evidence: the six normalized Phase 7A PNG figures. No Python-drawn graphics and no decorative generated images.
 - Source text: UTF-8 with LF checkout endings.
 - Numeric formatting: standard report formatting and declared rounding only.
@@ -204,7 +207,7 @@ All commands run from the repository root with paths resolved from the bundled w
 
 - Missing, malformed, stale, or hash-mismatched evidence fails before authoring.
 - Unsupported content tokens report the exact JSON path and source field.
-- Word automation owns and closes only the process it creates; cleanup occurs in `finally` blocks.
+- Optional Word diagnostics own and close only the process they create, fail if an owned PID survives, and clean up in `finally` blocks.
 - Rendering, overlap, clipping, page-count, placeholder, or source-note failures block delivery.
 - Build scripts write through temporary files and replace final artifacts only after structural validation.
 

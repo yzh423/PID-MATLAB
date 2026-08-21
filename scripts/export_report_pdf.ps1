@@ -98,7 +98,7 @@ $temporaryManifest = Join-Path $reportRoot ('.build_manifest.' + [Guid]::NewGuid
 $encoding = New-Object Text.UTF8Encoding($false)
 [IO.File]::WriteAllText(
     $temporaryManifest,
-    (($manifest | ConvertTo-Json -Depth 20) + [Environment]::NewLine),
+    (($manifest | ConvertTo-Json -Depth 20).Replace("`r`n", "`n") + "`n"),
     $encoding
 )
 [IO.File]::Move($temporaryManifest, $manifestPath, $true)

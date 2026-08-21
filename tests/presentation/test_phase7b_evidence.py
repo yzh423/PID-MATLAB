@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 import shutil
+import subprocess
 import tempfile
 import unittest
 
@@ -36,6 +38,33 @@ def stage_phase7a_fixture(root: Path) -> None:
     manifest_path = root / "docs/report/build_manifest.json"
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(MANIFEST, manifest_path)
+    raw_manifest = ROOT / "docs/presentation/phase7b_raw_evidence.json"
+    raw_manifest_destination = root / "docs/presentation/phase7b_raw_evidence.json"
+    raw_manifest_destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(raw_manifest, raw_manifest_destination)
+    raw_records = json.loads(raw_manifest.read_text(encoding="utf-8"))["sources"]
+    for record in raw_records:
+        source = ROOT / record["path"]
+        destination = root / record["path"]
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+
+
+def rewrite_evidence_and_admission(root: Path, mutate) -> dict[str, object]:
+    """Mutate admitted evidence while keeping the fixture's outer hash valid."""
+    evidence_path = root / "results/report/report_evidence.json"
+    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    mutate(evidence)
+    evidence_path.write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8", newline="\n")
+    manifest_path = root / "docs/report/build_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    record = next(
+        record for record in manifest["sources"]
+        if record["path"] == "results/report/report_evidence.json"
+    )
+    record["sha256"] = sha256_file(evidence_path)
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n")
+    return evidence
 
 
 def leaf_strings(value: object) -> list[str]:
@@ -127,7 +156,10 @@ class Phase7BEvidenceTests(unittest.TestCase):
             all("{{" not in item and "}}" not in item for item in leaf_strings(package))
         )
         source_hashes = package["phase7aSourceHashes"]
-        self.assertEqual(set(source_hashes), {"manifest", "evidence", "sources"})
+        self.assertEqual(
+            set(source_hashes),
+            {"manifest", "evidence", "sources", "rawEvidence", "rawEvidenceLedger"},
+        )
         self.assertEqual(source_hashes["manifest"], {
             "path": "docs/report/build_manifest.json", "sha256": sha256_file(MANIFEST),
         })
@@ -135,6 +167,7 @@ class Phase7BEvidenceTests(unittest.TestCase):
             "path": "results/report/report_evidence.json", "sha256": sha256_file(EVIDENCE),
         })
         self.assertEqual(len(source_hashes["sources"]), 9)
+        self.assertEqual(len(source_hashes["rawEvidence"]), 14)
         self.assertEqual(len(package["selectedFigures"]), 6)
         self.assertEqual(package["summary"]["figure"], "results/figures/deterministic_robustness_summary.png")
         self.assertEqual(
@@ -242,6 +275,97 @@ class Phase7BEvidenceTests(unittest.TestCase):
             self.assertGreaterEqual(len(slide["sources"]), 1, slide["id"])
             self.assertTrue(all(source.startswith(("docs/", "results/")) for source in slide["sources"]))
         self.assertEqual(package["generatedAt"], "2026-08-21T00:00:00Z")
+
+    def test_slide_sources_are_repo_bound_existing_and_hash_admitted(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            fake_root = Path(directory)
+            stage_phase7a_fixture(fake_root)
+            template_path = fake_root / "docs/presentation/phase7b_template.json"
+
+            def set_source(source: str) -> None:
+                template = json.loads(TEMPLATE.read_text(encoding="utf-8"))
+                template["deck"]["slides"][0]["sources"] = [source]
+                template_path.write_text(json.dumps(template), encoding="utf-8")
+
+            for source in ("../../outside.txt", "C:/outside.txt", "docs/report/missing.txt"):
+                with self.subTest(source=source):
+                    set_source(source)
+                    with self.assertRaisesRegex(Phase7BEvidenceError, "slide source"):
+                        build_phase7b_package(fake_root)
+
+            unadmitted = fake_root / "docs/report/unadmitted.txt"
+            unadmitted.write_text("exists but is not admitted", encoding="utf-8")
+            set_source("docs/report/unadmitted.txt")
+            with self.assertRaisesRegex(Phase7BEvidenceError, "not admitted"):
+                build_phase7b_package(fake_root)
+
+            outside = fake_root.parent / f"{fake_root.name}-outside"
+            outside.mkdir()
+            (outside / "outside.txt").write_text("outside", encoding="utf-8")
+            link = fake_root / "docs/report/outside-link"
+            try:
+                if os.name == "nt":
+                    subprocess.run(
+                        ["cmd", "/c", "mklink", "/J", str(link), str(outside)],
+                        check=True,
+                        capture_output=True,
+                        text=True,
+                    )
+                else:
+                    os.symlink(outside, link, target_is_directory=True)
+                set_source("docs/report/outside-link/outside.txt")
+                with self.assertRaisesRegex(Phase7BEvidenceError, "outside the project root"):
+                    build_phase7b_package(fake_root)
+            finally:
+                if link.exists():
+                    link.rmdir()
+                (outside / "outside.txt").unlink(missing_ok=True)
+                outside.rmdir()
+
+    def test_direct_raw_slide_sources_are_hash_admitted(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            fake_root = Path(directory)
+            stage_phase7a_fixture(fake_root)
+            raw = fake_root / "results/data/stochastic_robustness_trials.csv"
+            raw.write_bytes(raw.read_bytes() + b"tampered")
+            with self.assertRaisesRegex(Phase7BEvidenceError, "raw evidence hash mismatch"):
+                build_phase7b_package(fake_root)
+
+    def test_categorical_rows_require_exact_complete_identity_sets(self) -> None:
+        mutations = {
+            "missing deterministic cell": lambda evidence: evidence["deterministic"]["runRows"].pop(),
+            "missing stochastic summary cell": lambda evidence: evidence["stochastic"]["summaryRows"].pop(),
+            "duplicate stochastic summary cell": lambda evidence: evidence["stochastic"]["summaryRows"].__setitem__(
+                -1, dict(evidence["stochastic"]["summaryRows"][0])
+            ),
+            "missing stochastic trial": lambda evidence: evidence["stochastic"]["trialRows"].pop(),
+            "wrong stochastic status": lambda evidence: evidence["stochastic"]["trialRows"][0].__setitem__("Status", "failed"),
+            "wrong cartesian status": lambda evidence: evidence["cartesian"]["runRows"][0].__setitem__("Status", "failed"),
+            "wrong cartesian task": lambda evidence: evidence["cartesian"]["runRows"][0].__setitem__("Task", "unexpected-task"),
+            "duplicate cartesian key": lambda evidence: evidence["cartesian"]["runRows"].__setitem__(
+                1, dict(evidence["cartesian"]["runRows"][0])
+            ),
+        }
+        for label, mutation in mutations.items():
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as directory:
+                fake_root = Path(directory)
+                stage_phase7a_fixture(fake_root)
+                rewrite_evidence_and_admission(fake_root, mutation)
+                with self.assertRaisesRegex(Phase7BEvidenceError, "identity|cardinality|status"):
+                    build_phase7b_package(fake_root)
+
+    def test_cartesian_claim_is_derived_by_key_not_row_position(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            fake_root = Path(directory)
+            stage_phase7a_fixture(fake_root)
+            rewrite_evidence_and_admission(
+                fake_root,
+                lambda evidence: evidence["cartesian"]["runRows"].reverse(),
+            )
+            package = build_phase7b_package(fake_root)
+            cartesian = package["deck"]["slides"][6]
+            self.assertIn("0.01422 m RMS", cartesian["body"][1])
+            self.assertIn("0.02970 m maximum", cartesian["body"][1])
 
 
 if __name__ == "__main__":

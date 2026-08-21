@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 import unittest
@@ -15,6 +16,11 @@ ROOT = Path(__file__).resolve().parents[2]
 DOCX = ROOT / "docs" / "summary" / "research_summary.docx"
 PDF = ROOT / "docs" / "summary" / "research_summary.pdf"
 EXPORTER = ROOT / "scripts" / "export_research_summary_pdf.ps1"
+DOCX_BUILDER = ROOT / "scripts" / "build_research_summary.py"
+PDF_BUILDER = ROOT / "scripts" / "build_research_summary_pdf.py"
+PACKAGE = ROOT / "results" / "presentation" / "phase7b_package.json"
+DESIGN = ROOT / "docs" / "skills" / "specs" / "2026-08-21-phase-7b-presentation-summary-design.md"
+PLAN = ROOT / "docs" / "skills" / "plans" / "2026-08-21-phase-7b-presentation-summary.md"
 FIGURE_RATIO = 1825 / 1171
 NAMESPACES = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
 
@@ -99,6 +105,50 @@ class ResearchSummaryPDFLayoutTests(unittest.TestCase):
         self.assertGreater(source_words[0]["bottom"], 650, "content should use the lower Letter page without a top-heavy blank third")
         self.assertLess(source_words[0]["bottom"], 752, "source footer must remain inside the bottom margin")
 
+    def test_docx_and_pdf_are_semantically_and_structurally_equivalent_renderers(self) -> None:
+        package = json.loads(PACKAGE.read_text(encoding="utf-8"))
+        summary = package["summary"]
+        document = Document(DOCX)
+        docx_text = " ".join(
+            [paragraph.text for paragraph in document.paragraphs]
+            + [cell.text for table in document.tables for row in table.rows for cell in row.cells]
+        )
+        pdf_text = " ".join((page.extract_text() or "") for page in PdfReader(PDF).pages)
+
+        def normalized(value: str) -> str:
+            return re.sub(r"\s+", " ", value).strip()
+
+        for field in ("title", "takeaway", "problem", "method", "significance", "limitations", "nextSteps"):
+            expected = normalized(str(summary[field]))
+            self.assertIn(expected, normalized(docx_text), field)
+            self.assertIn(expected, normalized(pdf_text), field)
+        for result in summary["results"]:
+            for value in (result["value"], result["label"]):
+                self.assertIn(normalized(value), normalized(docx_text))
+                self.assertIn(normalized(value), normalized(pdf_text))
+        for source in summary["sources"]:
+            self.assertIn(source, docx_text)
+            self.assertIn(source, pdf_text)
+
+        docx_order = [docx_text.index(text) for text in (
+            "Problem and research question", "Method", "Key results", "Why this matters", "Simulation scope", "Limitations and next steps", "Sources:"
+        )]
+        pdf_order = [pdf_text.index(text) for text in (
+            "Problem and research question", "Method", "Key results", "Why this matters", "Simulation scope", "Limitations and next steps", "Sources:"
+        )]
+        self.assertEqual(docx_order, sorted(docx_order))
+        self.assertEqual(pdf_order, sorted(pdf_order))
+
+    def test_contract_defines_two_independent_canonical_renderers(self) -> None:
+        design = DESIGN.read_text(encoding="utf-8")
+        plan = PLAN.read_text(encoding="utf-8")
+        for source in (design, plan):
+            self.assertIn("two independent canonical renderers", source)
+            self.assertIn("same deterministic Phase 7B package", source)
+            self.assertNotIn("PDF export: owned hidden Microsoft Word COM process", source)
+        self.assertIn("results/presentation/phase7b_package.json", PDF_BUILDER.read_text(encoding="utf-8"))
+        self.assertIn("results/presentation/phase7b_package.json", (ROOT / "scripts/phase7b/summary.py").read_text(encoding="utf-8"))
+
 
 class ResearchSummaryExportLifecycleTests(unittest.TestCase):
     def test_exporter_has_independent_com_and_temp_cleanup_guarantees(self) -> None:
@@ -110,14 +160,18 @@ class ResearchSummaryExportLifecycleTests(unittest.TestCase):
             "function Remove-TaskOwnedTemporaryPdf",
         ):
             self.assertIn(function, source)
-        self.assertRegex(source, r"try \{\s*\$Document\.Close\(0\)\s*\} catch")
-        self.assertRegex(source, r"try \{\s*\$Word\.Quit\(\)\s*\} catch")
+        self.assertRegex(source, r"try \{ Close-WordDocument .*? \} catch \{ \[void\]\$cleanupErrors\.Add")
+        self.assertRegex(source, r"try \{ Quit-WordApplication .*? \} catch \{ \[void\]\$cleanupErrors\.Add")
+        self.assertIn("Word diagnostic cleanup failed closed", source)
         self.assertRegex(
             source,
             r"finally \{\s*Remove-TaskOwnedTemporaryPdf -Path \$temporaryPdf -SummaryRoot \$summaryRoot",
         )
         self.assertIn(".research_summary.", source)
         self.assertIn(".tmp.pdf", source)
+        self.assertIn("non-canonical diagnostic", source)
+        self.assertIn("ownedProcessIds", source)
+        self.assertIn("Owned WINWORD process remains", source)
 
 
 if __name__ == "__main__":
