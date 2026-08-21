@@ -1,24 +1,23 @@
 {
   "schemaVersion": 1,
   "audit_skill": "paper-claim-audit",
-  "verdict": "BLOCKED",
-  "reason_code": "products_changed_audit_stale",
-  "summary": "STALE: Run 3 changed the canonical PPTX, template, package, layout, manifest, provenance, and verifier gates. A separate fresh zero-context audit must revalidate all claims and hashes before delivery.",
-  "details_status": "STALE_HISTORICAL_DO_NOT_AUTHORIZE",
-  "audited_commit": "8ef0947c237432097028bb0c194808dc686cc81c",
+  "verdict": "PASS",
+  "reason_code": "all_numbers_match",
+  "summary": "All 11 Phase 7B claim groups reconcile to admitted raw evidence with 132 atomic checks and zero findings.",
+  "audited_commit": "38ccca8b74b5a6537479fa4f2e4fffb3876f2e34",
   "audited_input_hashes": {
-    "docs/presentation/phase7b_template.json": "sha256:def36f35ed727e967433b74b2049c019396a4e3552fc914bb2e431476b2fa2f8",
-    "results/presentation/phase7b_package.json": "sha256:370ace654d63d09cdf92ef733d6e2ee405e6a31d00d6c1073673c372136ba488",
-    "docs/presentation/phase7b_build_manifest.json": "sha256:b6ecb4622675277a577245c9ff035efc6437090da8f507829553ad298311a5ae",
-    "docs/presentation/phase7b_layout_report.json": "sha256:2218bd42ae19ec400735abfa2555cba4e3210523021c3e34e66a383f7c832ca9",
+    "docs/presentation/phase7b_template.json": "sha256:bf03b2a736a7ae0c6ea5cc3bddba01d9a468d005d495bcaeced90f7149f4924d",
+    "results/presentation/phase7b_package.json": "sha256:37d2d202d469e1f38857e92948bdf4896aaf8a88b38c13aab6191d3b8be42ef7",
+    "docs/presentation/phase7b_build_manifest.json": "sha256:da6f6f39df0375edd37f78a0dd177787bc9743af15528d2b2389f39ba5dcdc2b",
+    "docs/presentation/phase7b_layout_report.json": "sha256:d4dbea314e9651f44c523b7326546dd54421028508ab74cc4777c85c230ce41c",
     "docs/presentation/phase7b_raw_evidence.json": "sha256:293d17c4538544d19d904ed4d92df31271fadde9f66fedddcd9c2207dec3fe5b",
-    "docs/report/build_manifest.json": "sha256:e91e88998090384f22bc76620d900cd65df08f940d4aa06885cc29d35b0a5bdb",
-    "results/report/report_evidence.json": "sha256:9495b9193b484f0622a3513779bcd2ed4b75d24e9710f4412b89a68da8237678",
-    "presentation/final_presentation.pptx": "sha256:2dc18d8e4a7d96edf80ee41cfab650670844446fd4facb48e6cfc4872a230299",
+    "docs/presentation/phase7b_toolchain.json": "sha256:28b930275d89931c5efc9eda1931b0070bd4f1cdcef95e53f784a1b1eeefa5c4",
+    "presentation/final_presentation.pptx": "sha256:0849d85579540ccf6c3e79565eb53fe274086730d20232a551f4640f25c42247",
     "docs/summary/research_summary.docx": "sha256:520ce606a10e2e3dbdb2463bd00bd3782fec52c37646491c222ceeff0bb2f3a4",
     "docs/summary/research_summary.pdf": "sha256:d7f614fb20edaff37a7fa12c2d44619aadf6b673cfac06728b527a8cbe0672db",
-    "docs/report/technical_report.md": "sha256:b3a7da4d611c7e8ced71285309b4a9960c38155bf9670fe9fee46114361b4674",
+    "docs/report/build_manifest.json": "sha256:e91e88998090384f22bc76620d900cd65df08f940d4aa06885cc29d35b0a5bdb",
     "docs/report/references.json": "sha256:5f4397716d25e3235003064a863b4154132c05ef9283b0777eb6db680c4eb019",
+    "results/report/report_evidence.json": "sha256:9495b9193b484f0622a3513779bcd2ed4b75d24e9710f4412b89a68da8237678",
     "results/data/nominal_pid_vs_fuzzy.mat": "sha256:759072fe594e5df4fc8e465e6807899ae8d983e91e06239f2d7e92bb8bdf1ab4",
     "results/data/pid_optimization.mat": "sha256:02c37925822b51ff44217162e11ed69aeabb0f65d84a68e9da215e3f06f78437",
     "results/data/deterministic_robustness.mat": "sha256:ccd563826228f878bc0dd712e6448c359335c0a630b1b2e1f9c4588739ef10d1",
@@ -42,13 +41,14 @@
   },
   "trace": {
     "retention": "ephemeral",
-    "path": ".aris/traces/paper-claim-audit/2026-08-21_run12/",
-    "reviewer_independence_fallback": "The run was executed as a fresh zero-context child task; the skill's separate reviewer-agent tool was not exposed in this child context."
+    "path": ".aris/traces/paper-claim-audit/2026-08-21_run13/"
   },
-  "generated_at": "2026-08-21T00:00:00Z",
+  "thread_id": "phase7b_run13_claim_audit",
+  "reviewer_model": "gpt-5 fresh zero-context Codex agent",
+  "reviewer_reasoning": "high",
+  "generated_at": "2026-08-21T05:24:01Z",
   "details": {
     "total_claims": 11,
-    "atomic_claim_checks": 72,
     "exact_match": 6,
     "rounding_ok": 5,
     "ambiguous_mapping": 0,
@@ -57,105 +57,146 @@
     "warn_count": 0,
     "fail_count": 0,
     "mismatches": [],
-    "test_summary": {
-      "presentation_python_suite": "PASS: bundled Python unittest discovery ran 77 tests in tests/presentation; 76 passed and 1 official Artifact Tool runtime test skipped because the official node_modules directory is genuinely empty.",
-      "node_atomic_tests": "PASS: bundled Node atomic_publish.test.mjs ran 6 tests; 6 passed.",
-      "canonical_audit_cli": "PASS before commit: PHASE7B_AUDIT_VERIFIED claims=11 findings=0."
-    },
-    "visual_summary": {
-      "pptx_render": "10 slides freshly rendered through owned read-only PowerPoint COM export at 1280x720.",
-      "docx_render": "DOCX freshly opened read-only through owned Word COM, exported to one-page PDF, and rasterized.",
-      "pdf_render": "Reviewed summary PDF freshly rasterized to one page.",
-      "findings": []
-    },
     "claim_groups": [
       {
         "claim_id": 1,
-        "location": "presentation/final_presentation.pptx slide 1",
         "status": "exact_match",
-        "atomic_claims": 5,
-        "paper_text": "Reliable execution connects plans to physical action; Evidence-grounded PID and Fuzzy-PID evaluation for a 2-link manipulator.",
-        "evidence": "Raw nominal MAT has two links and admitted multibody figure hash matches; note sources are repo-relative, admitted, and current."
+        "atomic_claims": 7,
+        "location": "presentation/final_presentation.pptx slide 1 visible content and notes",
+        "paper_text": "Cover title/subtitle claim evidence-grounded PID and Fuzzy-PID evaluation for a 2-link manipulator, with multibody tracking figure and [Sources].",
+        "evidence": "2-link confirmed from nominal MAT robot L1/L2 and two-row reference; cover embedded image hash 3bd780e3dfddb099659271c277ec1c133040178d54b69d1c9a43a48cb50da4f9 equals admitted multibody PNG; notes sources match package.",
+        "sources_verified": [
+          "docs/report/technical_report.md",
+          "results/figures/multibody_cross_validation_tracking.png"
+        ]
       },
       {
         "claim_id": 2,
-        "location": "presentation/final_presentation.pptx slide 2",
         "status": "exact_match",
-        "atomic_claims": 6,
-        "paper_text": "Nominal success is not enough; controlled payload/configuration/noise/disturbance/actuator stress is needed; failed completed runs are retained; conclusions are simulation-only.",
-        "evidence": "Raw deterministic/stochastic/Cartesian CSVs contain completed failed rows and the listed stress categories; evidence set contains simulation artifacts only and no hardware validation."
+        "atomic_claims": 9,
+        "location": "presentation/final_presentation.pptx slide 2 visible content and notes",
+        "paper_text": "Nominal success does not prove reliability; controller choice must survive payload, configuration, noise, disturbance, actuator authority; failed completed runs retained; simulation-only scope.",
+        "evidence": "Stress categories from raw rows: ['actuator', 'combined', 'configuration', 'disturbance', 'nominal', 'payload', 'uncertainty'] plus stochastic noise scenarios; deterministic has completed=39 with failed Success=0 rows, Cartesian completed=6 with 2 failed rows; no hardware/fidelity claim appears in slide/summary.",
+        "sources_verified": [
+          "docs/report/technical_report.md",
+          "results/figures/nominal_pid_vs_fuzzy_tracking.png"
+        ]
       },
       {
         "claim_id": 3,
-        "location": "presentation/final_presentation.pptx slide 3",
         "status": "exact_match",
-        "atomic_claims": 7,
-        "paper_text": "0.001 s fixed sample time, 5.0 s nominal duration, 5001 samples per nominal run, and identical plant/protocol controls.",
-        "evidence": "Nominal MAT reference/options recompute sampleTime=0.001, duration=5.0, samples=5001; raw rows show paired seeds and shared controller-scenario protocol."
+        "atomic_claims": 12,
+        "location": "presentation/final_presentation.pptx slide 3 visible content and notes",
+        "paper_text": "Protocol metrics 0.001 s, 5.0 s, 5001 samples; manual PID, Mamdani Fuzzy-PID, optimized PID use identical robot parameters, torque limits, trajectories, thresholds, and random seeds.",
+        "evidence": "nominal_pid_vs_fuzzy.mat gives sampleTime=0.001, time 0..5.0 and 5001 samples; raw rows show 3 controllers; torque limits [25,15], fixed thresholds, shared reference trajectory, and 30 fixed seeds per stochastic cell.",
+        "sources_verified": [
+          "docs/report/technical_report.md",
+          "results/report/report_evidence.json"
+        ]
       },
       {
         "claim_id": 4,
-        "location": "presentation/final_presentation.pptx slide 4",
         "status": "rounding_ok",
-        "atomic_claims": 8,
-        "paper_text": "The bounded search reduces the nominal objective by 7.283% and improves held-out payload objective from 0.214504 to 0.197284; exit flag 1, 12 iterations, 96 evaluations.",
-        "evidence": "pid_optimization.mat recomputes 7.283147860458988%, 0.21450363216387297 to 0.19728400491642561, exitFlag=1, iterations=12, funcCount=96; non-gain controller fields match."
+        "atomic_claims": 12,
+        "location": "presentation/final_presentation.pptx slide 4 visible content and notes",
+        "paper_text": "Optimization lowers nominal objective 7.283% and held-out payload objective from 0.214504 to 0.197284; exit flag 1 after 12 iterations and 96 evaluations; only PID gains change.",
+        "evidence": "pid_optimization.mat gives 0.202426799460455 to 0.18768375634655526, reduction 7.283147860458988%; held-out 0.21450363216387297 to 0.19728400491642561; exitFlag=1, iterations=12, funcCount=96; training payload 0.5 kg and held-out payload 0.8 kg; torque limits remain [25,15].",
+        "sources_verified": [
+          "docs/report/technical_report.md",
+          "results/figures/pid_optimization_objective.png",
+          "results/data/pid_optimization.mat"
+        ]
       },
       {
         "claim_id": 5,
-        "location": "presentation/final_presentation.pptx slide 5",
         "status": "exact_match",
-        "atomic_claims": 6,
-        "paper_text": "Success rises from 8/13 to 9/13 to 10/13; matrix contains 39 runs across seven deterministic categories; all three controllers fail the combined case.",
-        "evidence": "deterministic_robustness_runs.csv and summary CSV recompute 39 rows, 13 scenarios per controller, success counts 8/9/10, and three completed failures for combined-deterministic."
+        "atomic_claims": 17,
+        "location": "presentation/final_presentation.pptx slide 5 visible content and notes",
+        "paper_text": "Deterministic success rises from 8/13 manual PID to 9/13 Fuzzy-PID and 10/13 optimized PID; matrix has 39 runs across nominal, payload, configuration, uncertainty, disturbance, actuator, combined conditions; all 3 fail combined deterministic case.",
+        "evidence": "deterministic_robustness_runs.csv row count=39, scenarioCount=13, successCounts={'mamdani-fuzzy-pid': 9, 'manual-pid': 8, 'optimization-pid': 10}, totals={'mamdani-fuzzy-pid': 13, 'manual-pid': 13, 'optimization-pid': 13}; categories=['actuator', 'combined', 'configuration', 'disturbance', 'nominal', 'payload', 'uncertainty']; combined rows=[{'Scenario': 'combined-deterministic', 'Controller': 'manual-pid', 'Status': 'completed', 'Success': '0'}, {'Scenario': 'combined-deterministic', 'Controller': 'mamdani-fuzzy-pid', 'Status': 'completed', 'Success': '0'}, {'Scenario': 'combined-deterministic', 'Controller': 'optimization-pid', 'Status': 'completed', 'Success': '0'}]; all statuses completed.",
+        "sources_verified": [
+          "docs/report/technical_report.md",
+          "results/figures/deterministic_robustness_summary.png",
+          "results/data/deterministic_robustness_summary.csv",
+          "results/data/deterministic_robustness_runs.csv"
+        ]
       },
       {
         "claim_id": 6,
-        "location": "presentation/final_presentation.pptx slide 6",
         "status": "rounding_ok",
-        "atomic_claims": 7,
-        "paper_text": "Each isolated-noise cell passes 30/30 paired trials; every combined-stress cell passes 0/30; study has 360 trials; high-noise optimized PID has lowest tracking error and highest mean torque slew of 2888.34 N m/s.",
-        "evidence": "stochastic_robustness_summary.csv and trials CSV recompute 9 isolated 30/30 cells, 3 combined 0/30 cells, 4 scenarios x 3 controllers x 30 paired seeds, and optimized high-noise mean torque slew 2888.34441441764."
+        "atomic_claims": 15,
+        "location": "presentation/final_presentation.pptx slide 6 visible content and notes",
+        "paper_text": "Each isolated-noise cell passes 30/30; every combined-stress cell passes 0/30; study has 360 trials; high-noise optimized PID has lowest tracking error and highest mean torque slew 2888.34 N m/s.",
+        "evidence": "stochastic summary/trial CSV and MATLAB v7.3 MAT load give trialCount=360, scenarios=4, controllers=3, nine isolated noise cells all 30/30, three combined cells all 0/30; high-noise MeanJointRms={'manual-pid': 0.0456057388059666, 'mamdani-fuzzy-pid': 0.0451110001403517, 'optimization-pid': 0.0228076739107534}; MeanTorqueSlew={'manual-pid': 1520.28248773485, 'mamdani-fuzzy-pid': 1631.15757003056, 'optimization-pid': 2888.34441441764}, optimized raw slew=2888.34441441764 rounds to 2888.34.",
+        "sources_verified": [
+          "docs/report/technical_report.md",
+          "results/figures/stochastic_robustness_chattering.png",
+          "results/data/stochastic_robustness_summary.csv",
+          "results/data/stochastic_robustness_trials.csv"
+        ]
       },
       {
         "claim_id": 7,
-        "location": "presentation/final_presentation.pptx slide 7",
         "status": "rounding_ok",
-        "atomic_claims": 6,
-        "paper_text": "All 3 controllers pass straight-line; only optimized PID passes pick-transfer-place; 4 of 6 completed task runs pass; optimized PID has 0.01422 m RMS and 0.02970 m maximum Cartesian error.",
-        "evidence": "cartesian_tasks_runs.csv recomputes six completed runs, four successes, only optimization-pid successful on pick-transfer-place, CartesianRms=0.0142210111046117, CartesianMax=0.029698222399069."
+        "atomic_claims": 12,
+        "location": "presentation/final_presentation.pptx slide 7 visible content and notes",
+        "paper_text": "All 3 controllers pass straight-line; only optimized PID passes pick-transfer-place; 4 of 6 task runs pass; manual and Fuzzy-PID complete but fail quantitative pickup/place criteria; optimized PID records 0.01422 m RMS and 0.02970 m max Cartesian error.",
+        "evidence": "cartesian_tasks_runs.csv has runCount=6, successCount=4, failureCount=2, statusCounts={'completed': 6}; straight-line rows all Success=1; pick-transfer-place pattern manual=0, fuzzy=0, optimized=1; optimized raw RMS=0.0142210111046117 and max=0.029698222399069 round as displayed.",
+        "sources_verified": [
+          "docs/report/technical_report.md",
+          "results/figures/cartesian_tasks_paths.png",
+          "results/data/cartesian_tasks_runs.csv"
+        ]
       },
       {
         "claim_id": 8,
-        "location": "presentation/final_presentation.pptx slide 8",
         "status": "rounding_ok",
-        "atomic_claims": 6,
-        "paper_text": "Simulink and Multibody each pass 2/2 agreement/tracking checks; worst end-effector difference is 3.34e-16 m; result supports fixed-protocol model consistency, not hardware fidelity.",
-        "evidence": "simulink_cross_validation_runs.csv and multibody_cross_validation_runs.csv recompute 2/2 agreement and tracking passes for each formulation; worst Multibody EndEffectorMax=3.34221388864417e-16 m; MaximumOutOfPlane=0."
+        "atomic_claims": 10,
+        "location": "presentation/final_presentation.pptx slide 8 visible content and notes",
+        "paper_text": "Simulink agreement and tracking pass 2/2; Multibody agreement and tracking pass 2/2; worst end-effector difference 3.34e-16 m; model consistency is not hardware fidelity.",
+        "evidence": "simulink rows=2, agreement+tracking pass=2; multibody rows=2, agreement+tracking pass=2; raw worst EndEffectorMax=3.34221388864417e-16 rounds to 3.34e-16; MATs expose shared robot/reference/options.",
+        "sources_verified": [
+          "docs/report/technical_report.md",
+          "results/data/simulink_cross_validation.mat",
+          "results/data/multibody_cross_validation.mat"
+        ]
       },
       {
         "claim_id": 9,
-        "location": "presentation/final_presentation.pptx slide 9",
         "status": "exact_match",
-        "atomic_claims": 6,
-        "paper_text": "Optimized PID is the strongest reliability baseline: 8/13 manual, 9/13 Fuzzy-PID, 10/13 optimized; nominal metrics are mixed, and optimized PID has deterministic/Cartesian reliability with torque-slew trade-off.",
-        "evidence": "Deterministic CSVs recompute 8/13, 9/13, 10/13; Cartesian CSV shows optimized is the only pick-transfer-place success; stochastic high-noise summary shows optimized lowest MeanJointRms and highest MeanTorqueSlew; nominal MAT shows mixed manual/Fuzzy steady RMS by joint."
+        "atomic_claims": 9,
+        "location": "presentation/final_presentation.pptx slide 9 visible content and notes",
+        "paper_text": "Optimized PID is the strongest reliability baseline; metrics 8/13, 9/13, 10/13; nominal manual/Fuzzy metrics are mixed; optimized gives best aggregate deterministic and Cartesian reliability with torque-slew trade-off under noise.",
+        "evidence": "Deterministic successCounts={'mamdani-fuzzy-pid': 9, 'manual-pid': 8, 'optimization-pid': 10}; optimized count 10 exceeds 9 and 8; Cartesian pick-transfer-place only optimized succeeds; nominal MAT has mixed manual-vs-fuzzy metrics; high-noise optimized has lowest tracking error and highest torque slew.",
+        "sources_verified": [
+          "docs/report/technical_report.md",
+          "results/report/report_evidence.json"
+        ]
       },
       {
         "claim_id": 10,
-        "location": "presentation/final_presentation.pptx slide 10",
         "status": "exact_match",
-        "atomic_claims": 4,
-        "paper_text": "Next steps are hardware-in-the-loop/physical validation, perception/task-planning integration, online monitoring, collision avoidance, and safety supervision before deployment.",
-        "evidence": "The claim is prospective and scoped as not-yet-claimed validation/safety/perception work."
+        "atomic_claims": 8,
+        "location": "presentation/final_presentation.pptx slide 10 visible content and notes",
+        "paper_text": "Next milestone is sensing, hardware uncertainty, online safety constraints; next steps are hardware-in-loop/physical arm validation, perception/task-planning integration, online monitoring/collision avoidance/safety supervision.",
+        "evidence": "Slide language is explicitly future work and is consistent with summary limitations: simulation only, no hardware fidelity, collision avoidance, perception, online safety supervisor, or end-to-end embodied-AI implementation claimed.",
+        "sources_verified": [
+          "docs/report/technical_report.md",
+          "docs/report/references.json"
+        ]
       },
       {
         "claim_id": 11,
-        "location": "docs/summary/research_summary.docx and docs/summary/research_summary.pdf",
         "status": "rounding_ok",
-        "atomic_claims": 11,
-        "paper_text": "One-page summary repeats the optimized PID takeaway, identical protocol scope, 2-link/0.001 s method, 7.283%, 10/13, 30/30 vs 0/30, deterministic figure caption, and simulation-only limitations.",
-        "evidence": "DOCX text equals the package summary; PDF text is semantically equivalent with line wrapping only; raw recomputation supports the numbers and scope; both render as one page."
+        "atomic_claims": 21,
+        "location": "docs/summary/research_summary.docx and docs/summary/research_summary.pdf one-page summary",
+        "paper_text": "One-page summary title/takeaway/problem/method/results/figure/significance/limitations/next steps/sources, including 2-link, 0.001 s, 7.283%, 10/13, 30/30 vs 0/30, deterministic figure caption, simulation-only limitations.",
+        "evidence": "DOCX text extraction and pypdf PDF extraction match package summary; Word read-only render pageCount=1 and checked-in PDF pages=1; summary image hash 92a0c6889e6171d1b4f5811d20cc28a272aca7990a45a6483fa6bf74718d2759 equals admitted deterministic PNG; raw values confirm 2-link/0.001s, reduction 7.283147860458988%, optimized deterministic 10/13, isolated noise 30/30, combined stress 0/30; source line contains technical_report.md, report_evidence.json, build_manifest.json.",
+        "sources_verified": [
+          "docs/report/technical_report.md",
+          "results/report/report_evidence.json",
+          "docs/report/build_manifest.json"
+        ]
       }
     ],
     "reproducibility_ledger": {
@@ -163,11 +204,542 @@
       "package_path": "results/presentation/phase7b_package.json",
       "raw_ledger_path": "docs/presentation/phase7b_raw_evidence.json",
       "claim_group_count": 11,
-      "atomic_claim_checks": 72,
-      "template_package_pptx": "Semantic text equality holds for all 10 slides after ignoring blank paragraph separator runs.",
-      "package_docx_pdf": "DOCX text equals package summary exactly; PDF contains the same semantic claims and all core values on one page.",
-      "source_blocks": "All 10 PPTX notes source blocks and the summary source block are repo-relative, admitted, existing, and hash-current.",
-      "title_font_check": "Slide 9 title OOXML run font sizes are 36.0 pt, clearing the 35 pt requirement."
+      "atomic_claim_checks": 132,
+      "template_package_pptx": "PASS: template tokens resolve into phase7b_package.json; PPTX visible text, notes [Sources], media hashes, relationships, and effective fonts match package/layout contract",
+      "package_docx_pdf": "PASS: DOCX paragraphs/table/image and PDF extracted text/page render match package summary; summary image hash equals admitted deterministic PNG",
+      "source_blocks": "PASS: all 10 PPTX notes [Sources] blocks and summary source line match package declarations and admitted source records",
+      "hash_records": "PASS: audited_input_hashes include current package/template/manifest/layout/toolchain/raw-ledger, final PPTX, summary DOCX/PDF, Phase7A indices, all admitted raw MAT/CSV, and six PNGs",
+      "boolean_status_records": "PASS: Success fields are exact 0/1 strings in CSVs, not booleans; Status categories are completed where claimed",
+      "toolchain_records": "PASS: manifest schemaVersion=2 with artifactTool BLOCKED/official_runtime_empty and verified Arial font hashes",
+      "tracked_package_provenance": "PASS: results/presentation/phase7b_package.json is tracked at audited HEAD and current sha256 37d2d202d469e1f38857e92948bdf4896aaf8a88b38c13aab6191d3b8be42ef7"
+    },
+    "atomic_claim_checks": 132,
+    "test_summary": {
+      "bundled_python_presentation_suite": "PASS: 88 tests in 35.150s, OK, skipped=1 official Artifact Tool runtime unavailable",
+      "bundled_node_atomic_suite": "PASS: node --test atomic_publish.test.mjs, 8 passed, 0 failed",
+      "deep_pptx_validator": "PASS: PHASE7B_PPTX_DEEP_VALIDATED slides=10 notes=10 layout=PASS",
+      "official_artifact_tool_rebuild": "SKIPPED: prescribed runtime node_modules entryCount=0 and @oai/artifact-tool absent; no install/search/substitute performed",
+      "hash_verification": "PASS: current output/input/raw/figure/font hashes match Phase 7B manifest/toolchain/raw ledger",
+      "office_process_cleanup": "PASS: no pre-existing Office processes; owned POWERPNT/WINWORD instances exited; no lingering POWERPNT/WINWORD processes after render"
+    },
+    "visual_summary": {
+      "pptx_render": "PASS: real PowerPoint read-only COM export produced 10 slide PNGs at 1600x900",
+      "docx_render": "PASS: real Word read-only COM export produced one-page PDF and one rendered PNG",
+      "pdf_render": "PASS: checked-in PDF rendered to one PNG",
+      "pixel_checks": "PASS: 12 rendered pages nonblank with expected dimensions and RGB extrema",
+      "manual_visual_inspection": "PASS: contact sheet plus individual slide 6/DOCX/PDF summary inspection found no clipping, collisions, wraps, missing glyphs, distortion, or readability issues",
+      "effective_font_gates": "PASS: cover title 51 pt; all slide titles >=35 pt including slide 6 effective 35.46 pt; slide 2/4/7 claim text 24 pt",
+      "findings": []
+    },
+    "derived_raw_values": {
+      "protocol": {
+        "linkCount": 2,
+        "sampleTimeS": 0.001,
+        "nominalDurationS": 5.0,
+        "nominalSampleCount": 5001,
+        "controllerCount": 3,
+        "torqueLimitsNm": [
+          25,
+          15
+        ]
+      },
+      "optimization": {
+        "initialObjective": 0.202426799460455,
+        "finalObjective": 0.18768375634655526,
+        "objectiveReductionPercent": 7.283147860458988,
+        "heldOutInitialObjective": 0.21450363216387297,
+        "heldOutFinalObjective": 0.19728400491642561,
+        "exitFlag": 1,
+        "iterations": 12,
+        "functionEvaluations": 96,
+        "trainingPayloadKg": 0.5,
+        "heldOutPayloadKg": 0.8
+      },
+      "deterministic": {
+        "runCount": 39,
+        "scenarioCount": 13,
+        "categories": [
+          "actuator",
+          "combined",
+          "configuration",
+          "disturbance",
+          "nominal",
+          "payload",
+          "uncertainty"
+        ],
+        "statusCounts": {
+          "completed": 39
+        },
+        "successCounts": {
+          "mamdani-fuzzy-pid": 9,
+          "manual-pid": 8,
+          "optimization-pid": 10
+        },
+        "totalByController": {
+          "mamdani-fuzzy-pid": 13,
+          "manual-pid": 13,
+          "optimization-pid": 13
+        },
+        "combinedFailures": [
+          {
+            "Scenario": "combined-deterministic",
+            "Controller": "manual-pid",
+            "Status": "completed",
+            "Success": "0"
+          },
+          {
+            "Scenario": "combined-deterministic",
+            "Controller": "mamdani-fuzzy-pid",
+            "Status": "completed",
+            "Success": "0"
+          },
+          {
+            "Scenario": "combined-deterministic",
+            "Controller": "optimization-pid",
+            "Status": "completed",
+            "Success": "0"
+          }
+        ],
+        "summaryRows": [
+          {
+            "Controller": "manual-pid",
+            "RunCount": "13",
+            "SuccessCount": "8",
+            "SuccessRate": "0.615384615384615",
+            "MeanJointRms": "0.131088336465542",
+            "WorstJointRms": "0.834756697851676",
+            "MeanEndEffectorRms": "0.183950964328974",
+            "WorstEndEffectorMax": "1.80461970202561",
+            "TotalSaturationTime": "10.7965",
+            "FailedRunCount": "5"
+          },
+          {
+            "Controller": "mamdani-fuzzy-pid",
+            "RunCount": "13",
+            "SuccessCount": "9",
+            "SuccessRate": "0.692307692307692",
+            "MeanJointRms": "0.130415062686311",
+            "WorstJointRms": "0.836038560524298",
+            "MeanEndEffectorRms": "0.181880505308613",
+            "WorstEndEffectorMax": "1.80379892769155",
+            "TotalSaturationTime": "10.5285",
+            "FailedRunCount": "4"
+          },
+          {
+            "Controller": "optimization-pid",
+            "RunCount": "13",
+            "SuccessCount": "10",
+            "SuccessRate": "0.769230769230769",
+            "MeanJointRms": "0.110744986923256",
+            "WorstJointRms": "0.830371693508359",
+            "MeanEndEffectorRms": "0.158216992926567",
+            "WorstEndEffectorMax": "1.80703613360757",
+            "TotalSaturationTime": "11.2795",
+            "FailedRunCount": "3"
+          }
+        ]
+      },
+      "stochastic": {
+        "trialCount": 360,
+        "scenarioCount": 4,
+        "controllerCount": 3,
+        "isolatedNoiseCells": [
+          {
+            "Scenario": "noise-low",
+            "Controller": "manual-pid",
+            "TrialCount": "30",
+            "SuccessCount": "30"
+          },
+          {
+            "Scenario": "noise-low",
+            "Controller": "mamdani-fuzzy-pid",
+            "TrialCount": "30",
+            "SuccessCount": "30"
+          },
+          {
+            "Scenario": "noise-low",
+            "Controller": "optimization-pid",
+            "TrialCount": "30",
+            "SuccessCount": "30"
+          },
+          {
+            "Scenario": "noise-medium",
+            "Controller": "manual-pid",
+            "TrialCount": "30",
+            "SuccessCount": "30"
+          },
+          {
+            "Scenario": "noise-medium",
+            "Controller": "mamdani-fuzzy-pid",
+            "TrialCount": "30",
+            "SuccessCount": "30"
+          },
+          {
+            "Scenario": "noise-medium",
+            "Controller": "optimization-pid",
+            "TrialCount": "30",
+            "SuccessCount": "30"
+          },
+          {
+            "Scenario": "noise-high",
+            "Controller": "manual-pid",
+            "TrialCount": "30",
+            "SuccessCount": "30"
+          },
+          {
+            "Scenario": "noise-high",
+            "Controller": "mamdani-fuzzy-pid",
+            "TrialCount": "30",
+            "SuccessCount": "30"
+          },
+          {
+            "Scenario": "noise-high",
+            "Controller": "optimization-pid",
+            "TrialCount": "30",
+            "SuccessCount": "30"
+          }
+        ],
+        "combinedStressCells": [
+          {
+            "Scenario": "combined-stochastic",
+            "Controller": "manual-pid",
+            "TrialCount": "30",
+            "SuccessCount": "0"
+          },
+          {
+            "Scenario": "combined-stochastic",
+            "Controller": "mamdani-fuzzy-pid",
+            "TrialCount": "30",
+            "SuccessCount": "0"
+          },
+          {
+            "Scenario": "combined-stochastic",
+            "Controller": "optimization-pid",
+            "TrialCount": "30",
+            "SuccessCount": "0"
+          }
+        ],
+        "highNoiseMeanJointRms": {
+          "manual-pid": 0.0456057388059666,
+          "mamdani-fuzzy-pid": 0.0451110001403517,
+          "optimization-pid": 0.0228076739107534
+        },
+        "highNoiseMeanTorqueSlew": {
+          "manual-pid": 1520.28248773485,
+          "mamdani-fuzzy-pid": 1631.15757003056,
+          "optimization-pid": 2888.34441441764
+        },
+        "optimizedHighNoiseMeanTorqueSlew": 2888.34441441764
+      },
+      "cartesian": {
+        "runCount": 6,
+        "successCount": 4,
+        "failureCount": 2,
+        "statusCounts": {
+          "completed": 6
+        },
+        "straightLine": [
+          {
+            "Task": "straight-line",
+            "Controller": "manual-pid",
+            "Status": "completed",
+            "Success": "1"
+          },
+          {
+            "Task": "straight-line",
+            "Controller": "mamdani-fuzzy-pid",
+            "Status": "completed",
+            "Success": "1"
+          },
+          {
+            "Task": "straight-line",
+            "Controller": "optimization-pid",
+            "Status": "completed",
+            "Success": "1"
+          }
+        ],
+        "pickTransferPlace": [
+          {
+            "Task": "pick-transfer-place",
+            "Controller": "manual-pid",
+            "Status": "completed",
+            "Success": "0",
+            "CartesianRms": "0.0277392693815804",
+            "CartesianMax": "0.0540317395549211",
+            "PickupError": "0.024387606252172",
+            "PlaceError": "0.00700796714624775"
+          },
+          {
+            "Task": "pick-transfer-place",
+            "Controller": "mamdani-fuzzy-pid",
+            "Status": "completed",
+            "Success": "0",
+            "CartesianRms": "0.0268502990305821",
+            "CartesianMax": "0.0535898652567819",
+            "PickupError": "0.0229599915393264",
+            "PlaceError": "0.0119024152275454"
+          },
+          {
+            "Task": "pick-transfer-place",
+            "Controller": "optimization-pid",
+            "Status": "completed",
+            "Success": "1",
+            "CartesianRms": "0.0142210111046117",
+            "CartesianMax": "0.029698222399069",
+            "PickupError": "0.0119258977466378",
+            "PlaceError": "0.00364073202227988"
+          }
+        ],
+        "optimizedPickTransferPlace": {
+          "CartesianRms": 0.0142210111046117,
+          "CartesianMax": 0.029698222399069
+        }
+      },
+      "crossValidation": {
+        "simulinkRows": 2,
+        "simulinkAgreementAndTrackingPass": 2,
+        "multibodyRows": 2,
+        "multibodyAgreementAndTrackingPass": 2,
+        "multibodyEndEffectorMaxWorst": 3.34221388864417e-16,
+        "maximumOutOfPlaneWorst": 0.0
+      }
+    },
+    "source_admission": {
+      "raw_ledger_sources": [
+        {
+          "path": "results/data/nominal_pid_vs_fuzzy.mat",
+          "sha256": "759072fe594e5df4fc8e465e6807899ae8d983e91e06239f2d7e92bb8bdf1ab4"
+        },
+        {
+          "path": "results/data/pid_optimization.mat",
+          "sha256": "02c37925822b51ff44217162e11ed69aeabb0f65d84a68e9da215e3f06f78437"
+        },
+        {
+          "path": "results/data/deterministic_robustness.mat",
+          "sha256": "ccd563826228f878bc0dd712e6448c359335c0a630b1b2e1f9c4588739ef10d1"
+        },
+        {
+          "path": "results/data/stochastic_robustness.mat",
+          "sha256": "5ee2a8a1f797a99a1c0ff511b6ae5984d4fd57a13fcad4b0f10e76c3d1b8404d"
+        },
+        {
+          "path": "results/data/cartesian_tasks.mat",
+          "sha256": "83d6d75cbff62d3a57ece2be3c32971a531c7444732381b7d2e61e299435ef27"
+        },
+        {
+          "path": "results/data/simulink_cross_validation.mat",
+          "sha256": "2e33db6a5901645c8d575817a0384ae686b9c9b0caff9b42ebe16c47c51ccde9"
+        },
+        {
+          "path": "results/data/multibody_cross_validation.mat",
+          "sha256": "d76b02921100511ecbaa462ebd5c44fc7621ad29a2def18d16c2df1e2ba81029"
+        },
+        {
+          "path": "results/data/deterministic_robustness_runs.csv",
+          "sha256": "9d0ddfd0c297fa43df351695d54c8a3ad427845ece588eaee79f4635c99dc8e0"
+        },
+        {
+          "path": "results/data/deterministic_robustness_summary.csv",
+          "sha256": "1041f7b8a57b382bdd4ce7dc152f029cebac40b428f05f03b1de7085dd8c702c"
+        },
+        {
+          "path": "results/data/stochastic_robustness_trials.csv",
+          "sha256": "5beaa1a23eb26b83f810ecae9f1937c8c1926870627d00bd590edf1ffde8b3e6"
+        },
+        {
+          "path": "results/data/stochastic_robustness_summary.csv",
+          "sha256": "083188735f2e5636f3f7272825188f6f02a45185a19936e4e603021663c257cd"
+        },
+        {
+          "path": "results/data/cartesian_tasks_runs.csv",
+          "sha256": "51d038f74682f3f371d13a95f883cff731517389b29425aae14255ba1535faa9"
+        },
+        {
+          "path": "results/data/simulink_cross_validation_runs.csv",
+          "sha256": "6427d4d6f85c75dc0b7f4cc836a3360b0ba963d1eea513f9289a179d1ded2e43"
+        },
+        {
+          "path": "results/data/multibody_cross_validation_runs.csv",
+          "sha256": "c69a5daa5552f2ed79ba176c3935b3dfe3157e3e9334e4dcee21f8b3fda112d0"
+        }
+      ],
+      "package_selected_figures": [
+        {
+          "path": "results/figures/multibody_cross_validation_tracking.png",
+          "sha256": "3bd780e3dfddb099659271c277ec1c133040178d54b69d1c9a43a48cb50da4f9"
+        },
+        {
+          "path": "results/figures/nominal_pid_vs_fuzzy_tracking.png",
+          "sha256": "af83a683500dc25559464801dae66fde87eeaa1b03dbd918180bfb4e3c55d84a"
+        },
+        {
+          "path": "results/figures/pid_optimization_objective.png",
+          "sha256": "95215e3025e328f6ce4d36e5ba39c57d00da99b6feeb9a233fbb1e9533d05058"
+        },
+        {
+          "path": "results/figures/deterministic_robustness_summary.png",
+          "sha256": "92a0c6889e6171d1b4f5811d20cc28a272aca7990a45a6483fa6bf74718d2759"
+        },
+        {
+          "path": "results/figures/stochastic_robustness_chattering.png",
+          "sha256": "ac368ef40a76090faec46a7b79ab0ea8df5490ac1c7d24d0f7929d7239930303"
+        },
+        {
+          "path": "results/figures/cartesian_tasks_paths.png",
+          "sha256": "7765ca66a9dde0f9cdb20bee13bd89182d1f3a4767c2a9e6d4d66c1160487d13"
+        }
+      ],
+      "package_used_evidence_tokens": [
+        "deterministic.runCount",
+        "deterministic.scenarioCount",
+        "deterministic.successCount.fuzzyPid",
+        "deterministic.successCount.manualPid",
+        "deterministic.successCount.optimizedPid",
+        "multibody.endEffectorMaxWorst",
+        "multibody.runCount",
+        "optimization.exitFlag",
+        "optimization.functionEvaluations",
+        "optimization.heldOutFinalObjective",
+        "optimization.heldOutInitialObjective",
+        "optimization.iterations",
+        "optimization.objectiveReductionPercent",
+        "phase7b.cartesian.completedRunCount",
+        "phase7b.cartesian.failureCount",
+        "phase7b.cartesian.optimizedPickTransferPlace.CartesianMax",
+        "phase7b.cartesian.optimizedPickTransferPlace.CartesianRms",
+        "phase7b.cartesian.successCount",
+        "phase7b.controllerCount",
+        "phase7b.linkCount",
+        "phase7b.stochastic.combinedStress.successCount",
+        "phase7b.stochastic.combinedStress.trialCount",
+        "phase7b.stochastic.isolatedNoise.successCount",
+        "phase7b.stochastic.isolatedNoise.trialCount",
+        "protocol.nominalDurationS",
+        "protocol.nominalSampleCount",
+        "protocol.sampleTimeS",
+        "protocol.stochasticTrialsPerScenario",
+        "simulink.runCount",
+        "stochastic.highNoiseMeanTorqueSlew.optimizedPid",
+        "stochastic.scenarioCount",
+        "stochastic.trialCount"
+      ],
+      "phase7a_source_hashes": {
+        "manifest": {
+          "path": "docs/report/build_manifest.json",
+          "sha256": "e91e88998090384f22bc76620d900cd65df08f940d4aa06885cc29d35b0a5bdb"
+        },
+        "evidence": {
+          "path": "results/report/report_evidence.json",
+          "sha256": "9495b9193b484f0622a3513779bcd2ed4b75d24e9710f4412b89a68da8237678"
+        },
+        "sources": [
+          {
+            "path": "docs/report/technical_report_template.md",
+            "sha256": "e7e88982b4ca1ab31dc82e6c4138022fffc32674eff221065283b15fa6ef0d7d"
+          },
+          {
+            "path": "docs/report/references.json",
+            "sha256": "5f4397716d25e3235003064a863b4154132c05ef9283b0777eb6db680c4eb019"
+          },
+          {
+            "path": "results/report/report_evidence.json",
+            "sha256": "9495b9193b484f0622a3513779bcd2ed4b75d24e9710f4412b89a68da8237678"
+          },
+          {
+            "path": "results/figures/nominal_pid_vs_fuzzy_tracking.png",
+            "sha256": "af83a683500dc25559464801dae66fde87eeaa1b03dbd918180bfb4e3c55d84a"
+          },
+          {
+            "path": "results/figures/pid_optimization_objective.png",
+            "sha256": "95215e3025e328f6ce4d36e5ba39c57d00da99b6feeb9a233fbb1e9533d05058"
+          },
+          {
+            "path": "results/figures/deterministic_robustness_summary.png",
+            "sha256": "92a0c6889e6171d1b4f5811d20cc28a272aca7990a45a6483fa6bf74718d2759"
+          },
+          {
+            "path": "results/figures/stochastic_robustness_chattering.png",
+            "sha256": "ac368ef40a76090faec46a7b79ab0ea8df5490ac1c7d24d0f7929d7239930303"
+          },
+          {
+            "path": "results/figures/cartesian_tasks_paths.png",
+            "sha256": "7765ca66a9dde0f9cdb20bee13bd89182d1f3a4767c2a9e6d4d66c1160487d13"
+          },
+          {
+            "path": "results/figures/multibody_cross_validation_tracking.png",
+            "sha256": "3bd780e3dfddb099659271c277ec1c133040178d54b69d1c9a43a48cb50da4f9"
+          }
+        ],
+        "rawEvidence": [
+          {
+            "path": "results/data/nominal_pid_vs_fuzzy.mat",
+            "sha256": "759072fe594e5df4fc8e465e6807899ae8d983e91e06239f2d7e92bb8bdf1ab4"
+          },
+          {
+            "path": "results/data/pid_optimization.mat",
+            "sha256": "02c37925822b51ff44217162e11ed69aeabb0f65d84a68e9da215e3f06f78437"
+          },
+          {
+            "path": "results/data/deterministic_robustness.mat",
+            "sha256": "ccd563826228f878bc0dd712e6448c359335c0a630b1b2e1f9c4588739ef10d1"
+          },
+          {
+            "path": "results/data/stochastic_robustness.mat",
+            "sha256": "5ee2a8a1f797a99a1c0ff511b6ae5984d4fd57a13fcad4b0f10e76c3d1b8404d"
+          },
+          {
+            "path": "results/data/cartesian_tasks.mat",
+            "sha256": "83d6d75cbff62d3a57ece2be3c32971a531c7444732381b7d2e61e299435ef27"
+          },
+          {
+            "path": "results/data/simulink_cross_validation.mat",
+            "sha256": "2e33db6a5901645c8d575817a0384ae686b9c9b0caff9b42ebe16c47c51ccde9"
+          },
+          {
+            "path": "results/data/multibody_cross_validation.mat",
+            "sha256": "d76b02921100511ecbaa462ebd5c44fc7621ad29a2def18d16c2df1e2ba81029"
+          },
+          {
+            "path": "results/data/deterministic_robustness_runs.csv",
+            "sha256": "9d0ddfd0c297fa43df351695d54c8a3ad427845ece588eaee79f4635c99dc8e0"
+          },
+          {
+            "path": "results/data/deterministic_robustness_summary.csv",
+            "sha256": "1041f7b8a57b382bdd4ce7dc152f029cebac40b428f05f03b1de7085dd8c702c"
+          },
+          {
+            "path": "results/data/stochastic_robustness_trials.csv",
+            "sha256": "5beaa1a23eb26b83f810ecae9f1937c8c1926870627d00bd590edf1ffde8b3e6"
+          },
+          {
+            "path": "results/data/stochastic_robustness_summary.csv",
+            "sha256": "083188735f2e5636f3f7272825188f6f02a45185a19936e4e603021663c257cd"
+          },
+          {
+            "path": "results/data/cartesian_tasks_runs.csv",
+            "sha256": "51d038f74682f3f371d13a95f883cff731517389b29425aae14255ba1535faa9"
+          },
+          {
+            "path": "results/data/simulink_cross_validation_runs.csv",
+            "sha256": "6427d4d6f85c75dc0b7f4cc836a3360b0ba963d1eea513f9289a179d1ded2e43"
+          },
+          {
+            "path": "results/data/multibody_cross_validation_runs.csv",
+            "sha256": "c69a5daa5552f2ed79ba176c3935b3dfe3157e3e9334e4dcee21f8b3fda112d0"
+          }
+        ],
+        "rawEvidenceLedger": {
+          "path": "docs/presentation/phase7b_raw_evidence.json",
+          "sha256": "293d17c4538544d19d904ed4d92df31271fadde9f66fedddcd9c2207dec3fe5b"
+        }
+      }
+    },
+    "typography": {
+      "cover_title_effective_pt": 51.0,
+      "minimum_slide_title_effective_pt": 35.4604,
+      "slide_2_claim_effective_pt": 24.0,
+      "slide_4_claim_effective_pt": 24.0,
+      "slide_7_claim_effective_pt": 24.0
     }
   }
 }
