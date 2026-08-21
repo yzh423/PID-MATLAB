@@ -25,9 +25,6 @@ _VOLATILE_CORE_DATE_TAGS = {
     f"{{{_DCTERMS_NAMESPACE}}}modified",
     f"{{{_CORE_PROPERTIES_NAMESPACE}}}lastPrinted",
 }
-_NAMESPACE_DECLARATION = re.compile(
-    br"\s+xmlns(?::([A-Za-z_][A-Za-z0-9_.-]*))?\s*=\s*(['\"])([^'\"]*)\2"
-)
 _XML_ENCODING = re.compile(
     br"\A\s*<\?xml\b[^>]*\bencoding\s*=\s*['\"]([^'\"]+)['\"]",
     re.IGNORECASE,
@@ -157,6 +154,31 @@ def _expanded_tag(name: tuple[bytes | None, bytes]) -> str:
     if namespace is None:
         return local.decode("utf-8")
     return f"{{{namespace.decode('utf-8')}}}{local.decode('utf-8')}"
+
+
+def _lexical_attributes(
+    body: bytes, label: str
+) -> list[tuple[bytes, bytes, int, int]]:
+    """Tokenize only real attributes, never namespace-looking quoted text."""
+    name_end = len(body.split(None, 1)[0])
+    cursor = name_end
+    attributes: list[tuple[bytes, bytes, int, int]] = []
+    while cursor < len(body):
+        while cursor < len(body) and body[cursor:cursor + 1].isspace():
+            cursor += 1
+        if cursor == len(body):
+            break
+        attribute = _XML_ATTRIBUTE.match(body, cursor)
+        if attribute is None:
+            raise Phase7BOfficeError(f"invalid lexical XML attribute in {label}")
+        attributes.append((
+            attribute.group("name"),
+            attribute.group("value"),
+            attribute.start("value"),
+            attribute.end("value"),
+        ))
+        cursor = attribute.end()
+    return attributes
 
 
 def _validate_field_date(
@@ -300,8 +322,11 @@ def _volatile_date_text_ranges(
         parent_scope = frames[-1]["scope"] if frames else {}
         assert isinstance(parent_scope, dict)
         scope = parent_scope.copy()
-        for prefix, _, uri in _NAMESPACE_DECLARATION.findall(body):
-            scope[prefix] = uri
+        for attribute_name, uri, _, _ in _lexical_attributes(body, "core properties"):
+            if attribute_name == b"xmlns":
+                scope[b""] = uri
+            elif attribute_name.startswith(b"xmlns:"):
+                scope[attribute_name.removeprefix(b"xmlns:")] = uri
         is_volatile = _expanded_name(name, scope) in volatile_names
         if self_closing:
             if is_volatile:
@@ -423,19 +448,22 @@ def _xml_start_tags(
         lexical_name = body.split(None, 1)[0]
         parent_scope = frames[-1][1] if frames else {}
         scope = parent_scope.copy()
-        for prefix, _, uri in _NAMESPACE_DECLARATION.findall(body):
-            scope[prefix] = uri
+        lexical_attributes = _lexical_attributes(body, label)
+        for attribute_name, uri, _, _ in lexical_attributes:
+            if attribute_name == b"xmlns":
+                scope[b""] = uri
+            elif attribute_name.startswith(b"xmlns:"):
+                scope[attribute_name.removeprefix(b"xmlns:")] = uri
         body_start = start + 1 + len(raw) - len(raw.lstrip())
         attributes = []
-        for attribute in _XML_ATTRIBUTE.finditer(body):
-            attribute_name = attribute.group("name")
+        for attribute_name, value, value_start, value_end in lexical_attributes:
             if attribute_name == b"xmlns" or attribute_name.startswith(b"xmlns:"):
                 continue
             attributes.append((
                 _expanded_attribute_name(attribute_name, scope),
-                attribute.group("value"),
-                body_start + attribute.start("value"),
-                body_start + attribute.end("value"),
+                value,
+                body_start + value_start,
+                body_start + value_end,
             ))
         tags.append((_expanded_name(lexical_name, scope), attributes))
         if not self_closing:

@@ -75,7 +75,7 @@
         "title": "Noise alone is manageable; combined stress is not",
         "claim": "Each isolated-noise cell passes {{phase7b.stochastic.isolatedNoise.successCount}}/{{phase7b.stochastic.isolatedNoise.trialCount}} paired trials, while every combined-stress cell passes {{phase7b.stochastic.combinedStress.successCount}}/{{phase7b.stochastic.combinedStress.trialCount}}.",
         "body": [
-          "The full study contains {{stochastic.trialCount}} trials: {{stochastic.scenarioCount}} scenarios x {{phase7b.controllerCount}} controllers x {{protocol.stochasticTrialsPerScenario}} fixed seeds.",
+          "Study: {{stochastic.trialCount}} trials ({{stochastic.scenarioCount}} scenarios x {{phase7b.controllerCount}} controllers x {{protocol.stochasticTrialsPerScenario}} fixed seeds).",
           "At high noise, optimized PID has the lowest tracking error but the highest mean torque slew ({{stochastic.highNoiseMeanTorqueSlew.optimizedPid|.2f}} N m/s)."
         ],
         "figure": "results/figures/stochastic_robustness_chattering.png",
@@ -113,7 +113,7 @@
       },
       {
         "id": "conclusion",
-        "title": "There is no universal winner, but optimized PID is the strongest reliability baseline",
+        "title": "Optimized PID is the strongest reliability baseline",
         "layout": "metrics",
         "metrics": [
           {"value": "{{deterministic.successCount.manualPid}}/{{deterministic.scenarioCount}}", "label": "manual PID deterministic success"},
@@ -126,7 +126,7 @@
       },
       {
         "id": "next-steps",
-        "title": "The validated layer is ready to support the next research step",
+        "title": "Validated layer supports the next research step",
         "claim": "The next milestone is to test whether the same evidence discipline survives contact with sensing, hardware uncertainty, and online safety constraints.",
         "body": [
           "1. Hardware-in-the-loop and physical-arm validation with calibrated uncertainty.",

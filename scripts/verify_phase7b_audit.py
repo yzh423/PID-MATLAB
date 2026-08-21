@@ -4,14 +4,17 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-import subprocess
 import sys
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from scripts.phase7b.audit import Phase7BAuditError, validate_phase7b_audit
+from scripts.phase7b.audit import (
+    Phase7BAuditError,
+    audited_commit_is_current_or_audit_only_parent,
+    validate_phase7b_audit,
+)
 
 
 def main() -> int:
@@ -23,13 +26,7 @@ def main() -> int:
     audit = args.audit if args.audit.is_absolute() else root / args.audit
 
     def is_ancestor(commit: str) -> bool:
-        return subprocess.run(
-            ["git", "merge-base", "--is-ancestor", commit, "HEAD"],
-            cwd=root,
-            check=False,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        ).returncode == 0
+        return audited_commit_is_current_or_audit_only_parent(root, commit)
 
     try:
         validate_phase7b_audit(root, audit, is_ancestor=is_ancestor)

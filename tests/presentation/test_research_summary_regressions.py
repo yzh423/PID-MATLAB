@@ -3,6 +3,9 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+import shutil
+import subprocess
+import tempfile
 import unittest
 from xml.etree import ElementTree
 from zipfile import ZipFile
@@ -10,6 +13,8 @@ from zipfile import ZipFile
 from docx import Document
 import pdfplumber
 from pypdf import PdfReader
+
+from scripts.phase7b.evidence import sha256_file
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -149,6 +154,19 @@ class ResearchSummaryPDFLayoutTests(unittest.TestCase):
         self.assertIn("results/presentation/phase7b_package.json", PDF_BUILDER.read_text(encoding="utf-8"))
         self.assertIn("results/presentation/phase7b_package.json", (ROOT / "scripts/phase7b/summary.py").read_text(encoding="utf-8"))
 
+    def test_plan_and_design_describe_the_current_keyed_audit_gated_contract(self) -> None:
+        design = DESIGN.read_text(encoding="utf-8")
+        plan = PLAN.read_text(encoding="utf-8")
+        self.assertIn("Optimized PID is the strongest reliability baseline", design)
+        self.assertIn("actual rendered pagination", design)
+        self.assertIn("OOXML-resolved geometry", design)
+        self.assertNotIn("cartesian.runRows.5", plan)
+        self.assertIn("phase7b.cartesian.optimizedPickTransferPlace", plan)
+        self.assertNotIn("docs/report/PAPER_CLAIM_AUDIT.md", plan)
+        self.assertNotIn("validate bundled Node/Python and Word availability", plan)
+        self.assertNotIn("export PDF, and normalize both", plan)
+        self.assertIn("canonical Phase 7B audit gate", plan)
+
 
 class ResearchSummaryExportLifecycleTests(unittest.TestCase):
     def test_exporter_has_independent_com_and_temp_cleanup_guarantees(self) -> None:
@@ -172,6 +190,39 @@ class ResearchSummaryExportLifecycleTests(unittest.TestCase):
         self.assertIn("non-canonical diagnostic", source)
         self.assertIn("ownedProcessIds", source)
         self.assertIn("Owned WINWORD process remains", source)
+
+    def test_word_diagnostic_requires_explicit_noncanonical_output(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            summary = root / "docs/summary"
+            summary.mkdir(parents=True)
+            shutil.copy2(DOCX, summary / DOCX.name)
+            shutil.copy2(PDF, summary / PDF.name)
+            canonical = summary / PDF.name
+            original_hash = sha256_file(canonical)
+            cases = (
+                ["-UseWordCom"],
+                ["-UseWordCom", "-PdfPath", str(canonical)],
+            )
+            for arguments in cases:
+                with self.subTest(arguments=arguments):
+                    completed = subprocess.run(
+                        [
+                            "powershell", "-NoProfile", "-ExecutionPolicy", "Bypass",
+                            "-File", str(EXPORTER), "-ProjectRoot", str(root), *arguments,
+                        ],
+                        cwd=ROOT,
+                        check=False,
+                        capture_output=True,
+                        text=True,
+                        timeout=45,
+                    )
+                    self.assertNotEqual(completed.returncode, 0, completed.stdout)
+                    self.assertRegex(
+                        completed.stdout + completed.stderr,
+                        "explicit.*diagnostic|canonical",
+                    )
+                    self.assertEqual(sha256_file(canonical), original_hash)
 
 
 if __name__ == "__main__":

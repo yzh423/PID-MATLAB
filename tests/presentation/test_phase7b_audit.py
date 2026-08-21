@@ -2,15 +2,21 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import subprocess
 import tempfile
 import unittest
 
+from scripts.phase7b import audit as audit_module
 from scripts.phase7b.audit import Phase7BAuditError, validate_phase7b_audit
 from scripts.phase7b.evidence import sha256_file
 
 
 ROOT = Path(__file__).resolve().parents[2]
-CANONICAL_AUDIT = ROOT / "docs/presentation/PHASE7B_CLAIM_AUDIT.json"
+audited_commit_is_current_or_audit_only_parent = getattr(
+    audit_module,
+    "audited_commit_is_current_or_audit_only_parent",
+    lambda root, commit: False,
+)
 VERIFY = ROOT / "scripts/verify_phase7b.ps1"
 REQUIRED = (
     "docs/presentation/phase7b_template.json",
@@ -103,9 +109,60 @@ class Phase7BAuditGateTests(unittest.TestCase):
             with self.subTest(label=label), self.assertRaises(Phase7BAuditError):
                 self._validate(audit)
 
-    def test_canonical_audit_is_intentionally_blocked_until_fresh_review(self) -> None:
-        with self.assertRaisesRegex(Phase7BAuditError, "fresh|BLOCKED"):
-            validate_phase7b_audit(ROOT, CANONICAL_AUDIT, is_ancestor=lambda commit: True)
+    def test_intended_pass_audit_for_current_head_is_accepted(self) -> None:
+        current = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT, check=True,
+            capture_output=True, text=True,
+        ).stdout.strip()
+        audit = valid_audit()
+        audit["audited_commit"] = current
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "audit.json"
+            path.write_text(json.dumps(audit), encoding="utf-8")
+            validate_phase7b_audit(
+                ROOT,
+                path,
+                is_ancestor=lambda commit: audited_commit_is_current_or_audit_only_parent(ROOT, commit),
+            )
+
+    def test_commit_policy_accepts_only_current_or_audit_only_immediate_parent(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.email", "phase7b@example.invalid"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.name", "Phase 7B Test"], cwd=root, check=True)
+            product = root / "product.txt"
+            product.write_text("reviewed\n", encoding="utf-8")
+            subprocess.run(["git", "add", "product.txt"], cwd=root, check=True)
+            subprocess.run(["git", "commit", "-q", "-m", "product"], cwd=root, check=True)
+            product_commit = subprocess.run(
+                ["git", "rev-parse", "HEAD"], cwd=root, check=True,
+                capture_output=True, text=True,
+            ).stdout.strip()
+            audit_dir = root / "docs/presentation"
+            audit_dir.mkdir(parents=True)
+            (audit_dir / "PHASE7B_CLAIM_AUDIT.json").write_text("{}\n", encoding="utf-8")
+            (audit_dir / "PHASE7B_CLAIM_AUDIT.md").write_text("audit\n", encoding="utf-8")
+            subprocess.run(["git", "add", "docs/presentation"], cwd=root, check=True)
+            subprocess.run(["git", "commit", "-q", "-m", "audit"], cwd=root, check=True)
+            audit_commit = subprocess.run(
+                ["git", "rev-parse", "HEAD"], cwd=root, check=True,
+                capture_output=True, text=True,
+            ).stdout.strip()
+
+            self.assertTrue(audited_commit_is_current_or_audit_only_parent(root, audit_commit))
+            self.assertTrue(audited_commit_is_current_or_audit_only_parent(root, product_commit))
+
+            product.write_text("changed\n", encoding="utf-8")
+            subprocess.run(["git", "add", "product.txt"], cwd=root, check=True)
+            subprocess.run(["git", "commit", "-q", "-m", "product change"], cwd=root, check=True)
+            current = subprocess.run(
+                ["git", "rev-parse", "HEAD"], cwd=root, check=True,
+                capture_output=True, text=True,
+            ).stdout.strip()
+            self.assertTrue(audited_commit_is_current_or_audit_only_parent(root, current))
+            self.assertFalse(audited_commit_is_current_or_audit_only_parent(root, audit_commit))
+            self.assertFalse(audited_commit_is_current_or_audit_only_parent(root, product_commit))
 
     def test_verifier_invokes_canonical_audit_gate_after_manifest_write(self) -> None:
         source = VERIFY.read_text(encoding="utf-8")

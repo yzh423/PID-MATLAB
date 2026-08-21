@@ -55,14 +55,14 @@ class Phase7BOutputTests(unittest.TestCase):
         self.assertIn('.Replace("`r`n", "`n")', source)
         self.assertNotIn("[Environment]::NewLine", source)
 
-    def test_verifier_uses_self_contained_docx_page_contract_and_cleans_up(self) -> None:
+    def test_verifier_uses_rendered_word_pagination_and_cleans_up(self) -> None:
         source = VERIFY.read_text(encoding="utf-8")
-        self.assertIn("Get-DocxDeclaredPageCount", source)
-        self.assertIn("docProps/app.xml", source)
-        self.assertNotIn("OpenNoRepairDialog", source)
-        self.assertNotIn("ComputeStatistics(2)", source)
+        self.assertIn("Get-DocxRenderedPageCount", source)
+        self.assertIn("measure_docx_pages.ps1", source)
+        self.assertNotIn("Get-DocxDeclaredPageCount", source)
         self.assertNotIn("'docxPages': 1", source)
         self.assertIn("Remove-Item -LiteralPath $rebuildRoot -Force -Recurse", source)
+        self.assertIn("summaryPageCount = $DocxPageCount", source)
 
     def test_verifier_orders_manifest_paths_with_ordinal_comparison(self) -> None:
         source = VERIFY.read_text(encoding="utf-8")
@@ -136,6 +136,7 @@ class Phase7BOutputTests(unittest.TestCase):
             "results/data/simulink_cross_validation.mat",
             "results/data/multibody_cross_validation.mat",
             "scripts/export_phase7b_package.py",
+            "scripts/phase7b/measure_docx_pages.ps1",
             "scripts/verify_phase7b.ps1",
         ):
             self.assertIn(required, source_paths)

@@ -51,8 +51,31 @@ test("successful publication validates and normalizes before atomic replacement"
     normalize: async () => { order.push("normalize"); },
     replace: async (temporary, target) => { order.push("replace"); await fs.rename(temporary, target); },
   });
-  assert.deepEqual(order, ["save", "validate", "normalize", "replace"]);
+  assert.deepEqual(order, ["save", "validate", "normalize", "validate", "replace"]);
   assert.equal(await fs.readFile(finalPath, "utf8"), "candidate");
   assert.deepEqual(await ownedTemps(directory), []);
+  await fs.rm(directory, { recursive: true, force: true });
+});
+
+test("normalizer corruption is rejected before replacement", async () => {
+  const { directory, finalPath } = await fixture();
+  const sentinel = path.join(directory, ".final.pptx.phase7b-unowned.tmp.pptx");
+  await fs.writeFile(sentinel, "sentinel");
+  await assert.rejects(
+    publishAtomically(finalPath, {
+      save: async (temporary) => { await fs.writeFile(temporary, "candidate"); },
+      validate: async (temporary) => {
+        if (await fs.readFile(temporary, "utf8") !== "candidate") {
+          throw new Error("normalized candidate is corrupt");
+        }
+      },
+      normalize: async (temporary) => { await fs.writeFile(temporary, "corrupt"); },
+      replace: async (temporary, target) => { await fs.rename(temporary, target); },
+    }),
+    /normalized candidate is corrupt/,
+  );
+  assert.equal(await fs.readFile(finalPath, "utf8"), "reviewed-final");
+  assert.equal(await fs.readFile(sentinel, "utf8"), "sentinel");
+  assert.deepEqual(await ownedTemps(directory), [path.basename(sentinel)]);
   await fs.rm(directory, { recursive: true, force: true });
 });

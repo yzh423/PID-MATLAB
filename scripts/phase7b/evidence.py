@@ -262,6 +262,10 @@ def _derive_phase7b_values(evidence: Mapping[str, object]) -> dict[str, object]:
             or summary.get("FailedRunCount") != len(DETERMINISTIC_SCENARIOS) - success_count
         ):
             raise Phase7BEvidenceError("Phase 7A evidence deterministic summary cardinality mismatch")
+        if deterministic_keys[(controller, "combined-deterministic")].get("Success") is not False:
+            raise Phase7BEvidenceError(
+                "Phase 7A evidence does not support the all-controller combined deterministic failure claim"
+            )
 
     stochastic = _require_mapping(evidence.get("stochastic"), "stochastic")
     stochastic_rows = _require_rows(stochastic.get("summaryRows"), "stochastic summary")
@@ -339,6 +343,18 @@ def _derive_phase7b_values(evidence: Mapping[str, object]) -> dict[str, object]:
         {(controller, task) for controller in CONTROLLERS for task in CARTESIAN_TASKS},
         "cartesian controller/task",
     )
+    expected_cartesian_success = {
+        (controller, task): task == "straight-line" or controller == "optimization-pid"
+        for controller in CONTROLLERS
+        for task in CARTESIAN_TASKS
+    }
+    if any(
+        cartesian_keys[key].get("Success") is not expected
+        for key, expected in expected_cartesian_success.items()
+    ):
+        raise Phase7BEvidenceError(
+            "Phase 7A evidence does not support the exact Cartesian success pattern"
+        )
     completed_rows = list(cartesian_keys.values())
     successful_rows = [row for row in completed_rows if row.get("Success") is True]
     run_count = _require_nonnegative_int(cartesian.get("runCount"), "cartesian run count")

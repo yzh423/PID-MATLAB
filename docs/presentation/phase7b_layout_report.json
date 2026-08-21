@@ -1,15 +1,19 @@
 {
   "schemaVersion": 1,
   "generatedAt": "2026-08-21T00:00:00Z",
-  "method": "tracked minimal layout ledger; COM-free; derived from the reviewed builder contract and structurally checked PPTX",
+  "method": "tracked layout report derived from final PPTX OOXML-resolved geometry, text runs, fonts, wrapping, and autofit overflow guards",
+  "slideSizeEmu": {
+    "width": 12192000,
+    "height": 6858000
+  },
   "sources": {
     "package": {
       "path": "results/presentation/phase7b_package.json",
-      "sha256": "8e85522427fcbbe16ac8262f14fa76280b3d24535eb8d5755643ed77c3eecc79"
+      "sha256": "370ace654d63d09cdf92ef733d6e2ee405e6a31d00d6c1073673c372136ba488"
     },
     "pptx": {
       "path": "presentation/final_presentation.pptx",
-      "sha256": "0fd8abda808d3c258a3d1900e701e362a3943343e0b1c977c6666c3d7ea737af"
+      "sha256": "2dc18d8e4a7d96edf80ee41cfab650670844446fd4facb48e6cfc4872a230299"
     }
   },
   "slides": [
@@ -19,16 +23,84 @@
       "title": "Reliable execution connects plans to physical action",
       "elements": [
         {
+          "type": "image",
+          "name": "picture-4",
+          "geometryEmu": {
+            "x": 6477000,
+            "y": 1471702,
+            "width": 5143500,
+            "height": 3571696
+          },
+          "bbox": [
+            680,
+            154.5094,
+            540,
+            374.9812
+          ],
+          "withinSlide": true
+        },
+        {
+          "type": "text",
           "name": "cover-title",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 1619250,
+            "width": 5334000,
+            "height": 2000250
+          },
           "bbox": [
             52,
             170,
             560,
             210
           ],
-          "resolvedFontSize": 51,
+          "withinSlide": true,
+          "resolvedFontSize": 51.0,
+          "resolvedRunFontSizes": [
+            51.0,
+            51.0
+          ],
+          "minimumFontSize": 50,
+          "minimumFontSizePass": true,
           "textLayout": {
-            "lineCount": 2
+            "text": "Reliable execution connects plans to physical action",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 81863,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "cover-subtitle",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 3905250,
+            "width": 5334000,
+            "height": 1047750
+          },
+          "bbox": [
+            52,
+            410,
+            560,
+            110
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 21.0,
+          "resolvedRunFontSizes": [
+            21.0,
+            21.0
+          ],
+          "minimumFontSize": 16,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "Evidence-grounded PID and Fuzzy-PID evaluation for a 2-link manipulator",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
           }
         }
       ]
@@ -39,29 +111,120 @@
       "title": "Nominal success is not enough to claim reliable manipulation",
       "elements": [
         {
+          "type": "text",
           "name": "slide-2-title",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 323850,
+            "width": 11125200,
+            "height": 685800
+          },
           "bbox": [
             52,
             34,
             1168,
             72
           ],
-          "resolvedFontSize": 48,
+          "withinSlide": true,
+          "resolvedFontSize": 36.0,
+          "resolvedRunFontSizes": [
+            36.0,
+            36.0
+          ],
+          "minimumFontSize": 35,
+          "minimumFontSizePass": true,
           "textLayout": {
-            "lineCount": 1
+            "text": "Nominal success is not enough to claim reliable manipulation",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 81563,
+            "overflowGuard": true
           }
         },
         {
+          "type": "image",
+          "name": "picture-6",
+          "geometryEmu": {
+            "x": 5905500,
+            "y": 1734837,
+            "width": 5715000,
+            "height": 3635976
+          },
+          "bbox": [
+            620,
+            182.1351,
+            600,
+            381.7298
+          ],
+          "withinSlide": true
+        },
+        {
+          "type": "text",
           "name": "problem-claim",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 1714500,
+            "width": 5143500,
+            "height": 1524000
+          },
           "bbox": [
             52,
             180,
             540,
             160
           ],
-          "resolvedFontSize": 32,
+          "withinSlide": true,
+          "resolvedFontSize": 24.0,
+          "resolvedRunFontSizes": [
+            24.0,
+            24.0
+          ],
+          "minimumFontSize": 24,
+          "minimumFontSizePass": true,
           "textLayout": {
-            "lineCount": 3
+            "text": "The central question is how controller choices survive controlled changes in payload, configuration, noise, disturbance, and actuator authority.",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 89980,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "problem-body",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 3429000,
+            "width": 5143500,
+            "height": 2362200
+          },
+          "bbox": [
+            52,
+            360,
+            540,
+            248
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 18.0,
+          "resolvedRunFontSizes": [
+            18.0,
+            18.0,
+            18.0,
+            18.0,
+            18.0,
+            18.0
+          ],
+          "minimumFontSize": 16,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "A controller can pass one nominal trajectory and still fail when uncertainties interact.\n\nThis study therefore reports failed completed runs instead of filtering them from averages.\n\nAll conclusions are simulation-only; no hardware safety or fidelity claim is made.",
+            "lineCount": 5,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
           }
         }
       ]
@@ -72,16 +235,259 @@
       "title": "Every controller faces the same plant, trajectory, limits, and metrics",
       "elements": [
         {
+          "type": "text",
           "name": "slide-3-title",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 323850,
+            "width": 11125200,
+            "height": 685800
+          },
           "bbox": [
             52,
             34,
             1168,
             72
           ],
-          "resolvedFontSize": 48,
+          "withinSlide": true,
+          "resolvedFontSize": 36.0,
+          "resolvedRunFontSizes": [
+            36.0,
+            36.0
+          ],
+          "minimumFontSize": 35,
+          "minimumFontSizePass": true,
           "textLayout": {
-            "lineCount": 1
+            "text": "Every controller faces the same plant, trajectory, limits, and metrics",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 74530,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "protocol-metric-1",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 2381250,
+            "width": 3333750,
+            "height": 1143000
+          },
+          "bbox": [
+            52,
+            250,
+            350,
+            120
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 40.5,
+          "resolvedRunFontSizes": [
+            40.5,
+            40.5
+          ],
+          "minimumFontSize": 24,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "0.001 s",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "protocol-metric-label-1",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 3733800,
+            "width": 3333750,
+            "height": 952500
+          },
+          "bbox": [
+            52,
+            392,
+            350,
+            100
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 18.0,
+          "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "minimumFontSize": 16,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "fixed sample time",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "protocol-metric-2",
+          "geometryEmu": {
+            "x": 4324350,
+            "y": 2381250,
+            "width": 3333750,
+            "height": 1143000
+          },
+          "bbox": [
+            454,
+            250,
+            350,
+            120
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 40.5,
+          "resolvedRunFontSizes": [
+            40.5,
+            40.5
+          ],
+          "minimumFontSize": 24,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "5.0 s",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "protocol-metric-label-2",
+          "geometryEmu": {
+            "x": 4324350,
+            "y": 3733800,
+            "width": 3333750,
+            "height": 952500
+          },
+          "bbox": [
+            454,
+            392,
+            350,
+            100
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 18.0,
+          "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "minimumFontSize": 16,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "nominal duration",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "protocol-metric-3",
+          "geometryEmu": {
+            "x": 8153400,
+            "y": 2381250,
+            "width": 3333750,
+            "height": 1143000
+          },
+          "bbox": [
+            856,
+            250,
+            350,
+            120
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 40.5,
+          "resolvedRunFontSizes": [
+            40.5,
+            40.5
+          ],
+          "minimumFontSize": 24,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "5001",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "protocol-metric-label-3",
+          "geometryEmu": {
+            "x": 8153400,
+            "y": 3733800,
+            "width": 3333750,
+            "height": 952500
+          },
+          "bbox": [
+            856,
+            392,
+            350,
+            100
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 18.0,
+          "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "minimumFontSize": 16,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "samples per nominal run",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "protocol-interpretation",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 5143500,
+            "width": 10953750,
+            "height": 762000
+          },
+          "bbox": [
+            52,
+            540,
+            1150,
+            80
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 18.0,
+          "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "minimumFontSize": 16,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "Manual PID, Mamdani Fuzzy-PID, and optimized PID use identical robot parameters, torque limits, trajectories, thresholds, and random seeds.",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
           }
         }
       ]
@@ -92,29 +498,118 @@
       "title": "Optimization improves the baseline without changing the protocol",
       "elements": [
         {
+          "type": "text",
           "name": "slide-4-title",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 323850,
+            "width": 11125200,
+            "height": 685800
+          },
           "bbox": [
             52,
             34,
             1168,
             72
           ],
-          "resolvedFontSize": 48,
+          "withinSlide": true,
+          "resolvedFontSize": 36.0,
+          "resolvedRunFontSizes": [
+            36.0,
+            36.0
+          ],
+          "minimumFontSize": 35,
+          "minimumFontSizePass": true,
           "textLayout": {
-            "lineCount": 1
+            "text": "Optimization improves the baseline without changing the protocol",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 75920,
+            "overflowGuard": true
           }
         },
         {
+          "type": "image",
+          "name": "picture-6",
+          "geometryEmu": {
+            "x": 5905500,
+            "y": 1706467,
+            "width": 5715000,
+            "height": 3692717
+          },
+          "bbox": [
+            620,
+            179.1566,
+            600,
+            387.6868
+          ],
+          "withinSlide": true
+        },
+        {
+          "type": "text",
           "name": "optimization-claim",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 1714500,
+            "width": 5143500,
+            "height": 1524000
+          },
           "bbox": [
             52,
             180,
             540,
             160
           ],
-          "resolvedFontSize": 32,
+          "withinSlide": true,
+          "resolvedFontSize": 24.0,
+          "resolvedRunFontSizes": [
+            24.0,
+            24.0
+          ],
+          "minimumFontSize": 24,
+          "minimumFontSizePass": true,
           "textLayout": {
-            "lineCount": 3
+            "text": "The bounded search reduces the nominal objective by 7.283% and improves the held-out payload objective from 0.214504 to 0.197284.",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 94592,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "optimization-body",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 3429000,
+            "width": 5143500,
+            "height": 2362200
+          },
+          "bbox": [
+            52,
+            360,
+            540,
+            248
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 18.0,
+          "resolvedRunFontSizes": [
+            18.0,
+            18.0,
+            18.0,
+            18.0
+          ],
+          "minimumFontSize": 16,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "The search converges with exit flag 1 after 12 iterations and 96 evaluations.\n\nOnly PID gains change; the plant, torque limits, trajectory, objective, and evaluation thresholds remain fixed.",
+            "lineCount": 3,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
           }
         }
       ]
@@ -125,29 +620,118 @@
       "title": "Reliability separates the controllers under deterministic stress",
       "elements": [
         {
+          "type": "text",
           "name": "slide-5-title",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 323850,
+            "width": 11125200,
+            "height": 685800
+          },
           "bbox": [
             52,
             34,
             1168,
             72
           ],
-          "resolvedFontSize": 48,
+          "withinSlide": true,
+          "resolvedFontSize": 36.0,
+          "resolvedRunFontSizes": [
+            36.0,
+            36.0
+          ],
+          "minimumFontSize": 35,
+          "minimumFontSizePass": true,
           "textLayout": {
-            "lineCount": 1
+            "text": "Reliability separates the controllers under deterministic stress",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 80599,
+            "overflowGuard": true
           }
         },
         {
+          "type": "image",
+          "name": "picture-6",
+          "geometryEmu": {
+            "x": 5905500,
+            "y": 1719328,
+            "width": 5715000,
+            "height": 3666995
+          },
+          "bbox": [
+            620,
+            180.5069,
+            600,
+            384.9864
+          ],
+          "withinSlide": true
+        },
+        {
+          "type": "text",
           "name": "deterministic-claim",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 1714500,
+            "width": 5143500,
+            "height": 1524000
+          },
           "bbox": [
             52,
             180,
             540,
             160
           ],
-          "resolvedFontSize": 32,
+          "withinSlide": true,
+          "resolvedFontSize": 24.0,
+          "resolvedRunFontSizes": [
+            24.0,
+            24.0
+          ],
+          "minimumFontSize": 24,
+          "minimumFontSizePass": true,
           "textLayout": {
-            "lineCount": 3
+            "text": "Success rises from 8/13 for manual PID to 9/13 for Fuzzy-PID and 10/13 for optimized PID.",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "deterministic-body",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 3429000,
+            "width": 5143500,
+            "height": 2362200
+          },
+          "bbox": [
+            52,
+            360,
+            540,
+            248
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 18.0,
+          "resolvedRunFontSizes": [
+            18.0,
+            18.0,
+            18.0,
+            18.0
+          ],
+          "minimumFontSize": 16,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "The matrix contains 39 controller-scenario runs across nominal, payload, configuration, uncertainty, disturbance, actuator, and combined conditions.\n\nAll 3 controllers fail the combined deterministic case, so the ranking is comparative rather than a safety guarantee.",
+            "lineCount": 3,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
           }
         }
       ]
@@ -158,29 +742,118 @@
       "title": "Noise alone is manageable; combined stress is not",
       "elements": [
         {
+          "type": "text",
           "name": "slide-6-title",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 323850,
+            "width": 11125200,
+            "height": 685800
+          },
           "bbox": [
             52,
             34,
             1168,
             72
           ],
-          "resolvedFontSize": 48,
+          "withinSlide": true,
+          "resolvedFontSize": 36.0,
+          "resolvedRunFontSizes": [
+            36.0,
+            36.0
+          ],
+          "minimumFontSize": 35,
+          "minimumFontSizePass": true,
           "textLayout": {
-            "lineCount": 1
+            "text": "Noise alone is manageable; combined stress is not",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 98501,
+            "overflowGuard": true
           }
         },
         {
+          "type": "image",
+          "name": "picture-6",
+          "geometryEmu": {
+            "x": 5905500,
+            "y": 1695364,
+            "width": 5715000,
+            "height": 3714922
+          },
+          "bbox": [
+            620,
+            177.991,
+            600,
+            390.0181
+          ],
+          "withinSlide": true
+        },
+        {
+          "type": "text",
           "name": "stochastic-claim",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 1714500,
+            "width": 5143500,
+            "height": 1524000
+          },
           "bbox": [
             52,
             180,
             540,
             160
           ],
-          "resolvedFontSize": 32,
+          "withinSlide": true,
+          "resolvedFontSize": 24.0,
+          "resolvedRunFontSizes": [
+            24.0,
+            24.0
+          ],
+          "minimumFontSize": 24,
+          "minimumFontSizePass": true,
           "textLayout": {
-            "lineCount": 3
+            "text": "Each isolated-noise cell passes 30/30 paired trials, while every combined-stress cell passes 0/30.",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "stochastic-body",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 3429000,
+            "width": 5143500,
+            "height": 2362200
+          },
+          "bbox": [
+            52,
+            360,
+            540,
+            248
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 18.0,
+          "resolvedRunFontSizes": [
+            18.0,
+            18.0,
+            18.0,
+            18.0
+          ],
+          "minimumFontSize": 16,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "Study: 360 trials (4 scenarios x 3 controllers x 30 fixed seeds).\n\nAt high noise, optimized PID has the lowest tracking error but the highest mean torque slew (2888.34 N m/s).",
+            "lineCount": 3,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
           }
         }
       ]
@@ -191,29 +864,118 @@
       "title": "Task-space evaluation exposes failures hidden by joint metrics",
       "elements": [
         {
+          "type": "text",
           "name": "slide-7-title",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 323850,
+            "width": 11125200,
+            "height": 685800
+          },
           "bbox": [
             52,
             34,
             1168,
             72
           ],
-          "resolvedFontSize": 48,
+          "withinSlide": true,
+          "resolvedFontSize": 36.0,
+          "resolvedRunFontSizes": [
+            36.0,
+            36.0
+          ],
+          "minimumFontSize": 35,
+          "minimumFontSizePass": true,
           "textLayout": {
-            "lineCount": 1
+            "text": "Task-space evaluation exposes failures hidden by joint metrics",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 79861,
+            "overflowGuard": true
           }
         },
         {
+          "type": "image",
+          "name": "picture-6",
+          "geometryEmu": {
+            "x": 5905500,
+            "y": 2195126,
+            "width": 5715000,
+            "height": 2715397
+          },
+          "bbox": [
+            620,
+            230.4594,
+            600,
+            285.081
+          ],
+          "withinSlide": true
+        },
+        {
+          "type": "text",
           "name": "cartesian-claim",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 1714500,
+            "width": 5143500,
+            "height": 1524000
+          },
           "bbox": [
             52,
             180,
             540,
             160
           ],
-          "resolvedFontSize": 32,
+          "withinSlide": true,
+          "resolvedFontSize": 24.0,
+          "resolvedRunFontSizes": [
+            24.0,
+            24.0
+          ],
+          "minimumFontSize": 24,
+          "minimumFontSizePass": true,
           "textLayout": {
-            "lineCount": 3
+            "text": "All 3 controllers pass the straight-line task; only optimized PID passes pick-transfer-place, so 4 of 6 completed task runs meet every gate.",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 91267,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "cartesian-body",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 3429000,
+            "width": 5143500,
+            "height": 2362200
+          },
+          "bbox": [
+            52,
+            360,
+            540,
+            248
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 18.0,
+          "resolvedRunFontSizes": [
+            18.0,
+            18.0,
+            18.0,
+            18.0
+          ],
+          "minimumFontSize": 16,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "Manual and Fuzzy-PID complete the pick-transfer-place simulation but fail its quantitative pickup/place criteria.\n\nOptimized PID records 0.01422 m RMS and 0.02970 m maximum Cartesian error.",
+            "lineCount": 3,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
           }
         }
       ]
@@ -224,29 +986,259 @@
       "title": "Independent formulations agree at numerical precision",
       "elements": [
         {
+          "type": "text",
           "name": "slide-8-title",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 323850,
+            "width": 11125200,
+            "height": 685800
+          },
           "bbox": [
             52,
             34,
             1168,
             72
           ],
-          "resolvedFontSize": 48,
+          "withinSlide": true,
+          "resolvedFontSize": 36.0,
+          "resolvedRunFontSizes": [
+            36.0,
+            36.0
+          ],
+          "minimumFontSize": 35,
+          "minimumFontSizePass": true,
           "textLayout": {
-            "lineCount": 1
+            "text": "Independent formulations agree at numerical precision",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 91780,
+            "overflowGuard": true
           }
         },
         {
-          "name": "cross-validation-claim",
+          "type": "text",
+          "name": "cross-validation-metric-1",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 2381250,
+            "width": 3333750,
+            "height": 1143000
+          },
           "bbox": [
             52,
-            180,
-            540,
-            160
+            250,
+            350,
+            120
           ],
-          "resolvedFontSize": 32,
+          "withinSlide": true,
+          "resolvedFontSize": 40.5,
+          "resolvedRunFontSizes": [
+            40.5,
+            40.5
+          ],
+          "minimumFontSize": 24,
+          "minimumFontSizePass": true,
           "textLayout": {
-            "lineCount": 3
+            "text": "2/2",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "cross-validation-metric-label-1",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 3733800,
+            "width": 3333750,
+            "height": 952500
+          },
+          "bbox": [
+            52,
+            392,
+            350,
+            100
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 18.0,
+          "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "minimumFontSize": 16,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "Simulink agreement and tracking passes",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "cross-validation-metric-2",
+          "geometryEmu": {
+            "x": 4324350,
+            "y": 2381250,
+            "width": 3333750,
+            "height": 1143000
+          },
+          "bbox": [
+            454,
+            250,
+            350,
+            120
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 40.5,
+          "resolvedRunFontSizes": [
+            40.5,
+            40.5
+          ],
+          "minimumFontSize": 24,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "2/2",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "cross-validation-metric-label-2",
+          "geometryEmu": {
+            "x": 4324350,
+            "y": 3733800,
+            "width": 3333750,
+            "height": 952500
+          },
+          "bbox": [
+            454,
+            392,
+            350,
+            100
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 18.0,
+          "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "minimumFontSize": 16,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "Multibody agreement and tracking passes",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "cross-validation-metric-3",
+          "geometryEmu": {
+            "x": 8153400,
+            "y": 2381250,
+            "width": 3333750,
+            "height": 1143000
+          },
+          "bbox": [
+            856,
+            250,
+            350,
+            120
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 40.5,
+          "resolvedRunFontSizes": [
+            40.5,
+            40.5
+          ],
+          "minimumFontSize": 24,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "3.34e-16 m",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "cross-validation-metric-label-3",
+          "geometryEmu": {
+            "x": 8153400,
+            "y": 3733800,
+            "width": 3333750,
+            "height": 952500
+          },
+          "bbox": [
+            856,
+            392,
+            350,
+            100
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 18.0,
+          "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "minimumFontSize": 16,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "worst end-effector difference",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "cross-validation-interpretation",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 5143500,
+            "width": 10953750,
+            "height": 762000
+          },
+          "bbox": [
+            52,
+            540,
+            1150,
+            80
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 18.0,
+          "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "minimumFontSize": 16,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "The result supports model consistency under one fixed protocol. Shared parameters and target trajectories mean it is not evidence of hardware fidelity.",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
           }
         }
       ]
@@ -254,19 +1246,262 @@
     {
       "number": 9,
       "id": "conclusion",
-      "title": "There is no universal winner, but optimized PID is the strongest reliability baseline",
+      "title": "Optimized PID is the strongest reliability baseline",
       "elements": [
         {
+          "type": "text",
           "name": "slide-9-title",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 228600,
+            "width": 11125200,
+            "height": 1066800
+          },
           "bbox": [
             52,
             24,
             1168,
             112
           ],
-          "resolvedFontSize": 36,
+          "withinSlide": true,
+          "resolvedFontSize": 36.0,
+          "resolvedRunFontSizes": [
+            36.0,
+            36.0
+          ],
+          "minimumFontSize": 35,
+          "minimumFontSizePass": true,
           "textLayout": {
-            "lineCount": 2
+            "text": "Optimized PID is the strongest reliability baseline",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "conclusion-metric-1",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 2381250,
+            "width": 3333750,
+            "height": 1143000
+          },
+          "bbox": [
+            52,
+            250,
+            350,
+            120
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 40.5,
+          "resolvedRunFontSizes": [
+            40.5,
+            40.5
+          ],
+          "minimumFontSize": 24,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "8/13",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "conclusion-metric-label-1",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 3733800,
+            "width": 3333750,
+            "height": 952500
+          },
+          "bbox": [
+            52,
+            392,
+            350,
+            100
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 18.0,
+          "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "minimumFontSize": 16,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "manual PID deterministic success",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "conclusion-metric-2",
+          "geometryEmu": {
+            "x": 4324350,
+            "y": 2381250,
+            "width": 3333750,
+            "height": 1143000
+          },
+          "bbox": [
+            454,
+            250,
+            350,
+            120
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 40.5,
+          "resolvedRunFontSizes": [
+            40.5,
+            40.5
+          ],
+          "minimumFontSize": 24,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "9/13",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "conclusion-metric-label-2",
+          "geometryEmu": {
+            "x": 4324350,
+            "y": 3733800,
+            "width": 3333750,
+            "height": 952500
+          },
+          "bbox": [
+            454,
+            392,
+            350,
+            100
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 18.0,
+          "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "minimumFontSize": 16,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "Fuzzy-PID deterministic success",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "conclusion-metric-3",
+          "geometryEmu": {
+            "x": 8153400,
+            "y": 2381250,
+            "width": 3333750,
+            "height": 1143000
+          },
+          "bbox": [
+            856,
+            250,
+            350,
+            120
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 40.5,
+          "resolvedRunFontSizes": [
+            40.5,
+            40.5
+          ],
+          "minimumFontSize": 24,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "10/13",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "conclusion-metric-label-3",
+          "geometryEmu": {
+            "x": 8153400,
+            "y": 3733800,
+            "width": 3333750,
+            "height": 952500
+          },
+          "bbox": [
+            856,
+            392,
+            350,
+            100
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 18.0,
+          "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "minimumFontSize": 16,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "optimized PID deterministic success",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "conclusion-interpretation",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 5143500,
+            "width": 10953750,
+            "height": 762000
+          },
+          "bbox": [
+            52,
+            540,
+            1150,
+            80
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 18.0,
+          "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "minimumFontSize": 16,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "Nominal metrics are mixed across manual PID and Fuzzy-PID; optimized PID provides the best aggregate deterministic and Cartesian reliability, with a torque-slew trade-off under noise.",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
           }
         }
       ]
@@ -274,19 +1509,106 @@
     {
       "number": 10,
       "id": "next-steps",
-      "title": "The validated layer is ready to support the next research step",
+      "title": "Validated layer supports the next research step",
       "elements": [
         {
+          "type": "text",
           "name": "slide-10-title",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 323850,
+            "width": 11125200,
+            "height": 685800
+          },
           "bbox": [
             52,
             34,
             1168,
             72
           ],
-          "resolvedFontSize": 48,
+          "withinSlide": true,
+          "resolvedFontSize": 36.0,
+          "resolvedRunFontSizes": [
+            36.0,
+            36.0
+          ],
+          "minimumFontSize": 35,
+          "minimumFontSizePass": true,
           "textLayout": {
-            "lineCount": 1
+            "text": "Validated layer supports the next research step",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "next-steps-lead",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 1524000,
+            "width": 10668000,
+            "height": 1333500
+          },
+          "bbox": [
+            52,
+            160,
+            1120,
+            140
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 31.5,
+          "resolvedRunFontSizes": [
+            31.5,
+            31.5
+          ],
+          "minimumFontSize": 24,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "The next milestone is to test whether the same evidence discipline survives contact with sensing, hardware uncertainty, and online safety constraints.",
+            "lineCount": 1,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 86243,
+            "overflowGuard": true
+          }
+        },
+        {
+          "type": "text",
+          "name": "next-steps-steps",
+          "geometryEmu": {
+            "x": 495300,
+            "y": 3238500,
+            "width": 10668000,
+            "height": 2571750
+          },
+          "bbox": [
+            52,
+            340,
+            1120,
+            270
+          ],
+          "withinSlide": true,
+          "resolvedFontSize": 21.0,
+          "resolvedRunFontSizes": [
+            21.0,
+            21.0,
+            21.0,
+            21.0,
+            21.0,
+            21.0
+          ],
+          "minimumFontSize": 16,
+          "minimumFontSizePass": true,
+          "textLayout": {
+            "text": "1. Hardware-in-the-loop and physical-arm validation with calibrated uncertainty.\n\n2. Perception and task-planning integration above the existing inner-loop controller layer.\n\n3. Online monitoring, collision avoidance, and explicit safety supervision before deployment.",
+            "lineCount": 5,
+            "wrapMode": "square",
+            "autoFit": "normAutofit",
+            "fontScale": 100000,
+            "overflowGuard": true
           }
         }
       ]
@@ -294,6 +1616,7 @@
   ],
   "checks": {
     "allWithinSlide": true,
+    "allTextOverflowGuarded": true,
     "minimumFontSizesPass": true,
     "notesCount": 10,
     "slideCount": 10

@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 import json
 from pathlib import Path, PurePosixPath
+import subprocess
 
 from scripts.phase7b.evidence import sha256_file
 
@@ -22,6 +23,44 @@ REQUIRED_AUDITED_INPUTS = {
 
 class Phase7BAuditError(ValueError):
     """Raised when the canonical audit cannot authorize Phase 7B delivery."""
+
+
+AUDIT_ONLY_PATHS = {
+    "docs/presentation/PHASE7B_CLAIM_AUDIT.json",
+    "docs/presentation/PHASE7B_CLAIM_AUDIT.md",
+}
+
+
+def _git(root: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", *arguments],
+        cwd=root,
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+
+
+def audited_commit_is_current_or_audit_only_parent(root: Path, audited_commit: str) -> bool:
+    """Accept HEAD, or HEAD^ only when HEAD changes exactly the two audit files."""
+    root = root.resolve(strict=True)
+    current = _git(root, "rev-parse", "HEAD")
+    if current.returncode != 0:
+        return False
+    head = current.stdout.strip().lower()
+    candidate = audited_commit.lower()
+    if candidate == head:
+        return True
+    parent = _git(root, "rev-parse", "HEAD^")
+    if parent.returncode != 0 or candidate != parent.stdout.strip().lower():
+        return False
+    changed = _git(root, "diff", "--name-only", "--diff-filter=ACDMRTUXB", "HEAD^", "HEAD")
+    if changed.returncode != 0:
+        return False
+    paths = {line.strip().replace("\\", "/") for line in changed.stdout.splitlines() if line.strip()}
+    return paths == AUDIT_ONLY_PATHS
 
 
 def _repo_path(root: Path, value: str) -> Path:

@@ -26,22 +26,14 @@ function Get-Sha256 {
     }
 }
 
-function Get-DocxDeclaredPageCount {
+function Get-DocxRenderedPageCount {
     param([string]$DocxPath)
-    Add-Type -AssemblyName System.IO.Compression.FileSystem
-    $archive = [IO.Compression.ZipFile]::OpenRead($DocxPath)
-    try {
-        $entry = $archive.GetEntry('docProps/app.xml')
-        if ($null -eq $entry) { throw 'DOCX is missing docProps/app.xml.' }
-        $reader = [IO.StreamReader]::new($entry.Open(), [Text.Encoding]::UTF8, $true)
-        try { [xml]$properties = $reader.ReadToEnd() } finally { $reader.Dispose() }
-        $pages = $properties.SelectSingleNode("/*[local-name()='Properties']/*[local-name()='Pages']")
-        if ($null -eq $pages -or [int]$pages.InnerText -lt 1) { throw 'DOCX has an invalid declared page count.' }
-        return [int]$pages.InnerText
-    }
-    finally {
-        $archive.Dispose()
-    }
+    $paginationScript = Join-Path $PSScriptRoot 'phase7b\measure_docx_pages.ps1'
+    $output = @(& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $paginationScript -DocxPath $DocxPath -TimeoutSeconds 45 2>&1)
+    if ($LASTEXITCODE -ne 0) { throw "Rendered DOCX pagination failed with exit code $LASTEXITCODE`: $($output -join [Environment]::NewLine)" }
+    $record = $output | Where-Object { $_ -match '^DOCX_RENDERED_PAGE_COUNT=\d+$' } | Select-Object -Last 1
+    if ($null -eq $record) { throw "Rendered DOCX pagination returned no count: $($output -join [Environment]::NewLine)" }
+    return [int]($record -replace '^DOCX_RENDERED_PAGE_COUNT=', '')
 }
 
 function Get-RelativeHashRecord {
@@ -115,6 +107,7 @@ function Write-Phase7BManifest {
         'scripts/phase7b/audit.py',
         'scripts/phase7b/evidence.py',
         'scripts/phase7b/layout.py',
+        'scripts/phase7b/measure_docx_pages.ps1',
         'scripts/phase7b/office.py',
         'scripts/phase7b/summary.py'
     )
@@ -165,7 +158,7 @@ foreach ($requiredPath in @($bundledPython, $bundledNode, $runtimeNodeModules, $
 
 if ($ManifestOnly) {
     $manifestDocx = Join-Path $projectRoot 'docs\summary\research_summary.docx'
-    Write-Phase7BManifest -ProjectRoot $projectRoot -DocxPageCount (Get-DocxDeclaredPageCount -DocxPath $manifestDocx)
+    Write-Phase7BManifest -ProjectRoot $projectRoot -DocxPageCount (Get-DocxRenderedPageCount -DocxPath $manifestDocx)
     Write-Output 'PHASE7B_MANIFEST_REFRESHED'
     return
 }
@@ -199,7 +192,7 @@ try {
         if ((Get-Sha256 -Path $rebuiltDocx) -ne (Get-Sha256 -Path $finalDocx)) {
             throw 'Rebuilt Phase 7B DOCX does not match the reviewed final DOCX.'
         }
-        $docxPageCount = Get-DocxDeclaredPageCount -DocxPath $rebuiltDocx
+        $docxPageCount = Get-DocxRenderedPageCount -DocxPath $rebuiltDocx
     }
     finally {
         if (Test-Path -LiteralPath $rebuildRoot) { Remove-Item -LiteralPath $rebuildRoot -Force -Recurse }
@@ -232,7 +225,7 @@ try {
             Invoke-Checked { & $bundledPython (Join-Path $documentsSkillDir 'render_docx.py') '.\docs\summary\research_summary.docx' --output_dir '.\tmp\phase7b\rendered-docx' --emit_pdf } 'Phase 7B DOCX render failed'
         }
         else {
-            Write-Warning 'LibreOffice is unavailable; DOCX visual rendering is skipped after the one-page OOXML contract passes. The reviewed final PDF is rendered below.'
+            Write-Warning 'LibreOffice is unavailable; DOCX visual rendering is skipped after the real Word pagination gate passes. The reviewed final PDF is rendered below.'
         }
         Invoke-Checked { & $bundledPython (Join-Path $presentationsSkillDir 'container_tools\render_slides.py') '.\docs\summary\research_summary.pdf' --output_dir '.\tmp\phase7b\rendered-pdf' } 'Phase 7B PDF render failed'
         Invoke-Checked { & $bundledPython (Join-Path $presentationsSkillDir 'container_tools\slides_test.py') '.\presentation\final_presentation.pptx' } 'Phase 7B slide overflow check failed'

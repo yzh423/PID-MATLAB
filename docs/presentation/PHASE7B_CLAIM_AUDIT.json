@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "audit_skill": "paper-claim-audit",
-  "verdict": "PASS",
-  "reason_code": "all_numbers_match",
-  "summary": "All 11 claim groups reconcile to the admitted raw evidence; no unsupported, ambiguous, warning, or failing claim was found.",
+  "verdict": "BLOCKED",
+  "reason_code": "products_changed_audit_stale",
+  "summary": "Phase 7B products, verification code, manifest, and layout evidence changed after the prior audit. A separate fresh zero-context audit is required before delivery.",
   "audited_commit": "64dfdc297ab45539a5a4194b68aca8eced584c20",
   "audited_input_hashes": {
     "docs/presentation/phase7b_template.json": "sha256:fceec272a5775e21446a6a3c1ad2e515a232cc8a3d7679c96b6aabaca8467e7c",
@@ -22,6 +22,7 @@
   "reviewer_model": "gpt-5",
   "reviewer_reasoning": "fresh zero-context run11 audit under an explicit no-subagent constraint",
   "generated_at": "2026-08-21T02:25:20Z",
+  "details_status": "historical_stale_do_not_use",
   "details": {
     "total_claims": 11,
     "exact_match": 7,

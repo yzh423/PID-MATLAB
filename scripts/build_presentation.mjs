@@ -32,19 +32,19 @@ function setNotes(slide, slideSpec) {
 }
 
 function addTitle(slide, title, number) {
-  const isTwoLineConclusion = number === 9;
+  const isConclusion = number === 9;
   const box = slide.shapes.add({
     geometry: "textbox",
     name: `slide-${number}-title`,
-    position: isTwoLineConclusion
+    position: isConclusion
       ? { left: 52, top: 24, width: 1168, height: 112 }
       : { left: 52, top: 34, width: 1168, height: 72 },
     fill: "none",
     line: { style: "solid", fill: "none", width: 0 },
   });
-  box.text = isTwoLineConclusion ? title.replace(", but ", ", but\n") : title;
+  box.text = title;
   box.text.style = {
-    fontSize: isTwoLineConclusion ? 36 : 48,
+    fontSize: 48,
     bold: true,
     color: COLORS.ink,
     typeface: "Arial",

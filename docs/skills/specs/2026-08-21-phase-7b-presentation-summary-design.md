@@ -16,7 +16,7 @@ Success means the package is scientifically faithful to the Phase 7A evidence, v
 - The audience is technically literate in robotics or controls but has not read the full report.
 - The presentation is intended for a 10- to 15-minute discussion, so 10 slides is the preferred midpoint of the required 8- to 12-slide range.
 - Visible deliverable content is English because the existing report, repository, and intended faculty-facing use are English.
-- The Phase 7A evidence manifest, selected figures, report, and claim audit are the only quantitative source of truth. Phase 7B does not create new controller experiments.
+- The Phase 7A manifest-admitted raw evidence and selected figures are the quantitative source of truth. The canonical Phase 7B audit is a delivery gate, not evidence. Phase 7B does not create new controller experiments.
 - No institution logo, personal portrait, or unverified affiliation is added.
 - The project title is reused from the verified technical report. No author name is inferred.
 - The current environment has no artifact-template picker, so the default Codex Grid visual route is used.
@@ -43,7 +43,7 @@ The deck contains exactly 10 slides:
 6. **Noise alone is manageable; combined stress is not.** The stochastic chattering figure, isolated-noise 30/30 results, combined-stress 0/30 disclosure, and torque-slew trade-off.
 7. **Task-space evaluation exposes failures hidden by joint metrics.** Cartesian path figure and the four-of-six task result, including the two failed pick-transfer-place cases.
 8. **Independent formulations agree at numerical precision.** Simulink and Multibody agreement, rigid-body audit maxima, and explicit distinction between model consistency and hardware fidelity.
-9. **There is no universal winner, but optimized PID is the strongest reliability baseline.** Joint-specific nominal result, stress-test aggregate, and honest trade-offs.
+9. **Optimized PID is the strongest reliability baseline.** Joint-specific nominal result, stress-test aggregate, and honest trade-offs.
 10. **The validated layer is ready to support the next research step.** Hardware validation, perception/planning integration, and online safety monitoring as bounded future work.
 
 Every slide must:
@@ -68,7 +68,7 @@ The summary is a one-page US Letter portrait document using the `standard_busine
 - limitations and next steps; and
 - a compact source footer tied to the technical report and admitted evidence.
 
-The page must not use tables as prose containers. A three-result strip is allowed as a named visual override, while the remaining content uses headings, short paragraphs, and one figure. The final DOCX and PDF must both render as exactly one page.
+The page must not use tables as prose containers. A three-result strip is allowed as a named visual override, while the remaining content uses headings, short paragraphs, and one figure. The DOCX gate uses actual rendered pagination from a task-owned hidden, read-only Word instance; stale `docProps/app.xml/Pages` metadata is diagnostic only. The independently rendered PDF must also contain exactly one page.
 
 The DOCX and PDF are **two independent canonical renderers** of the same deterministic Phase 7B package. The DOCX renderer uses `python-docx`; the PDF renderer uses ReportLab directly. Semantic equality, source coverage, figure aspect/layout equivalence, and the one-page contract are verified across both outputs. Word export is an optional, non-canonical diagnostic only and is never the canonical PDF gate.
 
@@ -125,7 +125,7 @@ docs/skills/plans/
   2026-08-21-phase-7b-presentation-summary.md
 ```
 
-Intermediate renders, layouts, source notes, package JSON, and Office automation caches remain ignored build outputs.
+Intermediate renders, source notes, and Office automation caches remain ignored build outputs. The final package JSON and hash-bound layout report are tracked verification inputs.
 
 ## Technology and Style
 
@@ -183,14 +183,14 @@ All commands run from the repository root with paths resolved from the bundled w
 - Require 10 slides, contiguous slide numbering, and no unresolved placeholders.
 - Require a `[Sources]` block in every slide's speaker notes.
 - Require all selected figures to be embedded and all externally sourced claims to identify report references.
-- Require title/body minimum font sizes and absence of slide-canvas overflow.
+- Require title/body minimum font sizes and absence of slide-canvas overflow from the tracked report derived from final PPTX OOXML-resolved geometry, text runs, wrapping, and autofit state.
 - Render every slide, inspect every slide PNG at full size, and run the presentation overflow checker.
 
 ### Summary tests
 
 - Require the mandated content sections and exact admitted numbers.
 - Require deterministic DOCX structure, one embedded figure, no unresolved tokens, and no hidden comments or tracked changes.
-- Render DOCX and PDF to PNG, confirm exactly one page, and inspect the page at full size.
+- Measure DOCX actual rendered pagination fail-closed with task-owned Word, render DOCX/PDF pages for visual QA, confirm exactly one page each, and inspect at full size.
 
 ### Reproducibility tests
 

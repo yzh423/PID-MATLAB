@@ -677,6 +677,36 @@ class Phase7BOfficeTests(unittest.TestCase):
             self.assertIn(b'<!-- <a16:creationId id="comment-id"/> -->', normalized)
             self.assertIn(b'<![CDATA[<p14:creationId val="cdata-value"/>]]>', normalized)
 
+    def test_quoted_namespace_text_cannot_spoof_creation_or_relationship_scope(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            package = Path(directory) / "quoted-namespace.pptx"
+            relationship = (
+                b'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+                b'<Relationship Id="R-one" Type="image" Target="../media/image1.png"/>'
+                b'</Relationships>'
+            )
+            slide = (
+                b'<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" '
+                b'xmlns:x="urn:custom" xmlns:o="urn:custom">'
+                b'<x:creationId data=" xmlns:x=\'http://schemas.microsoft.com/office/drawing/2014/main\' '
+                b'xmlns:o=\'http://schemas.openxmlformats.org/officeDocument/2006/relationships\'" '
+                b'id="business-id" o:embed="R-one"/>'
+                b'</p:sld>'
+            )
+            self._write_adversarial_pptx(
+                package, relationship_xml=relationship, slide_xml=slide
+            )
+            normalize_openxml_package(package, ".pptx")
+            with ZipFile(package) as archive:
+                normalized = archive.read("ppt/slides/slide1.xml")
+            self.assertIn(b'id="business-id"', normalized)
+            self.assertIn(b'o:embed="R-one"', normalized)
+            self.assertIn(b"xmlns:x='http://schemas.microsoft.com/office/drawing/2014/main'", normalized)
+            self.assertIn(
+                b"xmlns:o='http://schemas.openxmlformats.org/officeDocument/2006/relationships'",
+                normalized,
+            )
+
     def test_relationship_ids_canonicalize_for_default_and_prefixed_namespaces(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             default = Path(directory) / "default.pptx"

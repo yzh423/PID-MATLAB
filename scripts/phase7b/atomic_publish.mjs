@@ -30,6 +30,7 @@ export async function publishAtomically(finalPath, callbacks) {
     await callbacks.save(temporary);
     await callbacks.validate(temporary);
     await callbacks.normalize(temporary);
+    await callbacks.validate(temporary);
     await replace(temporary, finalPath);
   } finally {
     await fs.rm(temporary, { force: true });

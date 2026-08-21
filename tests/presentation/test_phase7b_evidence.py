@@ -104,6 +104,10 @@ class Phase7BEvidenceTests(unittest.TestCase):
         )
         conclusion = template["deck"]["slides"][8]
         self.assertEqual(
+            conclusion["title"],
+            "Optimized PID is the strongest reliability baseline",
+        )
+        self.assertEqual(
             conclusion["interpretation"],
             "Nominal metrics are mixed across manual PID and Fuzzy-PID; "
             "optimized PID provides the best aggregate deterministic and Cartesian reliability, "
@@ -341,6 +345,7 @@ class Phase7BEvidenceTests(unittest.TestCase):
             "missing stochastic trial": lambda evidence: evidence["stochastic"]["trialRows"].pop(),
             "wrong stochastic status": lambda evidence: evidence["stochastic"]["trialRows"][0].__setitem__("Status", "failed"),
             "wrong cartesian status": lambda evidence: evidence["cartesian"]["runRows"][0].__setitem__("Status", "failed"),
+            "missing cartesian cell": lambda evidence: evidence["cartesian"]["runRows"].pop(),
             "wrong cartesian task": lambda evidence: evidence["cartesian"]["runRows"][0].__setitem__("Task", "unexpected-task"),
             "duplicate cartesian key": lambda evidence: evidence["cartesian"]["runRows"].__setitem__(
                 1, dict(evidence["cartesian"]["runRows"][0])
@@ -353,6 +358,53 @@ class Phase7BEvidenceTests(unittest.TestCase):
                 rewrite_evidence_and_admission(fake_root, mutation)
                 with self.assertRaisesRegex(Phase7BEvidenceError, "identity|cardinality|status"):
                     build_phase7b_package(fake_root)
+
+    def test_cartesian_success_claim_requires_the_exact_keyed_pattern(self) -> None:
+        def swap_success(evidence: dict[str, object], first: tuple[str, str], second: tuple[str, str]) -> None:
+            rows = evidence["cartesian"]["runRows"]
+            keyed = {(row["Controller"], row["Task"]): row for row in rows}
+            keyed[first]["Success"], keyed[second]["Success"] = (
+                keyed[second]["Success"], keyed[first]["Success"]
+            )
+
+        swaps = {
+            "optimized pick-transfer-place exchanged with manual": (
+                ("optimization-pid", "pick-transfer-place"),
+                ("manual-pid", "pick-transfer-place"),
+            ),
+            "manual straight-line exchanged with manual pick-transfer-place": (
+                ("manual-pid", "straight-line"),
+                ("manual-pid", "pick-transfer-place"),
+            ),
+        }
+        for label, (first, second) in swaps.items():
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as directory:
+                fake_root = Path(directory)
+                stage_phase7a_fixture(fake_root)
+                rewrite_evidence_and_admission(
+                    fake_root,
+                    lambda evidence, first=first, second=second: swap_success(evidence, first, second),
+                )
+                with self.assertRaisesRegex(Phase7BEvidenceError, "Cartesian success pattern"):
+                    build_phase7b_package(fake_root)
+
+    def test_combined_deterministic_claim_requires_all_three_keyed_failures(self) -> None:
+        def swap_success(evidence: dict[str, object]) -> None:
+            rows = evidence["deterministic"]["runRows"]
+            keyed = {(row["Controller"], row["Scenario"]): row for row in rows}
+            combined = keyed[("manual-pid", "combined-deterministic")]
+            passing = next(
+                row for (controller, scenario), row in keyed.items()
+                if controller == "manual-pid" and scenario != "combined-deterministic" and row["Success"] is True
+            )
+            combined["Success"], passing["Success"] = passing["Success"], combined["Success"]
+
+        with tempfile.TemporaryDirectory() as directory:
+            fake_root = Path(directory)
+            stage_phase7a_fixture(fake_root)
+            rewrite_evidence_and_admission(fake_root, swap_success)
+            with self.assertRaisesRegex(Phase7BEvidenceError, "combined deterministic"):
+                build_phase7b_package(fake_root)
 
     def test_cartesian_claim_is_derived_by_key_not_row_position(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

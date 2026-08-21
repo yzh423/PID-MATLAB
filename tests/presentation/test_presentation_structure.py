@@ -84,6 +84,21 @@ class PresentationStructureTests(unittest.TestCase):
             text,
         )
 
+    def test_powerpoint_qa_copy_avoids_observed_clipping_and_title_collision(self) -> None:
+        text = pptx_text(PPTX)
+        self.assertIn(
+            "Study: 360 trials (4 scenarios x 3 controllers x 30 fixed seeds).",
+            text,
+        )
+        self.assertNotIn("The full study contains 360 trials:", text)
+        self.assertIn(
+            "Validated layer supports the next research step",
+            text,
+        )
+
+        closing_title = layout_element(10, "slide-10-title")
+        self.assertGreaterEqual(closing_title["resolvedFontSize"], 35)
+
     def test_resolved_title_and_claims_meet_layout_thresholds(self) -> None:
         title = layout_element(9, "slide-9-title")
         self.assertGreaterEqual(title["resolvedFontSize"], 35)
@@ -120,6 +135,19 @@ class PresentationStructureTests(unittest.TestCase):
         self.assertEqual(len(report["slides"]), 10)
         self.assertTrue(report["checks"]["allWithinSlide"])
         self.assertTrue(report["checks"]["minimumFontSizesPass"])
+        self.assertIn("OOXML", report["method"])
+        self.assertGreaterEqual(
+            sum(len(slide["elements"]) for slide in report["slides"]),
+            40,
+            "the report must inventory actual slide elements rather than a hand-picked ledger",
+        )
+        for slide in report["slides"]:
+            for element in slide["elements"]:
+                self.assertIn("geometryEmu", element)
+                self.assertIn("withinSlide", element)
+                if "textLayout" in element:
+                    self.assertIn("wrapMode", element["textLayout"])
+                    self.assertIn("overflowGuard", element["textLayout"])
 
 
 if __name__ == "__main__":

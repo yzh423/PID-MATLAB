@@ -309,15 +309,15 @@ Create `phase7b_template.json` with this complete controlled content:
       {
         "id": "cartesian",
         "title": "Task-space evaluation exposes failures hidden by joint metrics",
-        "claim": "All three controllers pass the straight-line task; only optimized PID passes pick-transfer-place, so 4 of 6 completed task runs meet every gate.",
+        "claim": "All {{phase7b.controllerCount}} controllers pass the straight-line task; only optimized PID passes pick-transfer-place, so {{phase7b.cartesian.successCount}} of {{phase7b.cartesian.completedRunCount}} completed task runs meet every gate.",
         "body": [
           "Manual and Fuzzy-PID complete the pick-transfer-place simulation but fail its quantitative pickup/place criteria.",
-          "Optimized PID records {{cartesian.runRows.5.CartesianRms|.5f}} m RMS and {{cartesian.runRows.5.CartesianMax|.5f}} m maximum Cartesian error."
+          "Optimized PID records {{phase7b.cartesian.optimizedPickTransferPlace.CartesianRms|.5f}} m RMS and {{phase7b.cartesian.optimizedPickTransferPlace.CartesianMax|.5f}} m maximum Cartesian error."
         ],
         "figure": "results/figures/cartesian_tasks_paths.png",
         "figureAlt": "Straight-line and pick-transfer-place Cartesian paths",
         "figureFrame": {"left": 620, "top": 138, "width": 600, "height": 470},
-        "presenterNote": "Completed does not mean successful; retain the two failed completed runs.",
+        "presenterNote": "Completed does not mean successful; retain the {{phase7b.cartesian.failureCount}} failed completed runs.",
         "sources": ["docs/report/technical_report.md", "results/figures/cartesian_tasks_paths.png", "results/data/cartesian_tasks_runs.csv"]
       },
       {
@@ -335,14 +335,14 @@ Create `phase7b_template.json` with this complete controlled content:
       },
       {
         "id": "conclusion",
-        "title": "There is no universal winner, but optimized PID is the strongest reliability baseline",
+        "title": "Optimized PID is the strongest reliability baseline",
         "layout": "metrics",
         "metrics": [
           {"value": "{{deterministic.successCount.manualPid}}/{{deterministic.scenarioCount}}", "label": "manual PID deterministic success"},
           {"value": "{{deterministic.successCount.fuzzyPid}}/{{deterministic.scenarioCount}}", "label": "Fuzzy-PID deterministic success"},
           {"value": "{{deterministic.successCount.optimizedPid}}/{{deterministic.scenarioCount}}", "label": "optimized PID deterministic success"}
         ],
-        "interpretation": "Fuzzy adaptation gives a small nominal joint-2 benefit; optimized PID provides the best aggregate deterministic and Cartesian reliability, with a torque-slew trade-off under noise.",
+        "interpretation": "Nominal metrics are mixed across manual PID and Fuzzy-PID; optimized PID provides the best aggregate deterministic and Cartesian reliability, with a torque-slew trade-off under noise.",
         "presenterNote": "Deliver a conditional conclusion, not a universal-controller claim.",
         "sources": ["docs/report/technical_report.md", "results/report/report_evidence.json"]
       },
@@ -367,15 +367,15 @@ Create `phase7b_template.json` with this complete controlled content:
     "method": "A two-link arm compares manual PID, Mamdani Fuzzy-PID, and bounded optimization-assisted PID under identical 0.001 s simulation, trajectory, torque-limit, threshold, and paired-seed protocols.",
     "results": [
       {"value": "{{optimization.objectiveReductionPercent|.3f}}%", "label": "nominal objective reduction"},
-      {"value": "{{deterministic.successCount.optimizedPid}}/{{deterministic.scenarioCount}}", "label": "deterministic scenarios passed"},
-      {"value": "30/30 vs 0/30", "label": "isolated-noise vs combined-stress trials"}
+      {"value": "{{deterministic.successCount.optimizedPid}}/{{deterministic.scenarioCount}}", "label": "optimized PID deterministic scenarios passed"},
+      {"value": "30/30 vs 0/30", "label": "per controller-scenario cell: isolated-noise cell vs full-combined-stress cell"}
     ],
     "figure": "results/figures/deterministic_robustness_summary.png",
     "figureCaption": "Deterministic stress testing separates aggregate controller reliability while preserving failed cases.",
     "significance": "The project supplies a transparent low-level execution layer that can sit beneath future perception, language, and task-planning systems.",
     "limitations": "Simulation only; no hardware fidelity, collision avoidance, perception, online safety supervisor, or end-to-end embodied-AI implementation is claimed.",
     "nextSteps": "Validate on hardware, add calibrated sensing uncertainty, and introduce runtime safety monitoring before deployment claims.",
-    "sources": ["docs/report/technical_report.md", "results/report/report_evidence.json", "docs/report/PAPER_CLAIM_AUDIT.md"]
+    "sources": ["docs/report/technical_report.md", "results/report/report_evidence.json", "docs/report/build_manifest.json"]
   }
 }
 ```
@@ -850,7 +850,7 @@ The result strip must use real table geometry with column widths summing to the 
 
 - [ ] **Step 5: Export and normalize PDF**
 
-Use `scripts/build_research_summary_pdf.py` as the canonical ReportLab renderer, independently consuming `results/presentation/phase7b_package.json`; normalize that output with the generalized PDF normalizer below. Retain `-UseWordCom` only as a non-canonical diagnostic: restrict paths to `docs/summary`, record the newly owned WINWORD PID, close only that document/process in `finally`, and fail closed if its PID survives. The verifier never substitutes Word output for the canonical PDF.
+Use `scripts/build_research_summary_pdf.py` as the canonical ReportLab renderer, independently consuming `results/presentation/phase7b_package.json`; normalize that output with the generalized PDF normalizer below. Retain `-UseWordCom` only as a non-canonical diagnostic that requires an explicit diagnostic output path and rejects `docs/summary/research_summary.pdf`. Record the newly owned WINWORD PID, close only that document/process in `finally`, and fail closed if its PID survives. The verifier never substitutes Word output for the canonical PDF.
 
 ```python
 FIXED_PDF_DATE = "D:20260821000000+08'00'"
@@ -913,16 +913,17 @@ def test_two_phase7b_builds_are_hash_identical(self) -> None:
 
 `verify_phase7b.ps1` must:
 
-1. validate bundled Node/Python and Word availability;
+1. validate the bundled Node/Python/runtime paths and fail closed if task-owned Word pagination is unavailable;
 2. export the evidence package;
 3. run pre-build Python tests;
 4. build and normalize the PPTX;
-5. build DOCX, export PDF, and normalize both;
+5. rebuild the deterministic DOCX and independently rebuild/normalize the canonical ReportLab PDF;
 6. write the manifest atomically with LF JSON;
 7. run all presentation tests;
 8. render PPTX/DOCX/PDF to ignored directories;
 9. run `slides_test.py`;
-10. confirm 10 slides, 10 notes, one DOCX page, one PDF page, zero placeholders, and no owned WINWORD process.
+10. confirm 10 slides, 10 notes, one actually paginated DOCX page, one PDF page, zero placeholders, and no surviving task-owned WINWORD pagination process;
+11. run the canonical Phase 7B audit gate after manifest publication.
 
 Use command-scoped variables copied exactly from `load_workspace_dependencies`; do not discover or install alternate runtimes.
 

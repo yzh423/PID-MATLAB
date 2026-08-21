@@ -4,7 +4,7 @@
     "sources":  [
                     {
                         "path":  "docs/presentation/phase7b_layout_report.json",
-                        "sha256":  "7b99e01ddf7066019f90a125c8cff2c1dc0fb76a1d5ec1936aa9cd862e8df894"
+                        "sha256":  "2218bd42ae19ec400735abfa2555cba4e3210523021c3e34e66a383f7c832ca9"
                     },
                     {
                         "path":  "docs/presentation/phase7b_raw_evidence.json",
@@ -12,7 +12,7 @@
                     },
                     {
                         "path":  "docs/presentation/phase7b_template.json",
-                        "sha256":  "fceec272a5775e21446a6a3c1ad2e515a232cc8a3d7679c96b6aabaca8467e7c"
+                        "sha256":  "def36f35ed727e967433b74b2049c019396a4e3552fc914bb2e431476b2fa2f8"
                     },
                     {
                         "path":  "docs/report/build_manifest.json",
@@ -100,7 +100,7 @@
                     },
                     {
                         "path":  "results/presentation/phase7b_package.json",
-                        "sha256":  "8e85522427fcbbe16ac8262f14fa76280b3d24535eb8d5755643ed77c3eecc79"
+                        "sha256":  "370ace654d63d09cdf92ef733d6e2ee405e6a31d00d6c1073673c372136ba488"
                     },
                     {
                         "path":  "results/report/report_evidence.json",
@@ -108,7 +108,7 @@
                     },
                     {
                         "path":  "scripts/build_presentation.mjs",
-                        "sha256":  "2de71840055db8e60e4fb16ea0cb5bd7f214d74c68a856ec31c6a7a948a72f3c"
+                        "sha256":  "0163e322a87852afabc17296b52a47286ab5b53fa9fe24d68ef28d00cbbc67e5"
                     },
                     {
                         "path":  "scripts/build_research_summary.py",
@@ -124,7 +124,7 @@
                     },
                     {
                         "path":  "scripts/export_research_summary_pdf.ps1",
-                        "sha256":  "b024f20cc2d2f70da35f073e46be3a28f77130f3a3166e5af86433df9969bf2a"
+                        "sha256":  "7f7dd1b969cd6c369611287aeee02324f666601b1581446163d10c37af0e3ffc"
                     },
                     {
                         "path":  "scripts/generate_phase7b_layout_report.py",
@@ -140,23 +140,27 @@
                     },
                     {
                         "path":  "scripts/phase7b/atomic_publish.mjs",
-                        "sha256":  "cfda68d4051e19a1f2923360244e70987eca8001cc675e5169b48d17e3f01c43"
+                        "sha256":  "f2fc252b7f6f69f93a90baf837185b9fe9a0f7b0c3ac97449f8fe6269c5e207f"
                     },
                     {
                         "path":  "scripts/phase7b/audit.py",
-                        "sha256":  "808ec2858523f83520ac11d94335cf62ccbb8ca900093d1aa3d821d133c99243"
+                        "sha256":  "78eeb44f13eabbcf477e07fe253ba2f0c70849e9a66d2af17ecda5026327aa01"
                     },
                     {
                         "path":  "scripts/phase7b/evidence.py",
-                        "sha256":  "e532af605f52877926b0857307dafcc9607582850d9736794d6e6bc630a74658"
+                        "sha256":  "44183bb4230eff0c8c9c3d046a445cf1bd6cbc1e774df9a041db9d50684d6a70"
                     },
                     {
                         "path":  "scripts/phase7b/layout.py",
-                        "sha256":  "6f987a2f2f11775cd49ff343191d36c3a5ea5c90cf4444d1c764896e2d96098e"
+                        "sha256":  "e9a0421812f41086af5517ed0f6c2364f1787d85ae1300a89654efeb59c596b2"
+                    },
+                    {
+                        "path":  "scripts/phase7b/measure_docx_pages.ps1",
+                        "sha256":  "3bca3c33645758877587e3699d74c78423b3360984e1485eed1549fa3ee717a7"
                     },
                     {
                         "path":  "scripts/phase7b/office.py",
-                        "sha256":  "ecabeb4888e19ffd9251bae218755190c25d112b69d233d244fac64fc4e914fc"
+                        "sha256":  "0bba9f23c945d6af8c9fe2d9814f3e6cbf2285c23e949463cf6fd435bdfff296"
                     },
                     {
                         "path":  "scripts/phase7b/summary.py",
@@ -164,11 +168,11 @@
                     },
                     {
                         "path":  "scripts/verify_phase7b.ps1",
-                        "sha256":  "9f23302a497703661b4eb1a7c5fc71c537ee1fd0b0c168b3621605eeef2e2c8c"
+                        "sha256":  "308dc9afa443038d623b825e4731a176ab4dc84a540957d2b8c932da3cc8578f"
                     },
                     {
                         "path":  "scripts/verify_phase7b_audit.py",
-                        "sha256":  "7e3db8351d79343c0c80d6e2f1fdd45f3337e3038bb668f065e4e300449a5916"
+                        "sha256":  "0a66b6bb40778966ab664548d23efe3259cca2246216808df6e6a0c183ce4d22"
                     }
                 ],
     "outputs":  [
@@ -182,7 +186,7 @@
                     },
                     {
                         "path":  "presentation/final_presentation.pptx",
-                        "sha256":  "0fd8abda808d3c258a3d1900e701e362a3943343e0b1c977c6666c3d7ea737af"
+                        "sha256":  "2dc18d8e4a7d96edf80ee41cfab650670844446fd4facb48e6cfc4872a230299"
                     }
                 ],
     "document":  {

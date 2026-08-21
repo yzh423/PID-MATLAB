@@ -53,14 +53,21 @@ function Assert-OwnedWordProcessesExited {
 
 $resolvedProjectRoot = (Resolve-Path -LiteralPath $ProjectRoot).Path
 $summaryRoot = (Resolve-Path -LiteralPath (Join-Path $resolvedProjectRoot 'docs\summary')).Path
+$canonicalPdf = Join-Path $summaryRoot 'research_summary.pdf'
+if ($UseWordCom -and [string]::IsNullOrWhiteSpace($PdfPath)) {
+    throw 'Word COM diagnostics require an explicit non-canonical diagnostic PDF output path.'
+}
 if ([string]::IsNullOrWhiteSpace($DocxPath)) {
     $DocxPath = Join-Path $summaryRoot 'research_summary.docx'
 }
 if ([string]::IsNullOrWhiteSpace($PdfPath)) {
-    $PdfPath = Join-Path $summaryRoot 'research_summary.pdf'
+    $PdfPath = $canonicalPdf
 }
 $resolvedDocx = (Resolve-Path -LiteralPath $DocxPath).Path
 $resolvedPdf = [IO.Path]::GetFullPath($PdfPath)
+if ($UseWordCom -and [StringComparer]::OrdinalIgnoreCase.Equals($resolvedPdf, $canonicalPdf)) {
+    throw 'Word COM diagnostics cannot target the canonical research_summary.pdf.'
+}
 
 if ([IO.Path]::GetExtension($resolvedDocx) -ine '.docx') { throw 'Input path must use the .docx extension.' }
 if ([IO.Path]::GetExtension($resolvedPdf) -ine '.pdf') { throw 'Output path must use the .pdf extension.' }
