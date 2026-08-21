@@ -1,7 +1,7 @@
 # Phase 7B Claim Audit Report — run10
 
-**Date:** 2026-08-21  
-**Audited commit:** `1d7be155f760f21b73f071389cfafde59f6fdbe4`  
+**Date:** 2026-08-21
+**Audited commit:** `1d7be155f760f21b73f071389cfafde59f6fdbe4`
 **Method:** fresh zero-context audit using only the current Phase 7B PPTX/DOCX/PDF/package/template/manifest and Phase 7A manifest, report evidence, raw MAT/CSV, and admitted PNG files.
 
 ## Overall verdict: PASS
