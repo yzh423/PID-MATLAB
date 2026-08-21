@@ -1,0 +1,435 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-21T00:00:00Z",
+  "deck": {
+    "title": "Reliable Robotic Manipulation Through Evidence-Grounded PID and Fuzzy-PID Evaluation",
+    "slides": [
+      {
+        "id": "opening",
+        "title": "Reliable control enables action",
+        "subtitle": "Evidence-grounded PID and Fuzzy-PID evaluation for a 2-link manipulator",
+        "figure": "results/figures/multibody_cross_validation_tracking.png",
+        "figureAlt": "MATLAB and Simscape Multibody end-effector tracking comparison",
+        "figureFrame": {
+          "left": 680,
+          "top": 92,
+          "width": 540,
+          "height": 500
+        },
+        "presenterNote": "Frame the project as a validated execution layer rather than an end-to-end robot intelligence stack.",
+        "sources": [
+          "docs/report/technical_report.md",
+          "results/figures/multibody_cross_validation_tracking.png"
+        ]
+      },
+      {
+        "id": "problem",
+        "title": "Nominal success does not prove reliable manipulation",
+        "claim": "Controller choice must survive changes in payload, configuration, noise, disturbance, and actuator authority.",
+        "body": [
+          "A controller can pass one nominal trajectory and still fail when uncertainties interact.",
+          "This study therefore reports failed completed runs instead of filtering them from averages.",
+          "All conclusions are simulation-only; no hardware safety or fidelity claim is made."
+        ],
+        "figure": "results/figures/nominal_pid_vs_fuzzy_tracking.png",
+        "figureAlt": "Nominal PID and Fuzzy-PID joint tracking comparison",
+        "figureFrame": {
+          "left": 620,
+          "top": 138,
+          "width": 600,
+          "height": 470
+        },
+        "presenterNote": "Use the nominal plot to motivate why the later stress matrix is necessary.",
+        "sources": [
+          "docs/report/technical_report.md",
+          "results/figures/nominal_pid_vs_fuzzy_tracking.png"
+        ]
+      },
+      {
+        "id": "protocol",
+        "title": "Every controller follows the same protocol",
+        "layout": "metrics",
+        "metrics": [
+          {
+            "value": "0.001 s",
+            "label": "fixed sample time"
+          },
+          {
+            "value": "5.0 s",
+            "label": "nominal duration"
+          },
+          {
+            "value": "5001",
+            "label": "samples per nominal run"
+          }
+        ],
+        "interpretation": "Manual PID, Mamdani Fuzzy-PID, and optimized PID use identical robot parameters, torque limits, trajectories, thresholds, and random seeds.",
+        "presenterNote": "Emphasize fairness before discussing controller rankings.",
+        "sources": [
+          "docs/report/technical_report.md",
+          "results/report/report_evidence.json"
+        ]
+      },
+      {
+        "id": "optimization",
+        "title": "Optimization improves PID under a fixed protocol",
+        "claim": "Optimization lowers the nominal objective 7.283% and the held-out payload objective from 0.214504 to 0.197284.",
+        "body": [
+          "The search converges with exit flag 1 after 12 iterations and 96 evaluations.",
+          "Only PID gains change; the plant, torque limits, trajectory, objective, and evaluation thresholds remain fixed."
+        ],
+        "figure": "results/figures/pid_optimization_objective.png",
+        "figureAlt": "PID optimization objective history",
+        "figureFrame": {
+          "left": 620,
+          "top": 138,
+          "width": 600,
+          "height": 470
+        },
+        "presenterNote": "Separate tuning evidence from reliability evidence: a lower objective does not prove universal robustness.",
+        "sources": [
+          "docs/report/technical_report.md",
+          "results/figures/pid_optimization_objective.png",
+          "results/data/pid_optimization.mat"
+        ]
+      },
+      {
+        "id": "deterministic",
+        "title": "Deterministic stress separates controller reliability",
+        "claim": "Success rises from 8/13 for manual PID to 9/13 for Fuzzy-PID and 10/13 for optimized PID.",
+        "body": [
+          "The matrix contains 39 controller-scenario runs across nominal, payload, configuration, uncertainty, disturbance, actuator, and combined conditions.",
+          "All 3 controllers fail the combined deterministic case, so the ranking is comparative rather than a safety guarantee."
+        ],
+        "figure": "results/figures/deterministic_robustness_summary.png",
+        "figureAlt": "Deterministic robustness success counts and error summary",
+        "figureFrame": {
+          "left": 620,
+          "top": 138,
+          "width": 600,
+          "height": 470
+        },
+        "presenterNote": "State both the aggregate ranking and the shared combined-condition failure.",
+        "sources": [
+          "docs/report/technical_report.md",
+          "results/figures/deterministic_robustness_summary.png",
+          "results/data/deterministic_robustness_summary.csv",
+          "results/data/deterministic_robustness_runs.csv"
+        ]
+      },
+      {
+        "id": "stochastic",
+        "title": "Noise alone is manageable; combined stress is not",
+        "claim": "Each isolated-noise cell passes 30/30 paired trials, while every combined-stress cell passes 0/30.",
+        "body": [
+          "Study: 360 trials (4 scenarios x 3 controllers x 30 fixed seeds).",
+          "At high noise, optimized PID has the lowest tracking error but the highest mean torque slew (2888.34 N m/s)."
+        ],
+        "figure": "results/figures/stochastic_robustness_chattering.png",
+        "figureAlt": "Stochastic robustness torque-slew comparison",
+        "figureFrame": {
+          "left": 620,
+          "top": 138,
+          "width": 600,
+          "height": 470
+        },
+        "presenterNote": "Use the paired-seed design to explain why the controller comparison is fair.",
+        "sources": [
+          "docs/report/technical_report.md",
+          "results/figures/stochastic_robustness_chattering.png",
+          "results/data/stochastic_robustness_summary.csv",
+          "results/data/stochastic_robustness_trials.csv"
+        ]
+      },
+      {
+        "id": "cartesian",
+        "title": "Task-space tests expose hidden failures",
+        "claim": "All 3 controllers pass straight-line; only optimized PID passes pick-transfer-place, so 4 of 6 task runs pass every gate.",
+        "body": [
+          "Manual and Fuzzy-PID complete the pick-transfer-place simulation but fail its quantitative pickup/place criteria.",
+          "Optimized PID records 0.01422 m RMS and 0.02970 m maximum Cartesian error."
+        ],
+        "figure": "results/figures/cartesian_tasks_paths.png",
+        "figureAlt": "Straight-line and pick-transfer-place Cartesian paths",
+        "figureFrame": {
+          "left": 620,
+          "top": 138,
+          "width": 600,
+          "height": 470
+        },
+        "presenterNote": "Completed does not mean successful; retain the 2 failed completed runs.",
+        "sources": [
+          "docs/report/technical_report.md",
+          "results/figures/cartesian_tasks_paths.png",
+          "results/data/cartesian_tasks_runs.csv"
+        ]
+      },
+      {
+        "id": "cross-validation",
+        "title": "Independent formulations agree numerically",
+        "layout": "metrics",
+        "metrics": [
+          {
+            "value": "2/2",
+            "label": "Simulink agreement and tracking passes"
+          },
+          {
+            "value": "2/2",
+            "label": "Multibody agreement and tracking passes"
+          },
+          {
+            "value": "3.34e-16 m",
+            "label": "worst end-effector difference"
+          }
+        ],
+        "interpretation": "The result supports model consistency under one fixed protocol. Shared parameters and target trajectories mean it is not evidence of hardware fidelity.",
+        "presenterNote": "Distinguish independent formulation from independent physical validation.",
+        "sources": [
+          "docs/report/technical_report.md",
+          "results/data/simulink_cross_validation.mat",
+          "results/data/multibody_cross_validation.mat"
+        ]
+      },
+      {
+        "id": "conclusion",
+        "title": "Optimized PID is the strongest reliability baseline",
+        "layout": "metrics",
+        "metrics": [
+          {
+            "value": "8/13",
+            "label": "manual PID deterministic success"
+          },
+          {
+            "value": "9/13",
+            "label": "Fuzzy-PID deterministic success"
+          },
+          {
+            "value": "10/13",
+            "label": "optimized PID deterministic success"
+          }
+        ],
+        "interpretation": "Nominal metrics are mixed across manual PID and Fuzzy-PID; optimized PID provides the best aggregate deterministic and Cartesian reliability, with a torque-slew trade-off under noise.",
+        "presenterNote": "Deliver a conditional conclusion, not a universal-controller claim.",
+        "sources": [
+          "docs/report/technical_report.md",
+          "results/report/report_evidence.json"
+        ]
+      },
+      {
+        "id": "next-steps",
+        "title": "Validated layer supports the next research step",
+        "claim": "The next milestone is to test whether the same evidence discipline survives contact with sensing, hardware uncertainty, and online safety constraints.",
+        "body": [
+          "1. Hardware-in-the-loop and physical-arm validation with calibrated uncertainty.",
+          "2. Perception and task-planning integration above the existing inner-loop controller layer.",
+          "3. Online monitoring, collision avoidance, and explicit safety supervision before deployment."
+        ],
+        "presenterNote": "Close by resolving the opening: the low-level layer is validated for simulation and bounded next research is clear.",
+        "sources": [
+          "docs/report/technical_report.md",
+          "docs/report/references.json"
+        ]
+      }
+    ]
+  },
+  "summary": {
+    "title": "Reliable Robotic Manipulation Through Evidence-Grounded Control",
+    "takeaway": "Across identical simulation protocols, optimized PID produced the strongest aggregate reliability while no controller dominated every condition.",
+    "problem": "Reliable manipulation requires more than nominal trajectory tracking: controllers must remain interpretable under payload, configuration, disturbance, noise, and actuator changes.",
+    "method": "A 2-link arm compares manual PID, Mamdani Fuzzy-PID, and bounded optimization-assisted PID under identical 0.001 s simulation, trajectory, torque-limit, threshold, and paired-seed protocols.",
+    "results": [
+      {
+        "value": "7.283%",
+        "label": "nominal objective reduction"
+      },
+      {
+        "value": "10/13",
+        "label": "optimized PID deterministic scenarios passed"
+      },
+      {
+        "value": "30/30 vs 0/30",
+        "label": "per controller-scenario cell: isolated-noise cell vs full-combined-stress cell"
+      }
+    ],
+    "figure": "results/figures/deterministic_robustness_summary.png",
+    "figureCaption": "Deterministic stress testing separates aggregate controller reliability while preserving failed cases.",
+    "significance": "The project supplies a transparent low-level execution layer that can sit beneath future perception, language, and task-planning systems.",
+    "limitations": "Simulation only; no hardware fidelity, collision avoidance, perception, online safety supervisor, or end-to-end embodied-AI implementation is claimed.",
+    "nextSteps": "Validate on hardware, add calibrated sensing uncertainty, and introduce runtime safety monitoring before deployment claims.",
+    "sources": [
+      "docs/report/technical_report.md",
+      "results/report/report_evidence.json",
+      "docs/report/build_manifest.json"
+    ]
+  },
+  "selectedFigures": [
+    {
+      "path": "results/figures/multibody_cross_validation_tracking.png",
+      "sha256": "3bd780e3dfddb099659271c277ec1c133040178d54b69d1c9a43a48cb50da4f9"
+    },
+    {
+      "path": "results/figures/nominal_pid_vs_fuzzy_tracking.png",
+      "sha256": "af83a683500dc25559464801dae66fde87eeaa1b03dbd918180bfb4e3c55d84a"
+    },
+    {
+      "path": "results/figures/pid_optimization_objective.png",
+      "sha256": "95215e3025e328f6ce4d36e5ba39c57d00da99b6feeb9a233fbb1e9533d05058"
+    },
+    {
+      "path": "results/figures/deterministic_robustness_summary.png",
+      "sha256": "92a0c6889e6171d1b4f5811d20cc28a272aca7990a45a6483fa6bf74718d2759"
+    },
+    {
+      "path": "results/figures/stochastic_robustness_chattering.png",
+      "sha256": "ac368ef40a76090faec46a7b79ab0ea8df5490ac1c7d24d0f7929d7239930303"
+    },
+    {
+      "path": "results/figures/cartesian_tasks_paths.png",
+      "sha256": "7765ca66a9dde0f9cdb20bee13bd89182d1f3a4767c2a9e6d4d66c1160487d13"
+    }
+  ],
+  "usedEvidenceTokens": [
+    "deterministic.runCount",
+    "deterministic.scenarioCount",
+    "deterministic.successCount.fuzzyPid",
+    "deterministic.successCount.manualPid",
+    "deterministic.successCount.optimizedPid",
+    "multibody.endEffectorMaxWorst",
+    "multibody.runCount",
+    "optimization.exitFlag",
+    "optimization.functionEvaluations",
+    "optimization.heldOutFinalObjective",
+    "optimization.heldOutInitialObjective",
+    "optimization.iterations",
+    "optimization.objectiveReductionPercent",
+    "phase7b.cartesian.completedRunCount",
+    "phase7b.cartesian.failureCount",
+    "phase7b.cartesian.optimizedPickTransferPlace.CartesianMax",
+    "phase7b.cartesian.optimizedPickTransferPlace.CartesianRms",
+    "phase7b.cartesian.successCount",
+    "phase7b.controllerCount",
+    "phase7b.linkCount",
+    "phase7b.stochastic.combinedStress.successCount",
+    "phase7b.stochastic.combinedStress.trialCount",
+    "phase7b.stochastic.isolatedNoise.successCount",
+    "phase7b.stochastic.isolatedNoise.trialCount",
+    "protocol.nominalDurationS",
+    "protocol.nominalSampleCount",
+    "protocol.sampleTimeS",
+    "protocol.stochasticTrialsPerScenario",
+    "simulink.runCount",
+    "stochastic.highNoiseMeanTorqueSlew.optimizedPid",
+    "stochastic.scenarioCount",
+    "stochastic.trialCount"
+  ],
+  "phase7aSourceHashes": {
+    "manifest": {
+      "path": "docs/report/build_manifest.json",
+      "sha256": "e91e88998090384f22bc76620d900cd65df08f940d4aa06885cc29d35b0a5bdb"
+    },
+    "evidence": {
+      "path": "results/report/report_evidence.json",
+      "sha256": "9495b9193b484f0622a3513779bcd2ed4b75d24e9710f4412b89a68da8237678"
+    },
+    "sources": [
+      {
+        "path": "docs/report/technical_report_template.md",
+        "sha256": "e7e88982b4ca1ab31dc82e6c4138022fffc32674eff221065283b15fa6ef0d7d"
+      },
+      {
+        "path": "docs/report/references.json",
+        "sha256": "5f4397716d25e3235003064a863b4154132c05ef9283b0777eb6db680c4eb019"
+      },
+      {
+        "path": "results/report/report_evidence.json",
+        "sha256": "9495b9193b484f0622a3513779bcd2ed4b75d24e9710f4412b89a68da8237678"
+      },
+      {
+        "path": "results/figures/nominal_pid_vs_fuzzy_tracking.png",
+        "sha256": "af83a683500dc25559464801dae66fde87eeaa1b03dbd918180bfb4e3c55d84a"
+      },
+      {
+        "path": "results/figures/pid_optimization_objective.png",
+        "sha256": "95215e3025e328f6ce4d36e5ba39c57d00da99b6feeb9a233fbb1e9533d05058"
+      },
+      {
+        "path": "results/figures/deterministic_robustness_summary.png",
+        "sha256": "92a0c6889e6171d1b4f5811d20cc28a272aca7990a45a6483fa6bf74718d2759"
+      },
+      {
+        "path": "results/figures/stochastic_robustness_chattering.png",
+        "sha256": "ac368ef40a76090faec46a7b79ab0ea8df5490ac1c7d24d0f7929d7239930303"
+      },
+      {
+        "path": "results/figures/cartesian_tasks_paths.png",
+        "sha256": "7765ca66a9dde0f9cdb20bee13bd89182d1f3a4767c2a9e6d4d66c1160487d13"
+      },
+      {
+        "path": "results/figures/multibody_cross_validation_tracking.png",
+        "sha256": "3bd780e3dfddb099659271c277ec1c133040178d54b69d1c9a43a48cb50da4f9"
+      }
+    ],
+    "rawEvidence": [
+      {
+        "path": "results/data/nominal_pid_vs_fuzzy.mat",
+        "sha256": "759072fe594e5df4fc8e465e6807899ae8d983e91e06239f2d7e92bb8bdf1ab4"
+      },
+      {
+        "path": "results/data/pid_optimization.mat",
+        "sha256": "02c37925822b51ff44217162e11ed69aeabb0f65d84a68e9da215e3f06f78437"
+      },
+      {
+        "path": "results/data/deterministic_robustness.mat",
+        "sha256": "ccd563826228f878bc0dd712e6448c359335c0a630b1b2e1f9c4588739ef10d1"
+      },
+      {
+        "path": "results/data/stochastic_robustness.mat",
+        "sha256": "5ee2a8a1f797a99a1c0ff511b6ae5984d4fd57a13fcad4b0f10e76c3d1b8404d"
+      },
+      {
+        "path": "results/data/cartesian_tasks.mat",
+        "sha256": "83d6d75cbff62d3a57ece2be3c32971a531c7444732381b7d2e61e299435ef27"
+      },
+      {
+        "path": "results/data/simulink_cross_validation.mat",
+        "sha256": "2e33db6a5901645c8d575817a0384ae686b9c9b0caff9b42ebe16c47c51ccde9"
+      },
+      {
+        "path": "results/data/multibody_cross_validation.mat",
+        "sha256": "d76b02921100511ecbaa462ebd5c44fc7621ad29a2def18d16c2df1e2ba81029"
+      },
+      {
+        "path": "results/data/deterministic_robustness_runs.csv",
+        "sha256": "9d0ddfd0c297fa43df351695d54c8a3ad427845ece588eaee79f4635c99dc8e0"
+      },
+      {
+        "path": "results/data/deterministic_robustness_summary.csv",
+        "sha256": "1041f7b8a57b382bdd4ce7dc152f029cebac40b428f05f03b1de7085dd8c702c"
+      },
+      {
+        "path": "results/data/stochastic_robustness_trials.csv",
+        "sha256": "5beaa1a23eb26b83f810ecae9f1937c8c1926870627d00bd590edf1ffde8b3e6"
+      },
+      {
+        "path": "results/data/stochastic_robustness_summary.csv",
+        "sha256": "083188735f2e5636f3f7272825188f6f02a45185a19936e4e603021663c257cd"
+      },
+      {
+        "path": "results/data/cartesian_tasks_runs.csv",
+        "sha256": "51d038f74682f3f371d13a95f883cff731517389b29425aae14255ba1535faa9"
+      },
+      {
+        "path": "results/data/simulink_cross_validation_runs.csv",
+        "sha256": "6427d4d6f85c75dc0b7f4cc836a3360b0ba963d1eea513f9289a179d1ded2e43"
+      },
+      {
+        "path": "results/data/multibody_cross_validation_runs.csv",
+        "sha256": "c69a5daa5552f2ed79ba176c3935b3dfe3157e3e9334e4dcee21f8b3fda112d0"
+      }
+    ],
+    "rawEvidenceLedger": {
+      "path": "docs/presentation/phase7b_raw_evidence.json",
+      "sha256": "293d17c4538544d19d904ed4d92df31271fadde9f66fedddcd9c2207dec3fe5b"
+    }
+  }
+}

@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { Presentation, PresentationFile } from "@oai/artifact-tool";
-import { publishAtomically, validatePptxStructure } from "./phase7b/atomic_publish.mjs";
+import { publishArtifactSetAtomically, validatePptxStructure } from "./phase7b/atomic_publish.mjs";
 
 const SIZE = { width: 1280, height: 720 };
 const COLORS = {
@@ -246,17 +246,44 @@ async function main() {
   await writePreviews(presentation, outputDirectory);
   await writeSourceNotes(root, packageData.deck.slides);
   const output = path.join(root, "presentation/final_presentation.pptx");
+  const layoutOutput = path.join(root, "docs/presentation/phase7b_layout_report.json");
+  const packagePath = path.join(root, "results/presentation/phase7b_package.json");
   const exported = await PresentationFile.exportPptx(presentation);
-  await publishAtomically(output, {
-    save: async (temporary) => exported.save(temporary),
-    validate: validatePptxStructure,
-    normalize: async (temporary) => normalizePptx(root, python, temporary),
+  let pptxCandidate;
+  await publishArtifactSetAtomically([
+    {
+      finalPath: output,
+      save: async (temporary) => {
+        pptxCandidate = temporary;
+        await exported.save(temporary);
+        await validatePptxStructure(temporary);
+        await normalizePptx(root, python, temporary);
+        await validatePptxStructure(temporary);
+        await runChecked(
+          python,
+          [path.join(root, "scripts/validate_phase7b_pptx.py"), "--project-root", root, "--pptx", temporary, "--package", packagePath],
+          "Phase 7B staged PPTX deep validation",
+        );
+      },
+    },
+    {
+      finalPath: layoutOutput,
+      save: async (temporary) => runChecked(
+        python,
+        [path.join(root, "scripts/generate_phase7b_layout_report.py"), "--project-root", root,
+          "--pptx", pptxCandidate, "--package", packagePath, "--output", temporary],
+        "Phase 7B staged layout report generation",
+      ),
+    },
+  ], {
+    validate: async (artifacts) => {
+      await validatePptxStructure(artifacts[0].temporary);
+      const layout = JSON.parse(await fs.readFile(artifacts[1].temporary, "utf8"));
+      for (const gate of ["allWithinSlide", "allTextOverflowGuarded", "allTextClippingFree", "noCollisions", "minimumFontSizesPass"]) {
+        if (layout.checks?.[gate] !== true) throw new Error(`Phase 7B staged layout gate failed: ${gate}`);
+      }
+    },
   });
-  await runChecked(
-    python,
-    [path.join(root, "scripts/generate_phase7b_layout_report.py"), "--project-root", root],
-    "Phase 7B layout report generation",
-  );
 }
 
 main().catch((error) => {

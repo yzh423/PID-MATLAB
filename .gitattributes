@@ -32,6 +32,7 @@
 /scripts/normalize_research_summary_pdf.py text eol=lf
 /scripts/verify_phase7b.ps1 text eol=lf
 /scripts/verify_phase7b_audit.py text eol=lf
+/scripts/validate_phase7b_pptx.py text eol=lf
 /tests/presentation/** text eol=lf
 /presentation/*.pptx binary
 /docs/summary/*.docx binary

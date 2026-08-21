@@ -6,7 +6,7 @@
     "slides": [
       {
         "id": "opening",
-        "title": "Reliable execution connects plans to physical action",
+        "title": "Reliable control enables action",
         "subtitle": "Evidence-grounded PID and Fuzzy-PID evaluation for a {{phase7b.linkCount}}-link manipulator",
         "figure": "results/figures/multibody_cross_validation_tracking.png",
         "figureAlt": "MATLAB and Simscape Multibody end-effector tracking comparison",
@@ -16,8 +16,8 @@
       },
       {
         "id": "problem",
-        "title": "Nominal success is not enough to claim reliable manipulation",
-        "claim": "The central question is how controller choices survive controlled changes in payload, configuration, noise, disturbance, and actuator authority.",
+        "title": "Nominal success does not prove reliable manipulation",
+        "claim": "Controller choice must survive changes in payload, configuration, noise, disturbance, and actuator authority.",
         "body": [
           "A controller can pass one nominal trajectory and still fail when uncertainties interact.",
           "This study therefore reports failed completed runs instead of filtering them from averages.",
@@ -31,7 +31,7 @@
       },
       {
         "id": "protocol",
-        "title": "Every controller faces the same plant, trajectory, limits, and metrics",
+        "title": "Every controller follows the same protocol",
         "layout": "metrics",
         "metrics": [
           {"value": "{{protocol.sampleTimeS|.3f}} s", "label": "fixed sample time"},
@@ -44,8 +44,8 @@
       },
       {
         "id": "optimization",
-        "title": "Optimization improves the baseline without changing the protocol",
-        "claim": "The bounded search reduces the nominal objective by {{optimization.objectiveReductionPercent|.3f}}% and improves the held-out payload objective from {{optimization.heldOutInitialObjective|.6f}} to {{optimization.heldOutFinalObjective|.6f}}.",
+        "title": "Optimization improves PID under a fixed protocol",
+        "claim": "Optimization lowers the nominal objective {{optimization.objectiveReductionPercent|.3f}}% and the held-out payload objective from {{optimization.heldOutInitialObjective|.6f}} to {{optimization.heldOutFinalObjective|.6f}}.",
         "body": [
           "The search converges with exit flag {{optimization.exitFlag}} after {{optimization.iterations}} iterations and {{optimization.functionEvaluations}} evaluations.",
           "Only PID gains change; the plant, torque limits, trajectory, objective, and evaluation thresholds remain fixed."
@@ -58,7 +58,7 @@
       },
       {
         "id": "deterministic",
-        "title": "Reliability separates the controllers under deterministic stress",
+        "title": "Deterministic stress separates controller reliability",
         "claim": "Success rises from {{deterministic.successCount.manualPid}}/{{deterministic.scenarioCount}} for manual PID to {{deterministic.successCount.fuzzyPid}}/{{deterministic.scenarioCount}} for Fuzzy-PID and {{deterministic.successCount.optimizedPid}}/{{deterministic.scenarioCount}} for optimized PID.",
         "body": [
           "The matrix contains {{deterministic.runCount}} controller-scenario runs across nominal, payload, configuration, uncertainty, disturbance, actuator, and combined conditions.",
@@ -86,8 +86,8 @@
       },
       {
         "id": "cartesian",
-        "title": "Task-space evaluation exposes failures hidden by joint metrics",
-        "claim": "All {{phase7b.controllerCount}} controllers pass the straight-line task; only optimized PID passes pick-transfer-place, so {{phase7b.cartesian.successCount}} of {{phase7b.cartesian.completedRunCount}} completed task runs meet every gate.",
+        "title": "Task-space tests expose hidden failures",
+        "claim": "All {{phase7b.controllerCount}} controllers pass straight-line; only optimized PID passes pick-transfer-place, so {{phase7b.cartesian.successCount}} of {{phase7b.cartesian.completedRunCount}} task runs pass every gate.",
         "body": [
           "Manual and Fuzzy-PID complete the pick-transfer-place simulation but fail its quantitative pickup/place criteria.",
           "Optimized PID records {{phase7b.cartesian.optimizedPickTransferPlace.CartesianRms|.5f}} m RMS and {{phase7b.cartesian.optimizedPickTransferPlace.CartesianMax|.5f}} m maximum Cartesian error."
@@ -100,7 +100,7 @@
       },
       {
         "id": "cross-validation",
-        "title": "Independent formulations agree at numerical precision",
+        "title": "Independent formulations agree numerically",
         "layout": "metrics",
         "metrics": [
           {"value": "{{simulink.runCount}}/{{simulink.runCount}}", "label": "Simulink agreement and tracking passes"},

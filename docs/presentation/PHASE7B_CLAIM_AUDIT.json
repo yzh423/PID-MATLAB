@@ -1,9 +1,10 @@
 {
   "schemaVersion": 1,
   "audit_skill": "paper-claim-audit",
-  "verdict": "PASS",
-  "reason_code": "all_numbers_match",
-  "summary": "All 11 Phase 7B presentation and summary claim groups reconcile to admitted raw evidence, package artifacts, and fresh visual renders; no findings.",
+  "verdict": "BLOCKED",
+  "reason_code": "products_changed_audit_stale",
+  "summary": "STALE: Run 3 changed the canonical PPTX, template, package, layout, manifest, provenance, and verifier gates. A separate fresh zero-context audit must revalidate all claims and hashes before delivery.",
+  "details_status": "STALE_HISTORICAL_DO_NOT_AUTHORIZE",
   "audited_commit": "8ef0947c237432097028bb0c194808dc686cc81c",
   "audited_input_hashes": {
     "docs/presentation/phase7b_template.json": "sha256:def36f35ed727e967433b74b2049c019396a4e3552fc914bb2e431476b2fa2f8",

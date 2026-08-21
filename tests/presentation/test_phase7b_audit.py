@@ -23,6 +23,8 @@ REQUIRED = (
     "results/presentation/phase7b_package.json",
     "docs/presentation/phase7b_build_manifest.json",
     "docs/presentation/phase7b_layout_report.json",
+    "docs/presentation/phase7b_raw_evidence.json",
+    "docs/presentation/phase7b_toolchain.json",
     "presentation/final_presentation.pptx",
     "docs/summary/research_summary.docx",
     "docs/summary/research_summary.pdf",
@@ -56,14 +58,29 @@ def valid_audit() -> dict[str, object]:
             "fail_count": 0,
             "mismatches": [],
             "claim_groups": [
-                {"claim_id": index, "status": "exact_match"}
+                {
+                    "claim_id": index,
+                    "status": "exact_match" if index <= 6 else "rounding_ok",
+                    "atomic_claims": 1,
+                    "location": f"presentation/final_presentation.pptx slide {index}",
+                    "paper_text": f"Audited claim group {index}",
+                    "evidence": f"Evidence mapping for claim group {index}",
+                }
                 for index in range(1, 12)
             ],
             "reproducibility_ledger": {
                 "manifest_path": "docs/presentation/phase7b_build_manifest.json",
                 "package_path": "results/presentation/phase7b_package.json",
+                "raw_ledger_path": "docs/presentation/phase7b_raw_evidence.json",
                 "claim_group_count": 11,
+                "atomic_claim_checks": 11,
+                "template_package_pptx": "recomputed",
+                "package_docx_pdf": "recomputed",
+                "source_blocks": "recomputed",
             },
+            "atomic_claim_checks": 11,
+            "test_summary": {"suite": "PASS"},
+            "visual_summary": {"pptx_render": "PASS", "findings": []},
         },
     }
 
@@ -124,6 +141,38 @@ class Phase7BAuditGateTests(unittest.TestCase):
                 path,
                 is_ancestor=lambda commit: audited_commit_is_current_or_audit_only_parent(ROOT, commit),
             )
+
+    def test_claim_group_counters_content_and_atomic_totals_are_derived_not_trusted(self) -> None:
+        cases = {}
+        swapped = valid_audit()
+        swapped["details"]["exact_match"] = 5
+        swapped["details"]["rounding_ok"] = 6
+        cases["counter swap"] = swapped
+        hollow = valid_audit()
+        del hollow["details"]["claim_groups"][0]["evidence"]
+        cases["hollow group"] = hollow
+        zero_atomic = valid_audit()
+        zero_atomic["details"]["claim_groups"][0]["atomic_claims"] = 0
+        cases["zero atomic group"] = zero_atomic
+        wrong_atomic_total = valid_audit()
+        wrong_atomic_total["details"]["atomic_claim_checks"] = 12
+        cases["wrong atomic total"] = wrong_atomic_total
+        wrong_ledger_total = valid_audit()
+        wrong_ledger_total["details"]["reproducibility_ledger"]["atomic_claim_checks"] = 12
+        cases["wrong ledger total"] = wrong_ledger_total
+        missing_reproducibility = valid_audit()
+        del missing_reproducibility["details"]["reproducibility_ledger"]["raw_ledger_path"]
+        cases["missing reproducibility record"] = missing_reproducibility
+        inconsistent_findings = valid_audit()
+        inconsistent_findings["details"]["mismatches"] = [{"claim_id": 1}]
+        cases["inconsistent findings"] = inconsistent_findings
+
+        for label, audit in cases.items():
+            with self.subTest(label=label), self.assertRaisesRegex(
+                Phase7BAuditError,
+                "claim|atomic|ledger|finding|reproduc",
+            ):
+                self._validate(audit)
 
     def test_commit_policy_accepts_only_current_or_audit_only_immediate_parent(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

@@ -64,12 +64,61 @@ function Get-OrdinalSortedRecords {
     return $ordered.ToArray()
 }
 
+function Read-Phase7BToolchainContract {
+    param([string]$ProjectRoot, [string]$RuntimeNodeModules)
+    $contractPath = Join-Path $ProjectRoot 'docs\presentation\phase7b_toolchain.json'
+    $contract = Get-Content -LiteralPath $contractPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    if ($contract.schemaVersion -ne 1 -or $contract.artifactTool.package -ne '@oai/artifact-tool') {
+        throw 'Invalid Phase 7B toolchain provenance contract.'
+    }
+    foreach ($font in @($contract.fonts)) {
+        if ($font.role -notin @('regular', 'bold') -or -not (Test-Path -LiteralPath $font.path -PathType Leaf)) {
+            throw "Phase 7B font provenance is invalid: $($font.role)"
+        }
+        if ((Get-Sha256 -Path $font.path) -ne $font.sha256) {
+            throw "Phase 7B font binary hash mismatch: $($font.path)"
+        }
+    }
+    $runtimeEntries = @(Get-ChildItem -LiteralPath $RuntimeNodeModules -Force)
+    if ($runtimeEntries.Count -eq 0) {
+        if ($contract.artifactTool.status -ne 'BLOCKED' -or
+            $contract.artifactTool.reason -ne 'official_runtime_empty' -or
+            $null -ne $contract.artifactTool.version -or
+            $null -ne $contract.artifactTool.treeSha256) {
+            throw 'Empty official runtime must have truthful BLOCKED/null Artifact Tool provenance.'
+        }
+        return $contract
+    }
+    $packageRoot = Join-Path $RuntimeNodeModules '@oai\artifact-tool'
+    $packageJson = Join-Path $packageRoot 'package.json'
+    if (-not (Test-Path -LiteralPath $packageJson -PathType Leaf)) {
+        throw 'Official runtime is populated but @oai/artifact-tool is absent.'
+    }
+    $installed = Get-Content -LiteralPath $packageJson -Raw -Encoding UTF8 | ConvertFrom-Json
+    if ($contract.artifactTool.status -ne 'READY' -or $contract.artifactTool.version -ne $installed.version) {
+        throw 'Artifact Tool version does not match the checked-in provenance contract.'
+    }
+    $treeRecords = @(Get-ChildItem -LiteralPath $packageRoot -File -Recurse | ForEach-Object {
+        $relative = $_.FullName.Substring($packageRoot.Length + 1).Replace('\', '/')
+        "$relative`0$(Get-Sha256 -Path $_.FullName)"
+    } | Sort-Object)
+    $treeBytes = [Text.Encoding]::UTF8.GetBytes(($treeRecords -join "`n") + "`n")
+    $algorithm = [Security.Cryptography.SHA256]::Create()
+    try { $treeHash = ([BitConverter]::ToString($algorithm.ComputeHash($treeBytes))).Replace('-', '').ToLowerInvariant() }
+    finally { $algorithm.Dispose() }
+    if ($treeHash -ne $contract.artifactTool.treeSha256) {
+        throw 'Artifact Tool tree integrity does not match the checked-in provenance contract.'
+    }
+    return $contract
+}
+
 function Write-Phase7BManifest {
     param([string]$ProjectRoot, [int]$DocxPageCount)
     $sourcePaths = @(
         'docs/presentation/phase7b_template.json',
         'docs/presentation/phase7b_raw_evidence.json',
         'docs/presentation/phase7b_layout_report.json',
+        'docs/presentation/phase7b_toolchain.json',
         'docs/report/build_manifest.json',
         'results/report/report_evidence.json',
         'results/presentation/phase7b_package.json',
@@ -103,6 +152,7 @@ function Write-Phase7BManifest {
         'scripts/normalize_research_summary_pdf.py',
         'scripts/verify_phase7b.ps1',
         'scripts/verify_phase7b_audit.py',
+        'scripts/validate_phase7b_pptx.py',
         'scripts/phase7b/atomic_publish.mjs',
         'scripts/phase7b/audit.py',
         'scripts/phase7b/evidence.py',
@@ -110,6 +160,7 @@ function Write-Phase7BManifest {
         'scripts/phase7b/measure_docx_pages.ps1',
         'scripts/phase7b/office.py',
         'scripts/phase7b/summary.py'
+        'scripts/reporting/evidence.py'
     )
     $outputPaths = @(
         'presentation/final_presentation.pptx',
@@ -117,11 +168,15 @@ function Write-Phase7BManifest {
         'docs/summary/research_summary.pdf'
     )
     $manifest = [ordered]@{
-        schemaVersion = 1
+        schemaVersion = 2
         generatedAt = '2026-08-21T00:00:00Z'
         sources = @(Get-OrdinalSortedRecords -Records @($sourcePaths | ForEach-Object { Get-RelativeHashRecord -ProjectRoot $ProjectRoot -Path (Join-Path $ProjectRoot $_) }))
         outputs = @(Get-OrdinalSortedRecords -Records @($outputPaths | ForEach-Object { Get-RelativeHashRecord -ProjectRoot $ProjectRoot -Path (Join-Path $ProjectRoot $_) }))
         document = [ordered]@{ notesCount = 10; slideCount = 10; summaryPageCount = $DocxPageCount }
+        externalInputs = [ordered]@{
+            artifactTool = $script:phase7bToolchain.artifactTool
+            fonts = @($script:phase7bToolchain.fonts)
+        }
     }
     $manifestRoot = Join-Path $ProjectRoot 'docs\presentation'
     $temporaryManifest = Join-Path $manifestRoot ('.phase7b_build_manifest.' + [Guid]::NewGuid().ToString('N') + '.tmp.json')
@@ -155,12 +210,17 @@ $documentsSkillDir = 'C:\Users\14228\.codex\plugins\cache\openai-primary-runtime
 foreach ($requiredPath in @($bundledPython, $bundledNode, $runtimeNodeModules, $runtimeBinDir, $presentationsSkillDir, $documentsSkillDir)) {
     if (-not (Test-Path -LiteralPath $requiredPath)) { throw "Required bundled dependency not found: $requiredPath" }
 }
+$script:phase7bToolchain = Read-Phase7BToolchainContract -ProjectRoot $projectRoot -RuntimeNodeModules $runtimeNodeModules
 
 if ($ManifestOnly) {
     $manifestDocx = Join-Path $projectRoot 'docs\summary\research_summary.docx'
     Write-Phase7BManifest -ProjectRoot $projectRoot -DocxPageCount (Get-DocxRenderedPageCount -DocxPath $manifestDocx)
     Write-Output 'PHASE7B_MANIFEST_REFRESHED'
     return
+}
+
+if ($script:phase7bToolchain.artifactTool.status -ne 'READY') {
+    throw 'PHASE7B_EXTERNAL_RUNTIME_BLOCKED: official @oai/artifact-tool runtime is empty; build is fail-closed.'
 }
 
 $originalNodePath = $env:NODE_PATH
@@ -175,6 +235,22 @@ try {
     $env:RUNTIME_NODE = $bundledNode
     $env:RUNTIME_NODE_MODULES = $runtimeNodeModules
     $env:RUNTIME_BIN_DIR = $runtimeBinDir
+    $transactionRoot = Join-Path $projectRoot ('tmp\phase7b\publish-backup-' + [Guid]::NewGuid().ToString('N'))
+    [IO.Directory]::CreateDirectory($transactionRoot) | Out-Null
+    $transactionTargets = @(
+        'presentation\final_presentation.pptx',
+        'docs\presentation\phase7b_layout_report.json',
+        'docs\presentation\phase7b_build_manifest.json'
+    )
+    $transactionRecords = @()
+    foreach ($relativeTarget in $transactionTargets) {
+        $finalTarget = Join-Path $projectRoot $relativeTarget
+        $backupTarget = Join-Path $transactionRoot ([IO.Path]::GetFileName($relativeTarget))
+        $existed = Test-Path -LiteralPath $finalTarget -PathType Leaf
+        if ($existed) { Copy-Item -LiteralPath $finalTarget -Destination $backupTarget -Force }
+        $transactionRecords += [PSCustomObject]@{ Final = $finalTarget; Backup = $backupTarget; Existed = $existed }
+    }
+    try {
     Invoke-Checked { & $bundledPython '.\scripts\export_phase7b_package.py' --project-root '.' } 'Phase 7B evidence export failed'
     if (-not $SkipTests) {
         Invoke-Checked { & $bundledPython -m unittest '.\tests\presentation\test_phase7b_evidence.py' '.\tests\presentation\test_phase7b_office.py' -v } 'Pre-build Phase 7B Python tests failed'
@@ -269,6 +345,17 @@ print(json.dumps({
         throw "Phase 7B output contract failed: $($summary | ConvertTo-Json -Compress)"
     }
     Write-Output 'PHASE7B_VERIFIED slides=10 notes=10 summary_docx_pages=1 summary_pdf_pages=1 placeholders=0'
+    }
+    catch {
+        foreach ($record in $transactionRecords) {
+            if ($record.Existed) { Copy-Item -LiteralPath $record.Backup -Destination $record.Final -Force }
+            elseif (Test-Path -LiteralPath $record.Final) { Remove-Item -LiteralPath $record.Final -Force }
+        }
+        throw
+    }
+    finally {
+        if (Test-Path -LiteralPath $transactionRoot) { Remove-Item -LiteralPath $transactionRoot -Force -Recurse }
+    }
 }
 finally {
     $env:NODE_PATH = $originalNodePath

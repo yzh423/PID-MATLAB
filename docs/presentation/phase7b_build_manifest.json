@@ -1,10 +1,10 @@
 {
-    "schemaVersion":  1,
+    "schemaVersion":  2,
     "generatedAt":  "2026-08-21T00:00:00Z",
     "sources":  [
                     {
                         "path":  "docs/presentation/phase7b_layout_report.json",
-                        "sha256":  "2218bd42ae19ec400735abfa2555cba4e3210523021c3e34e66a383f7c832ca9"
+                        "sha256":  "d4dbea314e9651f44c523b7326546dd54421028508ab74cc4777c85c230ce41c"
                     },
                     {
                         "path":  "docs/presentation/phase7b_raw_evidence.json",
@@ -12,7 +12,11 @@
                     },
                     {
                         "path":  "docs/presentation/phase7b_template.json",
-                        "sha256":  "def36f35ed727e967433b74b2049c019396a4e3552fc914bb2e431476b2fa2f8"
+                        "sha256":  "bf03b2a736a7ae0c6ea5cc3bddba01d9a468d005d495bcaeced90f7149f4924d"
+                    },
+                    {
+                        "path":  "docs/presentation/phase7b_toolchain.json",
+                        "sha256":  "28b930275d89931c5efc9eda1931b0070bd4f1cdcef95e53f784a1b1eeefa5c4"
                     },
                     {
                         "path":  "docs/report/build_manifest.json",
@@ -100,7 +104,7 @@
                     },
                     {
                         "path":  "results/presentation/phase7b_package.json",
-                        "sha256":  "370ace654d63d09cdf92ef733d6e2ee405e6a31d00d6c1073673c372136ba488"
+                        "sha256":  "37d2d202d469e1f38857e92948bdf4896aaf8a88b38c13aab6191d3b8be42ef7"
                     },
                     {
                         "path":  "results/report/report_evidence.json",
@@ -108,7 +112,7 @@
                     },
                     {
                         "path":  "scripts/build_presentation.mjs",
-                        "sha256":  "0163e322a87852afabc17296b52a47286ab5b53fa9fe24d68ef28d00cbbc67e5"
+                        "sha256":  "2a6710b4ce139af1baf2248f4c832f2be305f6799c17eb467ea33977d4afb991"
                     },
                     {
                         "path":  "scripts/build_research_summary.py",
@@ -128,7 +132,7 @@
                     },
                     {
                         "path":  "scripts/generate_phase7b_layout_report.py",
-                        "sha256":  "80889b6ec3adbef24c5fad1f051d0f5f0622a3535252463c013aa74db12b8842"
+                        "sha256":  "e0df3223ba8b100d3389faaadc483ee966a9d50a31d605294d1470eb08877fc7"
                     },
                     {
                         "path":  "scripts/normalize_phase7b_office.py",
@@ -140,35 +144,43 @@
                     },
                     {
                         "path":  "scripts/phase7b/atomic_publish.mjs",
-                        "sha256":  "f2fc252b7f6f69f93a90baf837185b9fe9a0f7b0c3ac97449f8fe6269c5e207f"
+                        "sha256":  "bd9dfc45080ba2e689723e14e8652d78ca91ed7f5cdd3af5264c20aaf7f9b01b"
                     },
                     {
                         "path":  "scripts/phase7b/audit.py",
-                        "sha256":  "78eeb44f13eabbcf477e07fe253ba2f0c70849e9a66d2af17ecda5026327aa01"
+                        "sha256":  "64d6a74141d3a7cba21004d24675caa09df02c64118db66d8b1e0ec99c2fa41d"
                     },
                     {
                         "path":  "scripts/phase7b/evidence.py",
-                        "sha256":  "44183bb4230eff0c8c9c3d046a445cf1bd6cbc1e774df9a041db9d50684d6a70"
+                        "sha256":  "463fd19a530acdfc2ba293fc82703681e1e47c69c05ac4b70301bbe9b5d46857"
                     },
                     {
                         "path":  "scripts/phase7b/layout.py",
-                        "sha256":  "e9a0421812f41086af5517ed0f6c2364f1787d85ae1300a89654efeb59c596b2"
+                        "sha256":  "2f8bd4303dc1e75d4ad550ed63ec7bfc0b63032e00cc0cb5a2a47ab1e5e58452"
                     },
                     {
                         "path":  "scripts/phase7b/measure_docx_pages.ps1",
-                        "sha256":  "3bca3c33645758877587e3699d74c78423b3360984e1485eed1549fa3ee717a7"
+                        "sha256":  "c4e2f162b17db15c84ed4cf7ed8a90089b2dbfbc4591912cda9037e35cecd8bc"
                     },
                     {
                         "path":  "scripts/phase7b/office.py",
-                        "sha256":  "0bba9f23c945d6af8c9fe2d9814f3e6cbf2285c23e949463cf6fd435bdfff296"
+                        "sha256":  "d53ab2eba9c0ffa2af8bfd158a24699a326b4ae0d73052d8625c6cced11167b9"
                     },
                     {
                         "path":  "scripts/phase7b/summary.py",
                         "sha256":  "2c005d9833a0bac9dc1902bac6759f717ea2aea415df303065e294fba73728fe"
                     },
                     {
+                        "path":  "scripts/reporting/evidence.py",
+                        "sha256":  "c8d08be2e2f8403261069a34cf31fe8112f174f4f57c0d3c7ca475816591b182"
+                    },
+                    {
+                        "path":  "scripts/validate_phase7b_pptx.py",
+                        "sha256":  "918fd414bec4e702a2a1435d457fac345c5bdb61784f681a9b3736b172e41858"
+                    },
+                    {
                         "path":  "scripts/verify_phase7b.ps1",
-                        "sha256":  "308dc9afa443038d623b825e4731a176ab4dc84a540957d2b8c932da3cc8578f"
+                        "sha256":  "3e78925856319fc0330ddbe6ac425f90385f1e7bd9e8380df98bf72cb0fa0f31"
                     },
                     {
                         "path":  "scripts/verify_phase7b_audit.py",
@@ -186,12 +198,33 @@
                     },
                     {
                         "path":  "presentation/final_presentation.pptx",
-                        "sha256":  "2dc18d8e4a7d96edf80ee41cfab650670844446fd4facb48e6cfc4872a230299"
+                        "sha256":  "0849d85579540ccf6c3e79565eb53fe274086730d20232a551f4640f25c42247"
                     }
                 ],
     "document":  {
                      "notesCount":  10,
                      "slideCount":  10,
                      "summaryPageCount":  1
-                 }
+                 },
+    "externalInputs":  {
+                           "artifactTool":  {
+                                                "package":  "@oai/artifact-tool",
+                                                "status":  "BLOCKED",
+                                                "reason":  "official_runtime_empty",
+                                                "version":  null,
+                                                "treeSha256":  null
+                                            },
+                           "fonts":  [
+                                         {
+                                             "role":  "regular",
+                                             "path":  "C:/Windows/Fonts/arial.ttf",
+                                             "sha256":  "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a"
+                                         },
+                                         {
+                                             "role":  "bold",
+                                             "path":  "C:/Windows/Fonts/arialbd.ttf",
+                                             "sha256":  "e8f4e3baf6cc35fed6fcce3a540e8b39e8f6cda1d22a28f2ec8f526fef7a43f5"
+                                         }
+                                     ]
+                       }
 }

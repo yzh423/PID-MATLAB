@@ -15,6 +15,8 @@ REQUIRED_AUDITED_INPUTS = {
     "results/presentation/phase7b_package.json",
     "docs/presentation/phase7b_build_manifest.json",
     "docs/presentation/phase7b_layout_report.json",
+    "docs/presentation/phase7b_raw_evidence.json",
+    "docs/presentation/phase7b_toolchain.json",
     "presentation/final_presentation.pptx",
     "docs/summary/research_summary.docx",
     "docs/summary/research_summary.pdf",
@@ -23,6 +25,12 @@ REQUIRED_AUDITED_INPUTS = {
 
 class Phase7BAuditError(ValueError):
     """Raised when the canonical audit cannot authorize Phase 7B delivery."""
+
+
+def _nonempty_string(value: object, label: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise Phase7BAuditError(f"canonical Phase 7B audit requires nonempty {label}")
+    return value
 
 
 AUDIT_ONLY_PATHS = {
@@ -135,18 +143,67 @@ def validate_phase7b_audit(
     if details.get("exact_match", 0) + details.get("rounding_ok", 0) != 11:
         raise Phase7BAuditError("canonical Phase 7B audit claim status counts are inconsistent")
     if details.get("mismatches") != []:
-        raise Phase7BAuditError("canonical Phase 7B audit contains mismatches")
+        raise Phase7BAuditError("canonical Phase 7B audit contains finding mismatches")
     groups = details.get("claim_groups")
     if (
         not isinstance(groups, list)
         or len(groups) != 11
-        or {group.get("claim_id") for group in groups if isinstance(group, Mapping)} != set(range(1, 12))
-        or any(group.get("status") not in {"exact_match", "rounding_ok"} for group in groups if isinstance(group, Mapping))
+        or not all(isinstance(group, Mapping) for group in groups)
+        or {group.get("claim_id") for group in groups} != set(range(1, 12))
     ):
         raise Phase7BAuditError("canonical Phase 7B audit claim groups are invalid")
+    exact_match = 0
+    rounding_ok = 0
+    atomic_claim_checks = 0
+    for group in groups:
+        status = group.get("status")
+        if status == "exact_match":
+            exact_match += 1
+        elif status == "rounding_ok":
+            rounding_ok += 1
+        else:
+            raise Phase7BAuditError("canonical Phase 7B audit claim status is invalid")
+        atomic_claims = group.get("atomic_claims")
+        if isinstance(atomic_claims, bool) or not isinstance(atomic_claims, int) or atomic_claims <= 0:
+            raise Phase7BAuditError("canonical Phase 7B audit claim atomic count must be positive")
+        atomic_claim_checks += atomic_claims
+        for field in ("location", "paper_text", "evidence"):
+            _nonempty_string(group.get(field), f"claim {group.get('claim_id')} {field}")
+    if details.get("exact_match") != exact_match or details.get("rounding_ok") != rounding_ok:
+        raise Phase7BAuditError("canonical Phase 7B audit claim status counters do not match groups")
+    if details.get("total_claims") != len(groups):
+        raise Phase7BAuditError("canonical Phase 7B audit total claim counter is inconsistent")
+    if details.get("atomic_claim_checks") != atomic_claim_checks:
+        raise Phase7BAuditError("canonical Phase 7B audit atomic claim total is inconsistent")
     ledger = details.get("reproducibility_ledger")
-    if not isinstance(ledger, Mapping) or ledger.get("claim_group_count") != 11:
+    if (
+        not isinstance(ledger, Mapping)
+        or ledger.get("claim_group_count") != len(groups)
+        or ledger.get("atomic_claim_checks") != atomic_claim_checks
+    ):
         raise Phase7BAuditError("canonical Phase 7B audit lacks a reproducible minimal ledger")
+    expected_ledger_paths = {
+        "manifest_path": "docs/presentation/phase7b_build_manifest.json",
+        "package_path": "results/presentation/phase7b_package.json",
+        "raw_ledger_path": "docs/presentation/phase7b_raw_evidence.json",
+    }
+    for field, expected in expected_ledger_paths.items():
+        if ledger.get(field) != expected:
+            raise Phase7BAuditError(f"canonical Phase 7B audit reproducibility ledger lacks {field}")
+    for field in ("template_package_pptx", "package_docx_pdf", "source_blocks"):
+        _nonempty_string(ledger.get(field), f"reproducibility ledger {field}")
+    test_summary = details.get("test_summary")
+    if not isinstance(test_summary, Mapping) or not test_summary:
+        raise Phase7BAuditError("canonical Phase 7B audit reproducibility test records are missing")
+    for key, value in test_summary.items():
+        _nonempty_string(key, "test record name")
+        _nonempty_string(value, f"test record {key}")
+    visual_summary = details.get("visual_summary")
+    if not isinstance(visual_summary, Mapping) or visual_summary.get("findings") != []:
+        raise Phase7BAuditError("canonical Phase 7B audit visual finding records are inconsistent")
+    for key, value in visual_summary.items():
+        if key != "findings":
+            _nonempty_string(value, f"visual record {key}")
     trace = audit.get("trace")
     if not isinstance(trace, Mapping) or trace.get("retention") != "ephemeral":
         raise Phase7BAuditError("canonical Phase 7B audit trace provenance is invalid")

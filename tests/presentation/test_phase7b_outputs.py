@@ -11,6 +11,7 @@ from scripts.phase7b.evidence import sha256_file
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "docs" / "presentation" / "phase7b_build_manifest.json"
+TOOLCHAIN = ROOT / "docs" / "presentation" / "phase7b_toolchain.json"
 VERIFY = ROOT / "scripts" / "verify_phase7b.ps1"
 REPORT_PDF_EXPORTER = ROOT / "scripts" / "export_report_pdf.ps1"
 FINAL_OUTPUTS = (
@@ -102,7 +103,7 @@ class Phase7BOutputTests(unittest.TestCase):
 
     def test_manifest_hashes_all_inputs_and_outputs(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-        self.assertEqual(manifest["schemaVersion"], 1)
+        self.assertEqual(manifest["schemaVersion"], 2)
         self.assertEqual(manifest["generatedAt"], "2026-08-21T00:00:00Z")
         self.assertEqual(
             manifest["document"],
@@ -137,10 +138,59 @@ class Phase7BOutputTests(unittest.TestCase):
             "results/data/multibody_cross_validation.mat",
             "scripts/export_phase7b_package.py",
             "scripts/phase7b/measure_docx_pages.ps1",
+            "scripts/reporting/evidence.py",
             "scripts/verify_phase7b.ps1",
+            "docs/presentation/phase7b_toolchain.json",
         ):
             self.assertIn(required, source_paths)
         self.assertNotIn("docs/presentation/PHASE7B_CLAIM_AUDIT.json", source_paths)
+
+    def test_package_is_a_tracked_commit_bound_input(self) -> None:
+        relative = "results/presentation/phase7b_package.json"
+        tracked = subprocess.run(
+            ["git", "ls-files", "--error-unmatch", relative],
+            cwd=ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(tracked.returncode, 0, tracked.stderr)
+        ignored = subprocess.run(
+            ["git", "check-ignore", "-q", relative],
+            cwd=ROOT,
+            check=False,
+        )
+        self.assertNotEqual(ignored.returncode, 0, "tracked canonical package must not be ignored")
+
+    def test_manifest_records_truthful_toolchain_and_exact_font_binaries(self) -> None:
+        self.assertTrue(TOOLCHAIN.is_file(), "checked-in toolchain provenance contract is required")
+        contract = json.loads(TOOLCHAIN.read_text(encoding="utf-8"))
+        self.assertEqual(contract["schemaVersion"], 1)
+        artifact = contract["artifactTool"]
+        self.assertEqual(artifact["package"], "@oai/artifact-tool")
+        runtime_entries = list(RUNTIME_NODE_MODULES.iterdir())
+        if runtime_entries:
+            self.assertEqual(artifact["status"], "READY")
+            self.assertIsInstance(artifact["version"], str)
+            self.assertRegex(artifact["treeSha256"], r"^[0-9a-f]{64}$")
+        else:
+            self.assertEqual(artifact["status"], "BLOCKED")
+            self.assertEqual(artifact["reason"], "official_runtime_empty")
+            self.assertIsNone(artifact["version"])
+            self.assertIsNone(artifact["treeSha256"])
+
+        fonts = contract["fonts"]
+        self.assertEqual({record["role"] for record in fonts}, {"regular", "bold"})
+        for record in fonts:
+            path = Path(record["path"])
+            self.assertTrue(path.is_file(), path)
+            self.assertEqual(record["sha256"], sha256_file(path), record["role"])
+
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        self.assertEqual(manifest["externalInputs"], {
+            "artifactTool": artifact,
+            "fonts": fonts,
+        })
 
     def test_hashed_text_sources_have_checkout_stable_lf_bytes(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))

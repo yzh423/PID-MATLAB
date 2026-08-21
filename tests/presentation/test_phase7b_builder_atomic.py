@@ -28,9 +28,11 @@ class Phase7BBuilderAtomicTests(unittest.TestCase):
     def test_builder_publishes_only_after_structure_and_normalization(self) -> None:
         source = BUILDER.read_text(encoding="utf-8")
         self.assertIn('from "./phase7b/atomic_publish.mjs";', source)
-        self.assertIn("publishAtomically(output", source)
+        self.assertIn("publishArtifactSetAtomically", source)
         self.assertIn("validatePptxStructure", source)
+        self.assertIn("validate_phase7b_pptx.py", source)
         self.assertIn("normalizePptx", source)
+        self.assertIn("phase7b_layout_report.json", source)
         direct_save = re.search(r"exportPptx\([^)]*\)\)\.save\(output\)", source)
         self.assertIsNone(direct_save, "builder must never save Artifact Tool output directly over the reviewed final")
         helper = HELPER.read_text(encoding="utf-8")

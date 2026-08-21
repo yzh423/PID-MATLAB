@@ -2,9 +2,16 @@ import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { promisify } from "node:util";
+import { execFile } from "node:child_process";
 import test from "node:test";
 
-import { publishAtomically } from "../../scripts/phase7b/atomic_publish.mjs";
+import * as atomic from "../../scripts/phase7b/atomic_publish.mjs";
+
+const { publishAtomically, validatePptxStructure } = atomic;
+const execFileAsync = promisify(execFile);
+const PYTHON = "C:/Users/14228/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe";
+const ROOT = path.resolve(import.meta.dirname, "../..");
 
 async function fixture() {
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), "phase7b-atomic-"));
@@ -77,5 +84,49 @@ test("normalizer corruption is rejected before replacement", async () => {
   assert.equal(await fs.readFile(finalPath, "utf8"), "reviewed-final");
   assert.equal(await fs.readFile(sentinel, "utf8"), "sentinel");
   assert.deepEqual(await ownedTemps(directory), [path.basename(sentinel)]);
+  await fs.rm(directory, { recursive: true, force: true });
+});
+
+test("deep PPTX validation rejects a valid ZIP with an invalid slide root", async () => {
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), "phase7b-invalid-slide-"));
+  const candidate = path.join(directory, "candidate.pptx");
+  const canonical = path.join(ROOT, "presentation/final_presentation.pptx");
+  const script = [
+    "import sys,zipfile",
+    "src,dst=sys.argv[1:3]",
+    "with zipfile.ZipFile(src) as zin, zipfile.ZipFile(dst,'w',zipfile.ZIP_DEFLATED) as zout:",
+    "  for info in zin.infolist():",
+    "    data=b'<not-a-presentation-slide/>' if info.filename=='ppt/slides/slide1.xml' else zin.read(info.filename)",
+    "    zout.writestr(info,data)",
+  ].join("\n");
+  await execFileAsync(PYTHON, ["-c", script, canonical, candidate]);
+  await assert.rejects(validatePptxStructure(candidate), /slide1|slide root|presentation slide/i);
+  await fs.rm(directory, { recursive: true, force: true });
+});
+
+test("artifact-set publication rolls back PPTX layout and manifest on downstream failure", async () => {
+  assert.equal(typeof atomic.publishArtifactSetAtomically, "function");
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), "phase7b-artifact-set-"));
+  const names = ["final.pptx", "layout.json", "manifest.json"];
+  const finalPaths = names.map((name) => path.join(directory, name));
+  await Promise.all(finalPaths.map((file, index) => fs.writeFile(file, `reviewed-${index}`)));
+  const before = await Promise.all(finalPaths.map((file) => fs.readFile(file)));
+
+  await assert.rejects(
+    atomic.publishArtifactSetAtomically(
+      finalPaths.map((finalPath, index) => ({
+        finalPath,
+        save: async (temporary) => {
+          if (index === 1) throw new Error("downstream layout generation failed");
+          await fs.writeFile(temporary, `candidate-${index}`);
+        },
+      })),
+      { validate: async () => {} },
+    ),
+    /downstream layout generation failed/,
+  );
+  const after = await Promise.all(finalPaths.map((file) => fs.readFile(file)));
+  assert.deepEqual(after, before);
+  assert.deepEqual((await fs.readdir(directory)).sort(), names.sort());
   await fs.rm(directory, { recursive: true, force: true });
 });

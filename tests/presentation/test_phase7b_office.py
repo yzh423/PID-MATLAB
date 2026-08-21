@@ -771,6 +771,71 @@ class Phase7BOfficeTests(unittest.TestCase):
                 normalize_openxml_package(package, ".pptx")
             self.assertEqual(sha256_file(package), original)
 
+    def test_entity_encoded_relationship_ids_and_namespaces_use_xml_semantics(self) -> None:
+        cases = {
+            "numeric-id": (
+                b'R&#45;one',
+                b'R-one',
+                b'http://schemas.openxmlformats.org/officeDocument/2006/relationships',
+            ),
+            "predefined-id": (
+                b'R&amp;one',
+                b'R&amp;one',
+                b'http://schemas.openxmlformats.org/officeDocument/2006/relationships',
+            ),
+            "numeric-namespace": (
+                b'R-one',
+                b'R-one',
+                b'http://schemas.openxmlformats.org/officeDocument&#47;2006/relationships',
+            ),
+        }
+        for label, (relationship_id, source_id, namespace) in cases.items():
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as directory:
+                package = Path(directory) / f"{label}.pptx"
+                relationships = (
+                    b'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+                    b'<Relationship Id="' + relationship_id + b'" Type="image" Target="../media/image1.png"/>'
+                    b'</Relationships>'
+                )
+                slide = (
+                    b'<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" '
+                    b'xmlns:r="' + namespace + b'"><p:pic r:embed="' + source_id + b'"/></p:sld>'
+                )
+                self._write_adversarial_pptx(package, relationship_xml=relationships, slide_xml=slide)
+                normalize_openxml_package(package, ".pptx")
+                with ZipFile(package) as archive:
+                    normalized = archive.read("ppt/slides/slide1.xml")
+                self.assertIn(b'r:embed="rId1"', normalized)
+
+    def test_semantic_duplicate_and_dangling_relationships_fail_before_replacement(self) -> None:
+        cases = {
+            "semantic duplicate": (
+                b'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+                b'<Relationship Id="R-one" Type="image" Target="../media/image1.png"/>'
+                b'<Relationship Id="R&#45;one" Type="image" Target="../media/image1.png"/>'
+                b'</Relationships>',
+                b'<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"/>',
+                "duplicate relationship Id",
+            ),
+            "dangling source reference": (
+                b'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+                b'<Relationship Id="R-one" Type="image" Target="../media/image1.png"/>'
+                b'</Relationships>',
+                b'<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" '
+                b'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+                b'<p:pic r:embed="R-missing"/></p:sld>',
+                "dangling relationship reference",
+            ),
+        }
+        for label, (relationships, slide, message) in cases.items():
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as directory:
+                package = Path(directory) / f"{label}.pptx"
+                self._write_adversarial_pptx(package, relationship_xml=relationships, slide_xml=slide)
+                original = sha256_file(package)
+                with self.assertRaisesRegex(ValueError, message):
+                    normalize_openxml_package(package, ".pptx")
+                self.assertEqual(sha256_file(package), original)
+
 
 if __name__ == "__main__":
     unittest.main()

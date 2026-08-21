@@ -90,6 +90,119 @@ class Phase7BLayoutReportTests(unittest.TestCase):
             self.assertFalse(title["minimumFontSizePass"])
             self.assertFalse(report["checks"]["minimumFontSizesPass"])
 
+    def test_norm_autofit_scale_controls_effective_font_and_malformed_scale_fails(self) -> None:
+        namespaces = {
+            "p": "http://schemas.openxmlformats.org/presentationml/2006/main",
+            "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
+        }
+
+        def scale_title(payload: bytes, value: str) -> bytes:
+            root = ElementTree.fromstring(payload)
+            title = next(
+                shape for shape in root.findall(".//p:sp", namespaces)
+                if shape.find("p:nvSpPr/p:cNvPr", namespaces).get("name") == "slide-9-title"
+            )
+            title.find("p:txBody/a:bodyPr/a:normAutofit", namespaces).set("fontScale", value)
+            return ElementTree.tostring(root, encoding="utf-8", xml_declaration=True)
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = self._stage_root(directory)
+            self._rewrite_slide(
+                root / "presentation/final_presentation.pptx",
+                "ppt/slides/slide9.xml",
+                lambda payload: scale_title(payload, "50000"),
+            )
+            report = build_layout_report(root)
+            title = next(
+                element for element in report["slides"][8]["elements"]
+                if element["name"] == "slide-9-title"
+            )
+            self.assertEqual(title["resolvedFontSize"], 18)
+            self.assertEqual(title["effectiveRunFontSizes"], [18, 18])
+            self.assertFalse(title["minimumFontSizePass"])
+
+        for malformed in ("0", "100001", "not-a-number"):
+            with self.subTest(malformed=malformed), tempfile.TemporaryDirectory() as directory:
+                root = self._stage_root(directory)
+                self._rewrite_slide(
+                    root / "presentation/final_presentation.pptx",
+                    "ppt/slides/slide9.xml",
+                    lambda payload, malformed=malformed: scale_title(payload, malformed),
+                )
+                with self.assertRaisesRegex(Phase7BLayoutError, "font scale"):
+                    build_layout_report(root)
+
+    def test_collision_and_clipping_checks_cover_slide_6_and_10_geometry(self) -> None:
+        namespaces = {
+            "p": "http://schemas.openxmlformats.org/presentationml/2006/main",
+            "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
+        }
+
+        def collide_lead_with_title(payload: bytes) -> bytes:
+            root = ElementTree.fromstring(payload)
+            shapes = {
+                shape.find("p:nvSpPr/p:cNvPr", namespaces).get("name"): shape
+                for shape in root.findall(".//p:sp", namespaces)
+            }
+            title_offset = shapes["slide-10-title"].find("p:spPr/a:xfrm/a:off", namespaces)
+            lead_offset = shapes["next-steps-lead"].find("p:spPr/a:xfrm/a:off", namespaces)
+            lead_offset.attrib.update(title_offset.attrib)
+            return ElementTree.tostring(root, encoding="utf-8", xml_declaration=True)
+
+        canonical = build_layout_report(ROOT)
+        self.assertIn("noCollisions", canonical["checks"])
+        self.assertIn("allTextClippingFree", canonical["checks"])
+        self.assertTrue(canonical["checks"]["noCollisions"])
+        self.assertTrue(canonical["checks"]["allTextClippingFree"])
+        for number in (6, 10):
+            slide = canonical["slides"][number - 1]
+            self.assertEqual(slide["collisions"], [])
+            self.assertTrue(all(
+                element.get("textLayout", {}).get("clippingFree", True)
+                for element in slide["elements"]
+            ))
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = self._stage_root(directory)
+            self._rewrite_slide(
+                root / "presentation/final_presentation.pptx",
+                "ppt/slides/slide10.xml",
+                collide_lead_with_title,
+            )
+            report = build_layout_report(root)
+            self.assertFalse(report["checks"]["noCollisions"])
+            self.assertIn(
+                ["next-steps-lead", "slide-10-title"],
+                [sorted(pair) for pair in report["slides"][9]["collisions"]],
+            )
+
+    def test_unhandled_content_bearing_ooxml_fails_closed(self) -> None:
+        namespaces = {"p": "http://schemas.openxmlformats.org/presentationml/2006/main"}
+
+        def add_graphic_frame(payload: bytes) -> bytes:
+            root = ElementTree.fromstring(payload)
+            tree = root.find("p:cSld/p:spTree", namespaces)
+            frame = ElementTree.fromstring(
+                b'<p:graphicFrame xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" '
+                b'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">'
+                b'<p:nvGraphicFramePr><p:cNvPr id="99" name="unhandled-table"/>'
+                b'<p:cNvGraphicFramePr/><p:nvPr/></p:nvGraphicFramePr>'
+                b'<p:xfrm/><a:graphic><a:graphicData uri="urn:test"><a:t>content</a:t>'
+                b'</a:graphicData></a:graphic></p:graphicFrame>'
+            )
+            tree.insert(2, frame)
+            return ElementTree.tostring(root, encoding="utf-8", xml_declaration=True)
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = self._stage_root(directory)
+            self._rewrite_slide(
+                root / "presentation/final_presentation.pptx",
+                "ppt/slides/slide1.xml",
+                add_graphic_frame,
+            )
+            with self.assertRaisesRegex(Phase7BLayoutError, "unhandled.*graphicFrame"):
+                build_layout_report(root)
+
     def test_corrupt_slide_xml_fails_closed_instead_of_reporting_pass(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = self._stage_root(directory)

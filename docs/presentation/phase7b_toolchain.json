@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-21T00:00:00Z",
+  "artifactTool": {
+    "package": "@oai/artifact-tool",
+    "status": "BLOCKED",
+    "reason": "official_runtime_empty",
+    "version": null,
+    "treeSha256": null
+  },
+  "fonts": [
+    {
+      "role": "regular",
+      "path": "C:/Windows/Fonts/arial.ttf",
+      "sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a"
+    },
+    {
+      "role": "bold",
+      "path": "C:/Windows/Fonts/arialbd.ttf",
+      "sha256": "e8f4e3baf6cc35fed6fcce3a540e8b39e8f6cda1d22a28f2ec8f526fef7a43f5"
+    }
+  ]
+}

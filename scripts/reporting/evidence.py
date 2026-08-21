@@ -67,7 +67,9 @@ def validate_evidence(evidence: Mapping[str, object]) -> None:
     }
     for dotted_path, expected in expected_counts.items():
         actual = lookup(evidence, dotted_path)
-        if actual != expected:
+        if type(actual) is not int:
+            errors.append(f"{dotted_path} must be an integer, got {actual!r}")
+        elif actual != expected:
             errors.append(f"{dotted_path} must equal {expected}, got {actual!r}")
 
     for section in ("deterministic", "stochastic", "cartesian", "simulink", "multibody"):

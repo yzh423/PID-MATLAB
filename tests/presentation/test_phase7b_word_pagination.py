@@ -78,9 +78,46 @@ class Phase7BWordPaginationTests(unittest.TestCase):
             "preexistingWordPids",
             "WaitForExit",
             "TimeoutSeconds",
+            "CreateJobObject",
+            "AssignProcessToJobObject",
+            "JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE",
+            "ReadyPath",
+            "FaultStage",
         ):
             self.assertIn(token, source)
         self.assertNotIn("Stop-Process -Name WINWORD", source)
+
+    def test_job_owned_faults_cannot_leak_word_before_pid_publication(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            docx = Path(directory) / "fault-injection.docx"
+            document = Document()
+            document.add_paragraph("Task-owned activation fault injection")
+            document.save(docx)
+            for stage in ("ActivationHang", "AfterCreationBeforePid", "AfterDocumentOpen"):
+                with self.subTest(stage=stage):
+                    before = word_process_ids()
+                    completed = subprocess.run(
+                        [
+                            "powershell", "-NoProfile", "-ExecutionPolicy", "Bypass",
+                            "-File", str(PAGINATOR), "-DocxPath", str(docx),
+                            "-TimeoutSeconds", "2", "-FaultStage", stage,
+                        ],
+                        cwd=ROOT,
+                        check=False,
+                        capture_output=True,
+                        text=True,
+                        encoding="utf-8",
+                        errors="replace",
+                        timeout=15,
+                    )
+                    after = word_process_ids()
+                    self.assertNotEqual(completed.returncode, 0)
+                    self.assertRegex(completed.stdout + completed.stderr, "timed out")
+                    self.assertEqual(
+                        after,
+                        before,
+                        f"{stage} must terminate only the task-owned job and preserve pre-existing WINWORD",
+                    )
 
 
 if __name__ == "__main__":

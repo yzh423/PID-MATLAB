@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedAt": "2026-08-21T00:00:00Z",
-  "method": "tracked layout report derived from final PPTX OOXML-resolved geometry, text runs, fonts, wrapping, and autofit overflow guards",
+  "method": "tracked layout report derived from final PPTX OOXML geometry, effective autofit-scaled fonts, exact Arial metrics, conservative wrapping/clipping, and collision checks",
   "slideSizeEmu": {
     "width": 12192000,
     "height": 6858000
@@ -9,18 +9,18 @@
   "sources": {
     "package": {
       "path": "results/presentation/phase7b_package.json",
-      "sha256": "370ace654d63d09cdf92ef733d6e2ee405e6a31d00d6c1073673c372136ba488"
+      "sha256": "37d2d202d469e1f38857e92948bdf4896aaf8a88b38c13aab6191d3b8be42ef7"
     },
     "pptx": {
       "path": "presentation/final_presentation.pptx",
-      "sha256": "2dc18d8e4a7d96edf80ee41cfab650670844446fd4facb48e6cfc4872a230299"
+      "sha256": "0849d85579540ccf6c3e79565eb53fe274086730d20232a551f4640f25c42247"
     }
   },
   "slides": [
     {
       "number": 1,
       "id": "opening",
-      "title": "Reliable execution connects plans to physical action",
+      "title": "Reliable control enables action",
       "elements": [
         {
           "type": "image",
@@ -56,19 +56,38 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 51.0,
+          "rawRunFontSizes": [
+            51.0,
+            51.0
+          ],
           "resolvedRunFontSizes": [
+            51.0,
+            51.0
+          ],
+          "effectiveRunFontSizes": [
             51.0,
             51.0
           ],
           "minimumFontSize": 50,
           "minimumFontSizePass": true,
           "textLayout": {
-            "text": "Reliable execution connects plans to physical action",
+            "text": "Reliable control enables action",
             "lineCount": 1,
             "wrapMode": "square",
             "autoFit": "normAutofit",
-            "fontScale": 81863,
-            "overflowGuard": true
+            "fontScale": 100000,
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 2,
+            "estimatedMaximumLineWidthPx": 468.656,
+            "availableWidthPx": 540.8,
+            "requiredHeightEmu": 1489710,
+            "availableHeightEmu": 1908810,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -88,7 +107,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 21.0,
+          "rawRunFontSizes": [
+            21.0,
+            21.0
+          ],
           "resolvedRunFontSizes": [
+            21.0,
+            21.0
+          ],
+          "effectiveRunFontSizes": [
             21.0,
             21.0
           ],
@@ -100,15 +127,27 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 2,
+            "estimatedMaximumLineWidthPx": 490.344,
+            "availableWidthPx": 540.8,
+            "requiredHeightEmu": 613410,
+            "availableHeightEmu": 956310,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         }
-      ]
+      ],
+      "collisions": []
     },
     {
       "number": 2,
       "id": "problem",
-      "title": "Nominal success is not enough to claim reliable manipulation",
+      "title": "Nominal success does not prove reliable manipulation",
       "elements": [
         {
           "type": "text",
@@ -127,19 +166,38 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 36.0,
+          "rawRunFontSizes": [
+            36.0,
+            36.0
+          ],
           "resolvedRunFontSizes": [
+            36.0,
+            36.0
+          ],
+          "effectiveRunFontSizes": [
             36.0,
             36.0
           ],
           "minimumFontSize": 35,
           "minimumFontSizePass": true,
           "textLayout": {
-            "text": "Nominal success is not enough to claim reliable manipulation",
+            "text": "Nominal success does not prove reliable manipulation",
             "lineCount": 1,
             "wrapMode": "square",
             "autoFit": "normAutofit",
-            "fontScale": 81563,
-            "overflowGuard": true
+            "fontScale": 100000,
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 1,
+            "estimatedMaximumLineWidthPx": 1147.609,
+            "availableWidthPx": 1148.8,
+            "requiredHeightEmu": 525780,
+            "availableHeightEmu": 594360,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -176,19 +234,38 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 24.0,
+          "rawRunFontSizes": [
+            24.0,
+            24.0
+          ],
           "resolvedRunFontSizes": [
+            24.0,
+            24.0
+          ],
+          "effectiveRunFontSizes": [
             24.0,
             24.0
           ],
           "minimumFontSize": 24,
           "minimumFontSizePass": true,
           "textLayout": {
-            "text": "The central question is how controller choices survive controlled changes in payload, configuration, noise, disturbance, and actuator authority.",
+            "text": "Controller choice must survive changes in payload, configuration, noise, disturbance, and actuator authority.",
             "lineCount": 1,
             "wrapMode": "square",
             "autoFit": "normAutofit",
-            "fontScale": 89980,
-            "overflowGuard": true
+            "fontScale": 100000,
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 4,
+            "estimatedMaximumLineWidthPx": 485.672,
+            "availableWidthPx": 520.8,
+            "requiredHeightEmu": 1402080,
+            "availableHeightEmu": 1432560,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -208,7 +285,23 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 18.0,
+          "rawRunFontSizes": [
+            18.0,
+            18.0,
+            18.0,
+            18.0,
+            18.0,
+            18.0
+          ],
           "resolvedRunFontSizes": [
+            18.0,
+            18.0,
+            18.0,
+            18.0,
+            18.0,
+            18.0
+          ],
+          "effectiveRunFontSizes": [
             18.0,
             18.0,
             18.0,
@@ -224,15 +317,27 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 8,
+            "estimatedMaximumLineWidthPx": 513.547,
+            "availableWidthPx": 520.8,
+            "requiredHeightEmu": 2103120,
+            "availableHeightEmu": 2270760,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         }
-      ]
+      ],
+      "collisions": []
     },
     {
       "number": 3,
       "id": "protocol",
-      "title": "Every controller faces the same plant, trajectory, limits, and metrics",
+      "title": "Every controller follows the same protocol",
       "elements": [
         {
           "type": "text",
@@ -251,19 +356,38 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 36.0,
+          "rawRunFontSizes": [
+            36.0,
+            36.0
+          ],
           "resolvedRunFontSizes": [
+            36.0,
+            36.0
+          ],
+          "effectiveRunFontSizes": [
             36.0,
             36.0
           ],
           "minimumFontSize": 35,
           "minimumFontSizePass": true,
           "textLayout": {
-            "text": "Every controller faces the same plant, trajectory, limits, and metrics",
+            "text": "Every controller follows the same protocol",
             "lineCount": 1,
             "wrapMode": "square",
             "autoFit": "normAutofit",
-            "fontScale": 74530,
-            "overflowGuard": true
+            "fontScale": 100000,
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 1,
+            "estimatedMaximumLineWidthPx": 888.609,
+            "availableWidthPx": 1148.8,
+            "requiredHeightEmu": 525780,
+            "availableHeightEmu": 594360,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -283,7 +407,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 40.5,
+          "rawRunFontSizes": [
+            40.5,
+            40.5
+          ],
           "resolvedRunFontSizes": [
+            40.5,
+            40.5
+          ],
+          "effectiveRunFontSizes": [
             40.5,
             40.5
           ],
@@ -295,7 +427,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 1,
+            "estimatedMaximumLineWidthPx": 177.125,
+            "availableWidthPx": 330.8,
+            "requiredHeightEmu": 591502,
+            "availableHeightEmu": 1051560,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -315,7 +458,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 18.0,
+          "rawRunFontSizes": [
+            18.0,
+            18.0
+          ],
           "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "effectiveRunFontSizes": [
             18.0,
             18.0
           ],
@@ -327,7 +478,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 1,
+            "estimatedMaximumLineWidthPx": 186.734,
+            "availableWidthPx": 330.8,
+            "requiredHeightEmu": 262890,
+            "availableHeightEmu": 861060,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -347,7 +509,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 40.5,
+          "rawRunFontSizes": [
+            40.5,
+            40.5
+          ],
           "resolvedRunFontSizes": [
+            40.5,
+            40.5
+          ],
+          "effectiveRunFontSizes": [
             40.5,
             40.5
           ],
@@ -359,7 +529,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 1,
+            "estimatedMaximumLineWidthPx": 117.062,
+            "availableWidthPx": 330.8,
+            "requiredHeightEmu": 591502,
+            "availableHeightEmu": 1051560,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -379,7 +560,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 18.0,
+          "rawRunFontSizes": [
+            18.0,
+            18.0
+          ],
           "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "effectiveRunFontSizes": [
             18.0,
             18.0
           ],
@@ -391,7 +580,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 1,
+            "estimatedMaximumLineWidthPx": 177.422,
+            "availableWidthPx": 330.8,
+            "requiredHeightEmu": 262890,
+            "availableHeightEmu": 861060,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -411,7 +611,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 40.5,
+          "rawRunFontSizes": [
+            40.5,
+            40.5
+          ],
           "resolvedRunFontSizes": [
+            40.5,
+            40.5
+          ],
+          "effectiveRunFontSizes": [
             40.5,
             40.5
           ],
@@ -423,7 +631,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 1,
+            "estimatedMaximumLineWidthPx": 120.125,
+            "availableWidthPx": 330.8,
+            "requiredHeightEmu": 591502,
+            "availableHeightEmu": 1051560,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -443,7 +662,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 18.0,
+          "rawRunFontSizes": [
+            18.0,
+            18.0
+          ],
           "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "effectiveRunFontSizes": [
             18.0,
             18.0
           ],
@@ -455,7 +682,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 1,
+            "estimatedMaximumLineWidthPx": 262.781,
+            "availableWidthPx": 330.8,
+            "requiredHeightEmu": 262890,
+            "availableHeightEmu": 861060,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -475,7 +713,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 18.0,
+          "rawRunFontSizes": [
+            18.0,
+            18.0
+          ],
           "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "effectiveRunFontSizes": [
             18.0,
             18.0
           ],
@@ -487,15 +733,27 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 2,
+            "estimatedMaximumLineWidthPx": 1044.453,
+            "availableWidthPx": 1130.8,
+            "requiredHeightEmu": 525780,
+            "availableHeightEmu": 670560,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         }
-      ]
+      ],
+      "collisions": []
     },
     {
       "number": 4,
       "id": "optimization",
-      "title": "Optimization improves the baseline without changing the protocol",
+      "title": "Optimization improves PID under a fixed protocol",
       "elements": [
         {
           "type": "text",
@@ -514,19 +772,38 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 36.0,
+          "rawRunFontSizes": [
+            36.0,
+            36.0
+          ],
           "resolvedRunFontSizes": [
+            36.0,
+            36.0
+          ],
+          "effectiveRunFontSizes": [
             36.0,
             36.0
           ],
           "minimumFontSize": 35,
           "minimumFontSizePass": true,
           "textLayout": {
-            "text": "Optimization improves the baseline without changing the protocol",
+            "text": "Optimization improves PID under a fixed protocol",
             "lineCount": 1,
             "wrapMode": "square",
             "autoFit": "normAutofit",
-            "fontScale": 75920,
-            "overflowGuard": true
+            "fontScale": 100000,
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 1,
+            "estimatedMaximumLineWidthPx": 1043.422,
+            "availableWidthPx": 1148.8,
+            "requiredHeightEmu": 525780,
+            "availableHeightEmu": 594360,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -563,19 +840,38 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 24.0,
+          "rawRunFontSizes": [
+            24.0,
+            24.0
+          ],
           "resolvedRunFontSizes": [
+            24.0,
+            24.0
+          ],
+          "effectiveRunFontSizes": [
             24.0,
             24.0
           ],
           "minimumFontSize": 24,
           "minimumFontSizePass": true,
           "textLayout": {
-            "text": "The bounded search reduces the nominal objective by 7.283% and improves the held-out payload objective from 0.214504 to 0.197284.",
+            "text": "Optimization lowers the nominal objective 7.283% and the held-out payload objective from 0.214504 to 0.197284.",
             "lineCount": 1,
             "wrapMode": "square",
             "autoFit": "normAutofit",
-            "fontScale": 94592,
-            "overflowGuard": true
+            "fontScale": 100000,
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 4,
+            "estimatedMaximumLineWidthPx": 498.109,
+            "availableWidthPx": 520.8,
+            "requiredHeightEmu": 1402080,
+            "availableHeightEmu": 1432560,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -595,7 +891,19 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 18.0,
+          "rawRunFontSizes": [
+            18.0,
+            18.0,
+            18.0,
+            18.0
+          ],
           "resolvedRunFontSizes": [
+            18.0,
+            18.0,
+            18.0,
+            18.0
+          ],
+          "effectiveRunFontSizes": [
             18.0,
             18.0,
             18.0,
@@ -609,15 +917,27 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 6,
+            "estimatedMaximumLineWidthPx": 500.25,
+            "availableWidthPx": 520.8,
+            "requiredHeightEmu": 1577340,
+            "availableHeightEmu": 2270760,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         }
-      ]
+      ],
+      "collisions": []
     },
     {
       "number": 5,
       "id": "deterministic",
-      "title": "Reliability separates the controllers under deterministic stress",
+      "title": "Deterministic stress separates controller reliability",
       "elements": [
         {
           "type": "text",
@@ -636,19 +956,38 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 36.0,
+          "rawRunFontSizes": [
+            36.0,
+            36.0
+          ],
           "resolvedRunFontSizes": [
+            36.0,
+            36.0
+          ],
+          "effectiveRunFontSizes": [
             36.0,
             36.0
           ],
           "minimumFontSize": 35,
           "minimumFontSizePass": true,
           "textLayout": {
-            "text": "Reliability separates the controllers under deterministic stress",
+            "text": "Deterministic stress separates controller reliability",
             "lineCount": 1,
             "wrapMode": "square",
             "autoFit": "normAutofit",
-            "fontScale": 80599,
-            "overflowGuard": true
+            "fontScale": 100000,
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 1,
+            "estimatedMaximumLineWidthPx": 1053.969,
+            "availableWidthPx": 1148.8,
+            "requiredHeightEmu": 525780,
+            "availableHeightEmu": 594360,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -685,7 +1024,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 24.0,
+          "rawRunFontSizes": [
+            24.0,
+            24.0
+          ],
           "resolvedRunFontSizes": [
+            24.0,
+            24.0
+          ],
+          "effectiveRunFontSizes": [
             24.0,
             24.0
           ],
@@ -697,7 +1044,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 3,
+            "estimatedMaximumLineWidthPx": 515.812,
+            "availableWidthPx": 520.8,
+            "requiredHeightEmu": 1051560,
+            "availableHeightEmu": 1432560,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -717,7 +1075,19 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 18.0,
+          "rawRunFontSizes": [
+            18.0,
+            18.0,
+            18.0,
+            18.0
+          ],
           "resolvedRunFontSizes": [
+            18.0,
+            18.0,
+            18.0,
+            18.0
+          ],
+          "effectiveRunFontSizes": [
             18.0,
             18.0,
             18.0,
@@ -731,10 +1101,22 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 8,
+            "estimatedMaximumLineWidthPx": 518.938,
+            "availableWidthPx": 520.8,
+            "requiredHeightEmu": 2103120,
+            "availableHeightEmu": 2270760,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         }
-      ]
+      ],
+      "collisions": []
     },
     {
       "number": 6,
@@ -757,10 +1139,18 @@
             72
           ],
           "withinSlide": true,
-          "resolvedFontSize": 36.0,
-          "resolvedRunFontSizes": [
+          "resolvedFontSize": 35.4604,
+          "rawRunFontSizes": [
             36.0,
             36.0
+          ],
+          "resolvedRunFontSizes": [
+            35.4604,
+            35.4604
+          ],
+          "effectiveRunFontSizes": [
+            35.4604,
+            35.4604
           ],
           "minimumFontSize": 35,
           "minimumFontSizePass": true,
@@ -770,7 +1160,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 98501,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 1,
+            "estimatedMaximumLineWidthPx": 1060.75,
+            "availableWidthPx": 1148.8,
+            "requiredHeightEmu": 517899,
+            "availableHeightEmu": 594360,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -807,7 +1208,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 24.0,
+          "rawRunFontSizes": [
+            24.0,
+            24.0
+          ],
           "resolvedRunFontSizes": [
+            24.0,
+            24.0
+          ],
+          "effectiveRunFontSizes": [
             24.0,
             24.0
           ],
@@ -819,7 +1228,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 3,
+            "estimatedMaximumLineWidthPx": 482.0,
+            "availableWidthPx": 520.8,
+            "requiredHeightEmu": 1051560,
+            "availableHeightEmu": 1432560,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -839,7 +1259,19 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 18.0,
+          "rawRunFontSizes": [
+            18.0,
+            18.0,
+            18.0,
+            18.0
+          ],
           "resolvedRunFontSizes": [
+            18.0,
+            18.0,
+            18.0,
+            18.0
+          ],
+          "effectiveRunFontSizes": [
             18.0,
             18.0,
             18.0,
@@ -853,15 +1285,27 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 6,
+            "estimatedMaximumLineWidthPx": 517.578,
+            "availableWidthPx": 520.8,
+            "requiredHeightEmu": 1577340,
+            "availableHeightEmu": 2270760,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         }
-      ]
+      ],
+      "collisions": []
     },
     {
       "number": 7,
       "id": "cartesian",
-      "title": "Task-space evaluation exposes failures hidden by joint metrics",
+      "title": "Task-space tests expose hidden failures",
       "elements": [
         {
           "type": "text",
@@ -880,19 +1324,38 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 36.0,
+          "rawRunFontSizes": [
+            36.0,
+            36.0
+          ],
           "resolvedRunFontSizes": [
+            36.0,
+            36.0
+          ],
+          "effectiveRunFontSizes": [
             36.0,
             36.0
           ],
           "minimumFontSize": 35,
           "minimumFontSizePass": true,
           "textLayout": {
-            "text": "Task-space evaluation exposes failures hidden by joint metrics",
+            "text": "Task-space tests expose hidden failures",
             "lineCount": 1,
             "wrapMode": "square",
             "autoFit": "normAutofit",
-            "fontScale": 79861,
-            "overflowGuard": true
+            "fontScale": 100000,
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 1,
+            "estimatedMaximumLineWidthPx": 851.359,
+            "availableWidthPx": 1148.8,
+            "requiredHeightEmu": 525780,
+            "availableHeightEmu": 594360,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -929,19 +1392,38 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 24.0,
+          "rawRunFontSizes": [
+            24.0,
+            24.0
+          ],
           "resolvedRunFontSizes": [
+            24.0,
+            24.0
+          ],
+          "effectiveRunFontSizes": [
             24.0,
             24.0
           ],
           "minimumFontSize": 24,
           "minimumFontSizePass": true,
           "textLayout": {
-            "text": "All 3 controllers pass the straight-line task; only optimized PID passes pick-transfer-place, so 4 of 6 completed task runs meet every gate.",
+            "text": "All 3 controllers pass straight-line; only optimized PID passes pick-transfer-place, so 4 of 6 task runs pass every gate.",
             "lineCount": 1,
             "wrapMode": "square",
             "autoFit": "normAutofit",
-            "fontScale": 91267,
-            "overflowGuard": true
+            "fontScale": 100000,
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 4,
+            "estimatedMaximumLineWidthPx": 478.422,
+            "availableWidthPx": 520.8,
+            "requiredHeightEmu": 1402080,
+            "availableHeightEmu": 1432560,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -961,7 +1443,19 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 18.0,
+          "rawRunFontSizes": [
+            18.0,
+            18.0,
+            18.0,
+            18.0
+          ],
           "resolvedRunFontSizes": [
+            18.0,
+            18.0,
+            18.0,
+            18.0
+          ],
+          "effectiveRunFontSizes": [
             18.0,
             18.0,
             18.0,
@@ -975,15 +1469,27 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 6,
+            "estimatedMaximumLineWidthPx": 468.219,
+            "availableWidthPx": 520.8,
+            "requiredHeightEmu": 1577340,
+            "availableHeightEmu": 2270760,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         }
-      ]
+      ],
+      "collisions": []
     },
     {
       "number": 8,
       "id": "cross-validation",
-      "title": "Independent formulations agree at numerical precision",
+      "title": "Independent formulations agree numerically",
       "elements": [
         {
           "type": "text",
@@ -1002,19 +1508,38 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 36.0,
+          "rawRunFontSizes": [
+            36.0,
+            36.0
+          ],
           "resolvedRunFontSizes": [
+            36.0,
+            36.0
+          ],
+          "effectiveRunFontSizes": [
             36.0,
             36.0
           ],
           "minimumFontSize": 35,
           "minimumFontSizePass": true,
           "textLayout": {
-            "text": "Independent formulations agree at numerical precision",
+            "text": "Independent formulations agree numerically",
             "lineCount": 1,
             "wrapMode": "square",
             "autoFit": "normAutofit",
-            "fontScale": 91780,
-            "overflowGuard": true
+            "fontScale": 100000,
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 1,
+            "estimatedMaximumLineWidthPx": 934.156,
+            "availableWidthPx": 1148.8,
+            "requiredHeightEmu": 525780,
+            "availableHeightEmu": 594360,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -1034,7 +1559,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 40.5,
+          "rawRunFontSizes": [
+            40.5,
+            40.5
+          ],
           "resolvedRunFontSizes": [
+            40.5,
+            40.5
+          ],
+          "effectiveRunFontSizes": [
             40.5,
             40.5
           ],
@@ -1046,7 +1579,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 1,
+            "estimatedMaximumLineWidthPx": 75.062,
+            "availableWidthPx": 330.8,
+            "requiredHeightEmu": 591502,
+            "availableHeightEmu": 1051560,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -1066,7 +1610,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 18.0,
+          "rawRunFontSizes": [
+            18.0,
+            18.0
+          ],
           "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "effectiveRunFontSizes": [
             18.0,
             18.0
           ],
@@ -1078,7 +1630,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 2,
+            "estimatedMaximumLineWidthPx": 258.797,
+            "availableWidthPx": 330.8,
+            "requiredHeightEmu": 525780,
+            "availableHeightEmu": 861060,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -1098,7 +1661,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 40.5,
+          "rawRunFontSizes": [
+            40.5,
+            40.5
+          ],
           "resolvedRunFontSizes": [
+            40.5,
+            40.5
+          ],
+          "effectiveRunFontSizes": [
             40.5,
             40.5
           ],
@@ -1110,7 +1681,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 1,
+            "estimatedMaximumLineWidthPx": 75.062,
+            "availableWidthPx": 330.8,
+            "requiredHeightEmu": 591502,
+            "availableHeightEmu": 1051560,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -1130,7 +1712,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 18.0,
+          "rawRunFontSizes": [
+            18.0,
+            18.0
+          ],
           "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "effectiveRunFontSizes": [
             18.0,
             18.0
           ],
@@ -1142,7 +1732,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 2,
+            "estimatedMaximumLineWidthPx": 270.812,
+            "availableWidthPx": 330.8,
+            "requiredHeightEmu": 525780,
+            "availableHeightEmu": 861060,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -1162,7 +1763,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 40.5,
+          "rawRunFontSizes": [
+            40.5,
+            40.5
+          ],
           "resolvedRunFontSizes": [
+            40.5,
+            40.5
+          ],
+          "effectiveRunFontSizes": [
             40.5,
             40.5
           ],
@@ -1174,7 +1783,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 1,
+            "estimatedMaximumLineWidthPx": 273.156,
+            "availableWidthPx": 330.8,
+            "requiredHeightEmu": 591502,
+            "availableHeightEmu": 1051560,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -1194,7 +1814,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 18.0,
+          "rawRunFontSizes": [
+            18.0,
+            18.0
+          ],
           "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "effectiveRunFontSizes": [
             18.0,
             18.0
           ],
@@ -1206,7 +1834,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 1,
+            "estimatedMaximumLineWidthPx": 303.281,
+            "availableWidthPx": 330.8,
+            "requiredHeightEmu": 262890,
+            "availableHeightEmu": 861060,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -1226,7 +1865,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 18.0,
+          "rawRunFontSizes": [
+            18.0,
+            18.0
+          ],
           "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "effectiveRunFontSizes": [
             18.0,
             18.0
           ],
@@ -1238,10 +1885,22 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 2,
+            "estimatedMaximumLineWidthPx": 1007.203,
+            "availableWidthPx": 1130.8,
+            "requiredHeightEmu": 525780,
+            "availableHeightEmu": 670560,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         }
-      ]
+      ],
+      "collisions": []
     },
     {
       "number": 9,
@@ -1265,7 +1924,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 36.0,
+          "rawRunFontSizes": [
+            36.0,
+            36.0
+          ],
           "resolvedRunFontSizes": [
+            36.0,
+            36.0
+          ],
+          "effectiveRunFontSizes": [
             36.0,
             36.0
           ],
@@ -1277,7 +1944,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 1,
+            "estimatedMaximumLineWidthPx": 1040.781,
+            "availableWidthPx": 1148.8,
+            "requiredHeightEmu": 525780,
+            "availableHeightEmu": 975360,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -1297,7 +1975,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 40.5,
+          "rawRunFontSizes": [
+            40.5,
+            40.5
+          ],
           "resolvedRunFontSizes": [
+            40.5,
+            40.5
+          ],
+          "effectiveRunFontSizes": [
             40.5,
             40.5
           ],
@@ -1309,7 +1995,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 1,
+            "estimatedMaximumLineWidthPx": 105.094,
+            "availableWidthPx": 330.8,
+            "requiredHeightEmu": 591502,
+            "availableHeightEmu": 1051560,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -1329,7 +2026,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 18.0,
+          "rawRunFontSizes": [
+            18.0,
+            18.0
+          ],
           "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "effectiveRunFontSizes": [
             18.0,
             18.0
           ],
@@ -1341,7 +2046,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 2,
+            "estimatedMaximumLineWidthPx": 266.766,
+            "availableWidthPx": 330.8,
+            "requiredHeightEmu": 525780,
+            "availableHeightEmu": 861060,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -1361,7 +2077,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 40.5,
+          "rawRunFontSizes": [
+            40.5,
+            40.5
+          ],
           "resolvedRunFontSizes": [
+            40.5,
+            40.5
+          ],
+          "effectiveRunFontSizes": [
             40.5,
             40.5
           ],
@@ -1373,7 +2097,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 1,
+            "estimatedMaximumLineWidthPx": 105.094,
+            "availableWidthPx": 330.8,
+            "requiredHeightEmu": 591502,
+            "availableHeightEmu": 1051560,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -1393,7 +2128,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 18.0,
+          "rawRunFontSizes": [
+            18.0,
+            18.0
+          ],
           "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "effectiveRunFontSizes": [
             18.0,
             18.0
           ],
@@ -1405,7 +2148,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 2,
+            "estimatedMaximumLineWidthPx": 253.391,
+            "availableWidthPx": 330.8,
+            "requiredHeightEmu": 525780,
+            "availableHeightEmu": 861060,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -1425,7 +2179,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 40.5,
+          "rawRunFontSizes": [
+            40.5,
+            40.5
+          ],
           "resolvedRunFontSizes": [
+            40.5,
+            40.5
+          ],
+          "effectiveRunFontSizes": [
             40.5,
             40.5
           ],
@@ -1437,7 +2199,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 1,
+            "estimatedMaximumLineWidthPx": 135.125,
+            "availableWidthPx": 330.8,
+            "requiredHeightEmu": 591502,
+            "availableHeightEmu": 1051560,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -1457,7 +2230,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 18.0,
+          "rawRunFontSizes": [
+            18.0,
+            18.0
+          ],
           "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "effectiveRunFontSizes": [
             18.0,
             18.0
           ],
@@ -1469,7 +2250,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 2,
+            "estimatedMaximumLineWidthPx": 290.766,
+            "availableWidthPx": 330.8,
+            "requiredHeightEmu": 525780,
+            "availableHeightEmu": 861060,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -1489,7 +2281,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 18.0,
+          "rawRunFontSizes": [
+            18.0,
+            18.0
+          ],
           "resolvedRunFontSizes": [
+            18.0,
+            18.0
+          ],
+          "effectiveRunFontSizes": [
             18.0,
             18.0
           ],
@@ -1501,10 +2301,22 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 2,
+            "estimatedMaximumLineWidthPx": 1125.812,
+            "availableWidthPx": 1130.8,
+            "requiredHeightEmu": 525780,
+            "availableHeightEmu": 670560,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         }
-      ]
+      ],
+      "collisions": []
     },
     {
       "number": 10,
@@ -1528,7 +2340,15 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 36.0,
+          "rawRunFontSizes": [
+            36.0,
+            36.0
+          ],
           "resolvedRunFontSizes": [
+            36.0,
+            36.0
+          ],
+          "effectiveRunFontSizes": [
             36.0,
             36.0
           ],
@@ -1540,7 +2360,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 1,
+            "estimatedMaximumLineWidthPx": 999.953,
+            "availableWidthPx": 1148.8,
+            "requiredHeightEmu": 525780,
+            "availableHeightEmu": 594360,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -1559,10 +2390,18 @@
             140
           ],
           "withinSlide": true,
-          "resolvedFontSize": 31.5,
-          "resolvedRunFontSizes": [
+          "resolvedFontSize": 27.1665,
+          "rawRunFontSizes": [
             31.5,
             31.5
+          ],
+          "resolvedRunFontSizes": [
+            27.1665,
+            27.1665
+          ],
+          "effectiveRunFontSizes": [
+            27.1665,
+            27.1665
           ],
           "minimumFontSize": 24,
           "minimumFontSizePass": true,
@@ -1572,7 +2411,18 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 86243,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 3,
+            "estimatedMaximumLineWidthPx": 1056.359,
+            "availableWidthPx": 1100.8,
+            "requiredHeightEmu": 1190300,
+            "availableHeightEmu": 1242060,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         },
         {
@@ -1592,7 +2442,23 @@
           ],
           "withinSlide": true,
           "resolvedFontSize": 21.0,
+          "rawRunFontSizes": [
+            21.0,
+            21.0,
+            21.0,
+            21.0,
+            21.0,
+            21.0
+          ],
           "resolvedRunFontSizes": [
+            21.0,
+            21.0,
+            21.0,
+            21.0,
+            21.0,
+            21.0
+          ],
+          "effectiveRunFontSizes": [
             21.0,
             21.0,
             21.0,
@@ -1608,15 +2474,29 @@
             "wrapMode": "square",
             "autoFit": "normAutofit",
             "fontScale": 100000,
-            "overflowGuard": true
+            "overflowGuard": true,
+            "clippingFree": true,
+            "estimatedRenderedLines": 6,
+            "estimatedMaximumLineWidthPx": 1096.078,
+            "availableWidthPx": 1100.8,
+            "requiredHeightEmu": 1840230,
+            "availableHeightEmu": 2480310,
+            "fontMetric": {
+              "path": "C:/Windows/Fonts/arial.ttf",
+              "dpi": 96,
+              "lineSafetyFactor": 1.15
+            }
           }
         }
-      ]
+      ],
+      "collisions": []
     }
   ],
   "checks": {
     "allWithinSlide": true,
     "allTextOverflowGuarded": true,
+    "allTextClippingFree": true,
+    "noCollisions": true,
     "minimumFontSizesPass": true,
     "notesCount": 10,
     "slideCount": 10

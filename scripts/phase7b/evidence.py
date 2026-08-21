@@ -164,6 +164,14 @@ def _require_nonnegative_int(value: object, label: str) -> int:
     return value
 
 
+def _require_boolean_success(rows: Sequence[Mapping[str, object]], label: str) -> None:
+    for index, row in enumerate(rows, start=1):
+        if type(row.get("Success")) is not bool:
+            raise Phase7BEvidenceError(
+                f"Phase 7A evidence requires {label} row {index} Success Boolean"
+            )
+
+
 def _require_exact_keys(
     rows: Sequence[Mapping[str, object]],
     fields: tuple[str, ...],
@@ -243,6 +251,7 @@ def _derive_phase7b_values(evidence: Mapping[str, object]) -> dict[str, object]:
     )
     deterministic_rows = _require_rows(deterministic.get("runRows"), "deterministic run")
     _require_completed(deterministic_rows, "deterministic run")
+    _require_boolean_success(deterministic_rows, "deterministic")
     deterministic_keys = _require_exact_keys(
         deterministic_rows,
         ("Controller", "Scenario"),
@@ -251,15 +260,24 @@ def _derive_phase7b_values(evidence: Mapping[str, object]) -> dict[str, object]:
     )
     for controller in CONTROLLERS:
         summary = controller_summary[(controller,)]
+        summary_run_count = _require_nonnegative_int(
+            summary.get("RunCount"), f"deterministic {controller} run count"
+        )
+        summary_success_count = _require_nonnegative_int(
+            summary.get("SuccessCount"), f"deterministic {controller} success count"
+        )
+        summary_failed_count = _require_nonnegative_int(
+            summary.get("FailedRunCount"), f"deterministic {controller} failed count"
+        )
         success_count = sum(
             row.get("Success") is True
             for (row_controller, _), row in deterministic_keys.items()
             if row_controller == controller
         )
         if (
-            summary.get("RunCount") != len(DETERMINISTIC_SCENARIOS)
-            or summary.get("SuccessCount") != success_count
-            or summary.get("FailedRunCount") != len(DETERMINISTIC_SCENARIOS) - success_count
+            summary_run_count != len(DETERMINISTIC_SCENARIOS)
+            or summary_success_count != success_count
+            or summary_failed_count != len(DETERMINISTIC_SCENARIOS) - success_count
         ):
             raise Phase7BEvidenceError("Phase 7A evidence deterministic summary cardinality mismatch")
         if deterministic_keys[(controller, "combined-deterministic")].get("Success") is not False:
@@ -285,6 +303,7 @@ def _derive_phase7b_values(evidence: Mapping[str, object]) -> dict[str, object]:
     ]
     stochastic_trials = _require_rows(stochastic.get("trialRows"), "stochastic trial")
     _require_completed(stochastic_trials, "stochastic trial")
+    _require_boolean_success(stochastic_trials, "stochastic")
     trial_count = _require_nonnegative_int(
         _require_mapping(evidence.get("protocol"), "protocol").get("stochasticTrialsPerScenario"),
         "stochastic trials per scenario",
@@ -301,12 +320,18 @@ def _derive_phase7b_values(evidence: Mapping[str, object]) -> dict[str, object]:
         "stochastic controller/scenario/trial",
     )
     for (controller, scenario), summary in stochastic_summary.items():
+        summary_trial_count = _require_nonnegative_int(
+            summary.get("TrialCount"), f"stochastic {controller}/{scenario} trial count"
+        )
+        summary_success_count = _require_nonnegative_int(
+            summary.get("SuccessCount"), f"stochastic {controller}/{scenario} success count"
+        )
         trials = [
             row for (row_controller, row_scenario, _), row in trial_keys.items()
             if row_controller == controller and row_scenario == scenario
         ]
         successes = sum(row.get("Success") is True for row in trials)
-        if summary.get("TrialCount") != trial_count or summary.get("SuccessCount") != successes:
+        if summary_trial_count != trial_count or summary_success_count != successes:
             raise Phase7BEvidenceError("Phase 7A evidence stochastic summary cardinality mismatch")
 
     def derive_cell(rows: list[Mapping[str, object]], name: str, expected_success: str) -> dict[str, int]:
@@ -337,6 +362,7 @@ def _derive_phase7b_values(evidence: Mapping[str, object]) -> dict[str, object]:
     cartesian = _require_mapping(evidence.get("cartesian"), "cartesian")
     cartesian_rows = _require_rows(cartesian.get("runRows"), "cartesian run")
     _require_completed(cartesian_rows, "cartesian run")
+    _require_boolean_success(cartesian_rows, "Cartesian")
     cartesian_keys = _require_exact_keys(
         cartesian_rows,
         ("Controller", "Task"),

@@ -8,7 +8,8 @@ results/videos/*.avi
 results/videos/*.mp4
 results/report/report_evidence.json
 results/report/rendered-pages/
-/results/presentation/
+/results/presentation/*
+!/results/presentation/phase7b_package.json
 /tmp/phase7b/
 /node_modules/
 /presentation/final_presentation/

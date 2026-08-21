@@ -100,9 +100,13 @@ class PresentationStructureTests(unittest.TestCase):
         self.assertGreaterEqual(closing_title["resolvedFontSize"], 35)
 
     def test_resolved_title_and_claims_meet_layout_thresholds(self) -> None:
-        title = layout_element(9, "slide-9-title")
-        self.assertGreaterEqual(title["resolvedFontSize"], 35)
-        self.assertLessEqual(title["textLayout"]["lineCount"], 2)
+        cover = layout_element(1, "cover-title")
+        self.assertGreaterEqual(cover["resolvedFontSize"], 50)
+
+        for slide_number in range(2, 11):
+            title = layout_element(slide_number, f"slide-{slide_number}-title")
+            self.assertGreaterEqual(title["resolvedFontSize"], 35)
+            self.assertTrue(title["minimumFontSizePass"])
 
         for slide_number, name in (
             (2, "problem-claim"),

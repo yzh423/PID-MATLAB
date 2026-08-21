@@ -8,6 +8,7 @@ import hashlib
 import lzma
 import os
 from pathlib import Path
+import posixpath
 import re
 import tempfile
 from xml.etree import ElementTree
@@ -43,6 +44,7 @@ _XML_ATTRIBUTE = re.compile(
     rb"(?P<name>[A-Za-z_][A-Za-z0-9_.-]*(?::[A-Za-z_][A-Za-z0-9_.-]*)?)\s*=\s*"
     rb"(?P<quote>['\"])(?P<value>.*?)(?P=quote)"
 )
+_XML_ENTITY = re.compile(rb"&(?:amp|lt|gt|quot|apos|#[0-9]+|#x[0-9A-Fa-f]+);")
 _RELATIONSHIP_NAMESPACE = b"http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 _PACKAGE_RELATIONSHIPS_NAMESPACE = b"http://schemas.openxmlformats.org/package/2006/relationships"
 _A16_NAMESPACE = b"http://schemas.microsoft.com/office/drawing/2014/main"
@@ -179,6 +181,40 @@ def _lexical_attributes(
         ))
         cursor = attribute.end()
     return attributes
+
+
+def _decode_xml_attribute(value: bytes, label: str) -> bytes:
+    """Return the XML-expanded UTF-8 value while retaining lexical byte ranges."""
+    decoded = bytearray()
+    cursor = 0
+    for match in _XML_ENTITY.finditer(value):
+        literal = value[cursor:match.start()]
+        if b"&" in literal:
+            raise Phase7BOfficeError(f"unsupported XML entity in {label}")
+        decoded.extend(literal)
+        token = match.group(0)
+        named = {
+            b"&amp;": b"&", b"&lt;": b"<", b"&gt;": b">",
+            b"&quot;": b'"', b"&apos;": b"'",
+        }
+        if token in named:
+            decoded.extend(named[token])
+        else:
+            try:
+                base = 16 if token.startswith(b"&#x") else 10
+                digits = token[3:-1] if base == 16 else token[2:-1]
+                codepoint = int(digits, base)
+                if codepoint == 0 or codepoint > 0x10FFFF or 0xD800 <= codepoint <= 0xDFFF:
+                    raise ValueError
+                decoded.extend(chr(codepoint).encode("utf-8"))
+            except (UnicodeError, ValueError) as exception:
+                raise Phase7BOfficeError(f"invalid numeric XML entity in {label}") from exception
+        cursor = match.end()
+    tail = value[cursor:]
+    if b"&" in tail:
+        raise Phase7BOfficeError(f"unsupported XML entity in {label}")
+    decoded.extend(tail)
+    return bytes(decoded)
 
 
 def _validate_field_date(
@@ -322,7 +358,8 @@ def _volatile_date_text_ranges(
         parent_scope = frames[-1]["scope"] if frames else {}
         assert isinstance(parent_scope, dict)
         scope = parent_scope.copy()
-        for attribute_name, uri, _, _ in _lexical_attributes(body, "core properties"):
+        for attribute_name, raw_uri, _, _ in _lexical_attributes(body, "core properties"):
+            uri = _decode_xml_attribute(raw_uri, "core properties namespace")
             if attribute_name == b"xmlns":
                 scope[b""] = uri
             elif attribute_name.startswith(b"xmlns:"):
@@ -449,16 +486,18 @@ def _xml_start_tags(
         parent_scope = frames[-1][1] if frames else {}
         scope = parent_scope.copy()
         lexical_attributes = _lexical_attributes(body, label)
-        for attribute_name, uri, _, _ in lexical_attributes:
+        for attribute_name, raw_uri, _, _ in lexical_attributes:
+            uri = _decode_xml_attribute(raw_uri, f"{label} namespace")
             if attribute_name == b"xmlns":
                 scope[b""] = uri
             elif attribute_name.startswith(b"xmlns:"):
                 scope[attribute_name.removeprefix(b"xmlns:")] = uri
         body_start = start + 1 + len(raw) - len(raw.lstrip())
         attributes = []
-        for attribute_name, value, value_start, value_end in lexical_attributes:
+        for attribute_name, raw_value, value_start, value_end in lexical_attributes:
             if attribute_name == b"xmlns" or attribute_name.startswith(b"xmlns:"):
                 continue
+            value = _decode_xml_attribute(raw_value, f"{label} attribute")
             attributes.append((
                 _expanded_attribute_name(attribute_name, scope),
                 value,
@@ -577,6 +616,72 @@ def _canonicalize_pptx_generated_ids(
     return [(name, compression, rewritten[name]) for name, compression, _ in entries]
 
 
+def _resolve_relationship_target(source_part: str | None, target: str) -> str:
+    if target.startswith("/"):
+        resolved = posixpath.normpath(target.lstrip("/"))
+    else:
+        parent = posixpath.dirname(source_part) if source_part else ""
+        resolved = posixpath.normpath(posixpath.join(parent, target))
+    if resolved in {"", ".", ".."} or resolved.startswith("../"):
+        raise Phase7BOfficeError(f"relationship target escapes the package: {target}")
+    return resolved
+
+
+def validate_pptx_relationship_graph(
+    entries: Sequence[tuple[str, int, bytes]],
+) -> None:
+    """Validate semantic relationship IDs, targets, and source references."""
+    payloads = {name: payload for name, _, payload in entries}
+    relationship_ids: dict[str | None, set[str]] = {}
+    namespace = _PACKAGE_RELATIONSHIPS_NAMESPACE.decode("ascii")
+    for name, payload in payloads.items():
+        if not name.endswith(".rels"):
+            continue
+        source_part = _relationship_source_part(name)
+        if source_part is not None and source_part not in payloads:
+            raise Phase7BOfficeError(f"relationship source part is missing: {source_part}")
+        try:
+            root = ElementTree.fromstring(payload)
+        except ElementTree.ParseError as exception:
+            raise Phase7BOfficeError(f"invalid relationship XML: {name}") from exception
+        if root.tag != f"{{{namespace}}}Relationships":
+            raise Phase7BOfficeError(f"relationship part root is invalid: {name}")
+        identifiers: set[str] = set()
+        for relationship in root:
+            if relationship.tag != f"{{{namespace}}}Relationship":
+                raise Phase7BOfficeError(f"unexpected relationship element: {name}")
+            identifier = relationship.get("Id")
+            target = relationship.get("Target")
+            if not identifier or identifier in identifiers:
+                raise Phase7BOfficeError(f"duplicate relationship Id: {identifier}")
+            if not target:
+                raise Phase7BOfficeError(f"relationship target is missing: {name}/{identifier}")
+            identifiers.add(identifier)
+            if relationship.get("TargetMode") != "External":
+                resolved = _resolve_relationship_target(source_part, target)
+                if resolved not in payloads:
+                    raise Phase7BOfficeError(
+                        f"dangling relationship target: {name}/{identifier} -> {resolved}"
+                    )
+        relationship_ids[source_part] = identifiers
+
+    relationship_namespace = _RELATIONSHIP_NAMESPACE.decode("ascii")
+    for name, payload in payloads.items():
+        if not name.endswith(".xml"):
+            continue
+        try:
+            root = ElementTree.fromstring(payload)
+        except ElementTree.ParseError as exception:
+            raise Phase7BOfficeError(f"invalid XML relationship source: {name}") from exception
+        identifiers = relationship_ids.get(name, set())
+        for element in root.iter():
+            for attribute, value in element.attrib.items():
+                if attribute.startswith(f"{{{relationship_namespace}}}") and value not in identifiers:
+                    raise Phase7BOfficeError(
+                        f"dangling relationship reference: {name}/{attribute}={value}"
+                    )
+
+
 def normalize_openxml_package(path: Path, suffix: str) -> None:
     """Rewrite one Open XML package with reproducible ZIP and core metadata."""
     path = path.resolve(strict=True)
@@ -607,6 +712,7 @@ def normalize_openxml_package(path: Path, suffix: str) -> None:
             entries[index] = (name, compression, normalize_core_properties(payload))
     if expected_suffix == ".pptx":
         entries = _canonicalize_pptx_generated_ids(entries)
+        validate_pptx_relationship_graph(entries)
 
     descriptor, temporary_name = tempfile.mkstemp(
         prefix=f".{path.name}.normalized.", suffix=".tmp", dir=path.parent

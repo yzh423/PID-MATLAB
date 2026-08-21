@@ -406,6 +406,54 @@ class Phase7BEvidenceTests(unittest.TestCase):
             with self.assertRaisesRegex(Phase7BEvidenceError, "combined deterministic"):
                 build_phase7b_package(fake_root)
 
+    def test_every_success_field_requires_a_real_boolean_before_aggregation(self) -> None:
+        invalid_values = (1, 0, "true", None, "missing")
+        row_locations = {
+            "deterministic": lambda evidence: evidence["deterministic"]["runRows"][0],
+            "stochastic-isolated": lambda evidence: next(
+                row for row in evidence["stochastic"]["trialRows"]
+                if row["Scenario"] == "noise-low"
+            ),
+            "stochastic-combined": lambda evidence: next(
+                row for row in evidence["stochastic"]["trialRows"]
+                if row["Scenario"] == "combined-stochastic"
+            ),
+            "cartesian": lambda evidence: evidence["cartesian"]["runRows"][0],
+        }
+        for section, locate in row_locations.items():
+            for invalid in invalid_values:
+                with self.subTest(section=section, invalid=invalid), tempfile.TemporaryDirectory() as directory:
+                    fake_root = Path(directory)
+                    stage_phase7a_fixture(fake_root)
+
+                    def mutate(evidence, locate=locate, invalid=invalid):
+                        row = locate(evidence)
+                        if invalid == "missing":
+                            row.pop("Success", None)
+                        else:
+                            row["Success"] = invalid
+
+                    rewrite_evidence_and_admission(fake_root, mutate)
+                    with self.assertRaisesRegex(Phase7BEvidenceError, "Success.*Boolean"):
+                        build_phase7b_package(fake_root)
+
+    def test_summary_counts_require_real_integers_not_booleans(self) -> None:
+        mutations = {
+            "deterministic": lambda evidence: evidence["deterministic"]["summaryRows"][0].__setitem__("RunCount", True),
+            "stochastic": lambda evidence: next(
+                row for row in evidence["stochastic"]["summaryRows"]
+                if row["Scenario"] == "combined-stochastic"
+            ).__setitem__("SuccessCount", False),
+            "cartesian": lambda evidence: evidence["cartesian"].__setitem__("runCount", True),
+        }
+        for section, mutation in mutations.items():
+            with self.subTest(section=section), tempfile.TemporaryDirectory() as directory:
+                fake_root = Path(directory)
+                stage_phase7a_fixture(fake_root)
+                rewrite_evidence_and_admission(fake_root, mutation)
+                with self.assertRaisesRegex(Phase7BEvidenceError, "integer"):
+                    build_phase7b_package(fake_root)
+
     def test_cartesian_claim_is_derived_by_key_not_row_position(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             fake_root = Path(directory)

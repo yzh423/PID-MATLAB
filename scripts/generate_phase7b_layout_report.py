@@ -19,10 +19,14 @@ from scripts.phase7b.layout import build_layout_report
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project-root", required=True, type=Path)
+    parser.add_argument("--pptx", type=Path)
+    parser.add_argument("--package", type=Path)
+    parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     root = args.project_root.resolve(strict=True)
-    output = root / "docs/presentation/phase7b_layout_report.json"
-    report = build_layout_report(root)
+    output = (args.output or root / "docs/presentation/phase7b_layout_report.json").resolve()
+    report = build_layout_report(root, args.pptx, args.package)
+    output.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary_name = tempfile.mkstemp(
         prefix=".phase7b_layout_report.", suffix=".tmp.json", dir=output.parent
     )
